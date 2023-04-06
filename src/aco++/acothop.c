@@ -186,6 +186,7 @@ void update_statistics( void )
 
     iteration_best_ant = find_best(); /* iteration_best_ant is a global variable */
 
+    write_iterations_report(iteration_best_ant);
     if ( ant[iteration_best_ant].fitness < best_so_far_ant->fitness ) {
         
         time_used = elapsed_time( VIRTUAL ); /* best sol found after time_used */
@@ -494,6 +495,7 @@ int main(int argc, char *argv[]) {
         
     for ( n_try = 0 ; n_try < max_tries ; n_try++ ) {
         init_try(n_try);
+        printf("%dth try \n", n_try + 1);
         while ( !termination_condition() ) {
             construct_solutions();            
             if ( ls_flag > 0 ) {

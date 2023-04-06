@@ -99,6 +99,7 @@ long int restart_found_best; /* iteration in which restart-best solution is foun
 /* ------------------------------------------------------------------------ */
 
 FILE *log_file;
+FILE *log_tries_file;
 
 char input_name_buf[LINE_BUF_LEN];
 char output_name_buf[LINE_BUF_LEN];
@@ -158,8 +159,12 @@ void init_program(long int argc, char * argv[])
     if (!log_flag) {
         sprintf(temp_buffer, "%s.log", output_name_buf);
         log_file = fopen(temp_buffer, "w");
+        
+        sprintf(temp_buffer, "%s.tries.log", output_name_buf);
+        log_tries_file = fopen(temp_buffer, "w");
     } else {
         log_file = NULL;
+        log_tries_file = NULL;
     }
 
     instance.distance = compute_distances();
@@ -247,6 +252,7 @@ void init_try( long int ntry )
     compute_total_information();
 
     if (log_file) fprintf(log_file,"\nbegin try %li \n",ntry);
+    if (log_tries_file) fprintf(log_tries_file,"begin try %li \n",ntry);
 }
 
 void exit_try(long int ntry)
@@ -267,6 +273,7 @@ void exit_try(long int ntry)
     }
         
     if (log_file) fprintf(log_file,"end try %li \n",ntry);
+    if (log_tries_file) fprintf(log_tries_file,"end try %li \n",ntry);
 }
 
 void read_thop_instance(const char *input_file_name, struct point **nodeptr, struct item **itemptr)
@@ -551,6 +558,55 @@ void write_report(void)
     }
 }
 
+void write_iterations_report(long int iteration_best_ant){
+
+    if (log_tries_file){
+        
+        int i, first_print;
+        char *visited = (char *) calloc(instance.n, sizeof(char));
+        visited[0] = visited[instance.n - 2] = 1;
+
+        long int profit = 0.0;
+
+        for (i = 0; i < instance.m; i++) {
+            if ( ant[iteration_best_ant].packing_plan[i] ) {
+                visited[instance.itemptr[i].id_city] = 1;
+                profit += instance.itemptr[i].profit;
+            }
+        }
+
+        fprintf(log_tries_file, "%ld,%ld,%.2f\n", iteration, profit, iteration, elapsed_time(VIRTUAL));
+        
+        first_print = TRUE;
+        fprintf(log_tries_file, "[");
+        for (i = 1; i < ant[iteration_best_ant].tour_size - 3 ; i++) {
+            if ( visited[ant[iteration_best_ant].tour[i]] ) {
+                if ( first_print == TRUE ) {
+                    first_print = FALSE;
+                    fprintf(log_tries_file, "%d", ant[iteration_best_ant].tour[i] + 1);
+                }
+                else fprintf(log_tries_file, ",%d", ant[iteration_best_ant].tour[i] + 1);
+            }
+        }
+        fprintf(log_tries_file, "]\n[");
+
+        first_print = TRUE;
+        for (i = 0; i < instance.m; i++) {
+            if ( ant[iteration_best_ant].packing_plan[i] ) {
+                if ( first_print == TRUE ) {
+                    first_print = FALSE;            
+                    fprintf(log_tries_file, "%d", i+1);
+                }
+                else fprintf(log_tries_file, ",%d", i+1);
+            }
+        }
+        fprintf(log_tries_file, "]\n");
+        free(visited);
+
+        fflush(log_tries_file);
+    }
+    
+}
 
 void write_params(void)
 /*    
