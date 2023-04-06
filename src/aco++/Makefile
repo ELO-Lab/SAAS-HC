@@ -7,29 +7,29 @@ EXE=acothop
 all: thop.o utilities.o ants.o inout.o unix_timer.o ls.o parse.o acothop.o 
 	$(CPP) $(CFLAGS) -o $(EXE) thop.o utilities.o ants.o inout.o unix_timer.o ls.o parse.o acothop.o 
 
-thop.o: thop.c thop.h
-	$(CPP) $(CFLAGS) -c thop.c
+thop.o: thop.cpp thop.h
+	$(CPP) $(CFLAGS) -c thop.cpp
 
-utilities.o: utilities.c utilities.h
-	$(CPP) $(CFLAGS) -c utilities.c
+utilities.o: utilities.cpp utilities.h
+	$(CPP) $(CFLAGS) -c utilities.cpp
 
-ants.o: ants.c ants.h
-	$(CPP) $(CFLAGS) -c ants.c
+ants.o: ants.cpp ants.h
+	$(CPP) $(CFLAGS) -c ants.cpp
 
-inout.o: inout.c inout.h
-	$(CPP) $(CFLAGS) -c inout.c
+inout.o: inout.cpp inout.h
+	$(CPP) $(CFLAGS) -c inout.cpp
 
-unix_timer.o: unix_timer.c timer.h
-	$(CPP) $(CFLAGS) -c unix_timer.c
+unix_timer.o: unix_timer.cpp timer.h
+	$(CPP) $(CFLAGS) -c unix_timer.cpp
 
-ls.o: ls.c ls.h
-	$(CPP) $(CFLAGS) -c ls.c
+ls.o: ls.cpp ls.h
+	$(CPP) $(CFLAGS) -c ls.cpp
 
-parse.o: parse.c parse.h
-	$(CPP) $(CFLAGS) -c parse.c
+parse.o: parse.cpp parse.h
+	$(CPP) $(CFLAGS) -c parse.cpp
 
-acothop.o: ants.h utilities.h inout.h thop.h timer.h ls.h acothop.c
-	$(CPP) $(CFLAGS) -c acothop.c
+acothop.o: ants.h utilities.h inout.h thop.h timer.h ls.h acothop.cpp
+	$(CPP) $(CFLAGS) -c acothop.cpp
 
 clean:
 	rm -f $(EXE) *.o
