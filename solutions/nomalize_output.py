@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib
 import base64
 
-log_path = "aco++/pr107-thop/pr107_03_unc_05_02.thop.sol.tries.log"
+log_path = "aco++_o/eil51-thop/eil51_01_bsc_01_01_01.thop.sol.tries.log"
 
 run = 0
 log = []
