@@ -53,3 +53,15 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Other
+solutions
+
+.gitignore
+.vscode
+Makefile
+
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles
+build
