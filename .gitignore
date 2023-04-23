@@ -55,4 +55,9 @@ Mkfile.old
 dkms.conf
 
 build
-solutions/aco++
+solutions
+.vscode
+src/aco++/cmake_install.cmake
+src/aco++/CMakeCache.txt
+CmakeFiles
+Makefile

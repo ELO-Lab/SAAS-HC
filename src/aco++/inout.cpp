@@ -194,7 +194,7 @@ void exit_program(void)
     long int profit = instance.UB + 1 - global_best_ant->fitness;
 
     if ( calibration_mode ) printf("%ld\n", -profit);    
-    else printf("Best solution: %ld\n", profit);
+    // else printf("Best solution: %ld\n", profit);
     
     if (output_flag) save_best_thop_solution();
 }

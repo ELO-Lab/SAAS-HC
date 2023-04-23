@@ -10,7 +10,7 @@
 ##########    ACO algorithms for the TSP    ##########
 ######################################################
 
-      Version: 1.0
+      Version: `1.0
       File:    main.c
       Author:  Thomas Stuetzle
       Purpose: main routines and control for the ACO algorithms
@@ -495,7 +495,7 @@ int main(int argc, char *argv[]) {
         
     for ( n_try = 0 ; n_try < max_tries ; n_try++ ) {
         init_try(n_try);
-        printf("%dth try \n", n_try + 1);
+        // printf("%dth try \n", n_try + 1);
         while ( !termination_condition() ) {
             construct_solutions();            
             if ( ls_flag > 0 ) {
