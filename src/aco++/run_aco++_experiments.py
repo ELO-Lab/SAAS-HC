@@ -599,6 +599,8 @@ if __name__ == "__main__":
     ]
     number_of_runs = 30
 
+    for _tsp_base in tsp_base:
+        os.makedirs(f"../../solutions/aco++/{_tsp_base}-thop", exist_ok=True)
     os.system("make clean")
     os.system("make")
 
