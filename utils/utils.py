@@ -153,11 +153,11 @@ def DTW_table(solution_folder, instace_folder, tsp_bases=None, item_levels=None)
     Tss = []
     Wss = []
 
-    for base, item_lv in itertools.product(tsp_bases, item_levels):
-        print(base, item_lv)
+    for _tsp_base, _item_lv in itertools.product(tsp_bases, item_levels):
+        print(_tsp_base, _item_lv)
         ls = list(
-            (solution_folder / base).glob(
-                f"{base.split('-')[0]}_{item_lv}_[a-z][a-z][a-z]_[0-9][0-9]*.sol"
+            (solution_folder / _tsp_base).glob(
+                f"{_tsp_base.split('-')[0]}_{_item_lv}_[a-z][a-z][a-z]_[0-9][0-9]*.sol"
             )
         )
         if len(ls) == 0:
@@ -171,7 +171,7 @@ def DTW_table(solution_folder, instace_folder, tsp_bases=None, item_levels=None)
         for solution_file in ls:
             name = solution_file.stem.split("_")
             res = "_".join(name[:-1]) + ".thop"
-            input_file = instace_folder / base / res
+            input_file = instace_folder / _tsp_base / res
             assert solution_file.name.startswith(
                 input_file.stem
             ), f"{solution_file.stem} {input_file.name}"
@@ -192,7 +192,7 @@ def DTW_table(solution_folder, instace_folder, tsp_bases=None, item_levels=None)
         T = np.mean([npT[i][index[i]] for i in range(index.shape[0])], axis=0)
         W = np.mean([npW[i][index[i]] for i in range(index.shape[0])], axis=0)
 
-        Nss.append(base.split("-")[0] + "_" + str(item_lv))
+        Nss.append(_tsp_base.split("-")[0] + "_" + str(_item_lv))
         Dss.append(D)
         Tss.append(T)
         Wss.append(W)
