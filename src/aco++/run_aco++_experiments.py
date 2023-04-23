@@ -613,7 +613,7 @@ if __name__ == "__main__":
         * len(maximum_travel_time)
         * number_of_runs
     )
-    pool = multiprocessing.Pool(processes=max(1, multiprocessing.cpu_count() - 2))
+    pool = multiprocessing.Pool(processes=max(1, multiprocessing.cpu_count() // 2))
 
     for _product in itertools.product(
         tsp_base,
