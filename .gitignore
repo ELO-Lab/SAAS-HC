@@ -57,7 +57,7 @@ dkms.conf
 # Other
 solutions
 
-.gitignore
+__pycache__
 .vscode
 Makefile
 
