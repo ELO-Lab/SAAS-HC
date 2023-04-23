@@ -231,10 +231,6 @@ def merge_csv(solution_folder, output_folder):
 
 
 def normalize_output(solution_folder):
-    import csv
-    from pathlib import Path
-    import hashlib
-    import base64
     from pathlib import Path
 
     solution_folder = Path(solution_folder)
@@ -242,59 +238,67 @@ def normalize_output(solution_folder):
 
     for log_path in ls:
         log_path = str(log_path)
-        log = []
+        normalize_single_file(log_path)
 
-        with open(log_path, "r") as f:
+
+def normalize_single_file(log_path):
+    import csv
+    from pathlib import Path
+    import hashlib
+    import base64
+
+    log = []
+    with open(log_path, "r") as f:
+        line = next(f)[:-1]
+
+        while line.startswith("begin try"):
             line = next(f)[:-1]
+            ls = []
 
-            while line.startswith("begin try"):
+            while not line.startswith("end try"):
+                fitness = int(line.split(",")[1])
                 line = next(f)[:-1]
-                ls = []
+                tour = line
+                line = next(f)[:-1]
+                packing_plan = line
+                line = next(f)[:-1]
+                solution = tour + packing_plan
 
-                while not line.startswith("end try"):
-                    fitness = int(line.split(",")[1])
-                    line = next(f)[:-1]
-                    tour = line
-                    line = next(f)[:-1]
-                    packing_plan = line
-                    line = next(f)[:-1]
-                    solution = tour + packing_plan
+                signature = base64.b64encode(
+                    hashlib.sha256(solution.encode()).digest()
+                ).decode()
+                ls.append([fitness, signature])
 
-                    signature = base64.b64encode(
-                        hashlib.sha256(solution.encode()).digest()
-                    ).decode()
-                    ls.append([fitness, signature])
+            log.append(ls)
+            try:
+                line = next(f)[:-1]
+            except:
+                pass
 
-                log.append(ls)
-                try:
-                    line = next(f)[:-1]
-                except:
-                    pass
+    header = ["Run", "Fitness1", "Solution1", "Fitness2", "Solution2"]
+    table = []
+    for i in range(len(log)):
+        for j in range(len(log[i]) - 1):
+            table.append(
+                [
+                    i + 1,
+                    log[i][j][0],
+                    log[i][j][1],
+                    log[i][j + 1][0],
+                    log[i][j + 1][1],
+                ]
+            )
 
-        header = ["Run", "Fitness1", "Solution1", "Fitness2", "Solution2"]
-        table = []
-        for i in range(len(log)):
-            for j in range(len(log[i]) - 1):
-                table.append(
-                    [
-                        i + 1,
-                        log[i][j][0],
-                        log[i][j][1],
-                        log[i][j + 1][0],
-                        log[i][j + 1][1],
-                    ]
-                )
+    input_file = Path(log_path)
+    csv_file = (
+        str(input_file.parents[0])
+        + "/"
+        + ".".join(input_file.name.split(".")[:-1])
+        + ".csv"
+    )
 
-        input_file = Path(log_path)
-        csv_file = (
-            str(input_file.parents[0])
-            + "/"
-            + ".".join(input_file.name.split(".")[:-1])
-            + ".csv"
-        )
-
-        with open(csv_file, "w") as csvfile:
-            csvwriter = csv.writer(csvfile)
-            csvwriter.writerow(header)
-            csvwriter.writerows(table)
-        print(csv_file)
+    with open(csv_file, "w") as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(header)
+        csvwriter.writerows(table)
+    print(csv_file)
