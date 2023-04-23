@@ -4,7 +4,6 @@
 import itertools
 import os
 import multiprocessing
-import argparse
 import math
 from tqdm import tqdm
 
@@ -566,6 +565,9 @@ def launcher(
         )
     )
 
+    global pbar
+    pbar.update(1)
+
 
 if __name__ == "__main__":
     tsp_base = [
@@ -600,6 +602,15 @@ if __name__ == "__main__":
     os.system("make clean")
     os.system("make")
 
+    global pbar
+    pbar = tqdm(
+        total=len(tsp_base)
+        * len(number_of_items_per_city)
+        * len(knapsack_type)
+        * len(knapsack_size)
+        * len(maximum_travel_time)
+        * number_of_runs
+    )
     pool = multiprocessing.Pool(processes=max(1, multiprocessing.cpu_count() - 2))
 
     for _product in itertools.product(
@@ -616,7 +627,7 @@ if __name__ == "__main__":
             _knapsack_size,
             _maximum_travel_time,
         ) = _product
-        for repetition in tqdm(range(number_of_runs)):
+        for repetition in range(number_of_runs):
             pool.apply_async(
                 launcher,
                 args=(
@@ -631,3 +642,4 @@ if __name__ == "__main__":
 
     pool.close()
     pool.join()
+    pbar.close()
