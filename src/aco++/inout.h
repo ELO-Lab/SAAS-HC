@@ -89,6 +89,7 @@ extern long int found_best;         /* iteration in which best solution is found
 extern long int restart_found_best; /* iteration in which restart-best solution is found */
 
 extern FILE *log_file;
+extern FILE *log_tries_file;
 
 extern char input_name_buf[LINE_BUF_LEN];
 extern char output_name_buf[LINE_BUF_LEN];
@@ -126,5 +127,7 @@ void set_default_ls_parameters(void);
 void save_best_thop_solution(void);
 
 void write_report(void);
+
+void write_iterations_report(long int iteration_best_ant);
 
 void write_params(void);
