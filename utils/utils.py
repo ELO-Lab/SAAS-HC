@@ -135,7 +135,7 @@ def check_solution(input_file, solution_file):
     return D, T, W, current_profit
 
 
-def DTW_table(solution_folder, instace_folder, tsp_bases=None, item_levels=None):
+def DTW_table(solution_folder, instace_folder, tsp_bases=None, num_item_each_city_list=None):
     from pathlib import Path
     import numpy as np
     import pandas as pd
@@ -145,19 +145,19 @@ def DTW_table(solution_folder, instace_folder, tsp_bases=None, item_levels=None)
     instace_folder = Path(instace_folder)
     if tsp_bases == None:
         tsp_bases = ["eil51-thop", "pr107-thop", "a280-thop", "dsj1000-thop"]
-    if item_levels == None:
-        item_levels = ["01", "03", "05", "10"]
+    if num_item_each_city_list == None:
+        num_item_each_city_list = ["01", "03", "05", "10"]
 
     Nss = []
     Dss = []
     Tss = []
     Wss = []
 
-    for _tsp_base, _item_lv in itertools.product(tsp_bases, item_levels):
-        print(_tsp_base, _item_lv)
+    for _tsp_base, _num_item_each_city in itertools.product(tsp_bases, num_item_each_city_list):
+        print(_tsp_base, _num_item_each_city)
         ls = list(
             (solution_folder / _tsp_base).glob(
-                f"{_tsp_base.split('-')[0]}_{_item_lv}_[a-z][a-z][a-z]_[0-9][0-9]*.sol"
+                f"{_tsp_base.split('-')[0]}_{_num_item_each_city}_[a-z][a-z][a-z]_[0-9][0-9]*.sol"
             )
         )
         if len(ls) == 0:
@@ -192,7 +192,7 @@ def DTW_table(solution_folder, instace_folder, tsp_bases=None, item_levels=None)
         T = np.mean([npT[i][index[i]] for i in range(index.shape[0])], axis=0)
         W = np.mean([npW[i][index[i]] for i in range(index.shape[0])], axis=0)
 
-        Nss.append(_tsp_base.split("-")[0] + "_" + str(_item_lv))
+        Nss.append(_tsp_base.split("-")[0] + "_" + str(_num_item_each_city))
         Dss.append(D)
         Tss.append(T)
         Wss.append(W)
