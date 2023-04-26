@@ -1,4 +1,3 @@
-
 rm -rf $1/build
 rm -rf $1/CMakeFiles
 rm -f $1/cmake_install.cmake
