@@ -565,9 +565,6 @@ def launcher(
         )
     )
 
-    global pbar
-    pbar.update(1)
-
 
 if __name__ == "__main__":
     tsp_base = [
@@ -604,7 +601,6 @@ if __name__ == "__main__":
     os.system("make clean")
     os.system("make")
 
-    global pbar
     pbar = tqdm(
         total=len(tsp_base)
         * len(number_of_items_per_city)
@@ -630,6 +626,7 @@ if __name__ == "__main__":
             _maximum_travel_time,
         ) = _product
         for repetition in range(number_of_runs):
+            pbar.update(1)
             pool.apply_async(
                 launcher,
                 args=(
