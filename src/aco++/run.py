@@ -98,6 +98,6 @@ if __name__ == "__main__":
     print(tabulate(configurations, headers='firstrow', tablefmt='fancy_grid'))
     os.system("cmake .")
     os.system("make")
-    os.system(f"./acothop_nc --mmas --tries 1 --seed {random_seed} --time {time} --inputfile {args.i} --outputfile {args.o} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries} --localsearch {localsearch} --log" )
+    os.system(f"./acothop_nc --tries 1 --seed {random_seed} --time {time} --inputfile {args.i} --outputfile {args.o} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries} --localsearch {localsearch} --log" )
 
 

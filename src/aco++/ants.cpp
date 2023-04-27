@@ -658,7 +658,10 @@ void node_clustering_move (ant_struct *a, long int phase){
 
         if (candidates.size() != 0) break;
 
-        if (first == 1 && selected_cluster != 0) selected_cluster = 0;
+        if (first == 1 && selected_cluster != 0) {
+            selected_cluster = 0;
+            first = 0;
+        }
         else selected_cluster ++;
     }
 
