@@ -75,14 +75,14 @@ ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
 ant_struct *global_best_ant;
 
-using namespace std;
+// using namespace std;
 
-vector<vector<vector<int>>> cluster_chunk;
-vector<vector<int>>clusters;
-vector<int>cluster;
+std::vector<std::vector<std::vector<int>>> cluster_chunk;
+std::vector<std::vector<int>>clusters;
+std::vector<int>cluster;
 
-vector<vector<double>> total_cluster;
-vector<double> t_cluster;
+std::vector<std::vector<double>> total_cluster;
+std::vector<double> t_cluster;
 
 int n_sector = 20;
 int n_size = 32;
@@ -323,7 +323,7 @@ int find_closest_node_in_sector(int pivot_node, int n_sector, int sector_index){
     return closest_node;
 }
 
-int find_closest_node(int pivot_node, const vector<bool> &visited){
+int find_closest_node(int pivot_node, const std::vector<bool> &visited){
     int closest_node = -1;
     double min_distance = MAXFLOAT;
     for (int node = 0; node < instance.n - 1; node++) if (!visited[node]){
@@ -363,7 +363,7 @@ void create_cluster ( void ){
     for (int i = 0; i < instance.n; i++){
         cluster_chunk.push_back(clusters);
         // Node curr_node = nodes[i];
-        vector<bool> visited (instance.n, false);
+        std::vector<bool> visited (instance.n, false);
         int nb_visited = 0;
         visited[i] = true; 
         nb_visited ++;
@@ -629,7 +629,7 @@ void node_clustering_move (ant_struct *a, long int phase){
 
     // select cluster
     double lp = 0;
-    vector<double> pC;
+    std::vector<double> pC;
     int cluster_size = total_cluster[current_city].size();
     for (int i = 0; i < cluster_size; i++){
         lp = lp + total_cluster[current_city][i];
@@ -647,7 +647,7 @@ void node_clustering_move (ant_struct *a, long int phase){
     //     return;
     // }
 
-    vector<long int> candidates;
+    std::vector<long int> candidates;
     while(true){
         for (int i = 0; i < cluster_chunk[current_city][selected_cluster].size(); i++){
             long int city = cluster_chunk[current_city][selected_cluster][i];
@@ -666,7 +666,7 @@ void node_clustering_move (ant_struct *a, long int phase){
     }
 
     // select next city
-    vector<double> total_candidates;
+    std::vector<double> total_candidates;
     lp = 0;
     for (int i = 0; i < candidates.size(); i++){
         lp = lp + total[current_city][candidates[i]];

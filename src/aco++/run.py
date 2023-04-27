@@ -400,7 +400,7 @@ if __name__ == "__main__":
     parser.add_argument("--ptries", type=int)
     parser.add_argument("--localsearch", type=int)
     parser.add_argument("--time", type=float)
-    parser.add_argument("--random_seed", default=0, type=float)
+    parser.add_argument("--random_seed", default=269070, type=float)
     parser.add_argument("--instance_name", type=str)
     parser.add_argument("--postfix", type=str)
     parser.add_argument("--run_only", action="store_true")
