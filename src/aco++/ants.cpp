@@ -84,7 +84,7 @@ std::vector<int>cluster;
 std::vector<std::vector<double>> total_cluster;
 std::vector<double> t_cluster;
 
-int n_sector = 20;
+int n_sector = 24;
 int n_size = 32;
 
 double   **pheromone;
@@ -349,7 +349,7 @@ void update_cluter_total ( void ){
             }
 
             p /= cluster_chunk[i][c].size();
-            h /= cluster_chunk[i][c].size();
+            h *= cluster_chunk[i][c].size();
 
             total_cluster[i].push_back(pow(p, alpha) * pow(h,beta));
         }
@@ -676,7 +676,7 @@ void node_clustering_move (ant_struct *a, long int phase){
     int selected_city = 0;
     rnd = ran01( &seed );
     rnd *= lp;
-    while(rnd >= total_candidates[selected_city] && selected_city < candidates.size()-1) 
+    while(total_candidates[selected_city] <= rnd && selected_city < candidates.size()-1) 
         selected_city++;
 
     // if (selected_city == candidates.size()){
@@ -686,7 +686,6 @@ void node_clustering_move (ant_struct *a, long int phase){
 
     a->tour[phase] = candidates[selected_city];
     a->visited[candidates[selected_city]] = TRUE;
-
 }
 
 /**************************************************************************
