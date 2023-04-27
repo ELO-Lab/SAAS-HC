@@ -130,6 +130,54 @@ void construct_solutions( void )
     n_tours += n_ants;
 }
 
+
+void construct_node_clustering_solution ( void ){
+    long int i, k;        /* counter variable */
+    long int step;    /* counter of the number of construction steps */
+    
+    TRACE ( printf("construct solutions for all ants\n"); );
+
+    /* Mark all cities as unvisited */
+    for ( k = 0 ; k < n_ants ; k++) {
+        ant_empty_memory( &ant[k] );
+    }
+
+    /* Place the ants at initial city 0 and set the final city as n-1 */
+    for ( k = 0 ; k < n_ants ; k++ ) {
+        ant[k].tour_size = 1;
+        ant[k].tour[0] = 0;
+        ant[k].visited[0] = TRUE;
+        ant[k].visited[instance.n - 1] = TRUE;
+    }
+
+    update_cluter_total ();
+
+    step = 0;
+
+    while ( step < instance.n - 2 ) {
+        step++;
+        for ( k = 0 ; k < n_ants ; k++ ) {
+            if ( ant[k].tour[ant[k].tour_size - 1] == instance.n - 2 ) { /* previous city is the last one */
+                continue;
+            }
+            node_clustering_move( &ant[k], step);  
+            if ( acs_flag )
+                local_acs_pheromone_update( &ant[k], step );
+            ant[k].tour_size++;
+        }
+    }
+
+    for ( k = 0 ; k < n_ants ; k++ ) {
+        ant[k].tour[ant[k].tour_size++] = instance.n - 1;
+        ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
+        for( i = ant[k].tour_size; i < instance.n; i++ ) ant[k].tour[i] = 0;
+        ant[k].fitness = compute_fitness( ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan );
+        if ( acs_flag )
+            local_acs_pheromone_update( &ant[k], ant[k].tour_size - 1);
+    }
+    n_tours += n_ants;
+}
+
 void local_search( void )
 /*    
       FUNCTION:       manage the local search phase; apply local search to ALL ants; in 
@@ -490,14 +538,17 @@ int main(int argc, char *argv[]) {
     pheromone = generate_double_matrix( instance.n, instance.n );
     total = generate_double_matrix( instance.n, instance.n );
 
+    create_cluster();
+
     time_used = elapsed_time( VIRTUAL );
     /*printf("Initialization took %.10f seconds\n",time_used);*/
         
     for ( n_try = 0 ; n_try < max_tries ; n_try++ ) {
         init_try(n_try);
-        printf("%dth try \n", n_try + 1);
+        // printf("%dth try \n", n_try + 1);
         while ( !termination_condition() ) {
-            construct_solutions();            
+            // construct_solutions(); 
+            construct_node_clustering_solution();           
             if ( ls_flag > 0 ) {
                 for ( k = 0 ; k < n_ants ; k++ ) {
                     copy_from_to( &ant[k], &prev_ls_ant[k] );

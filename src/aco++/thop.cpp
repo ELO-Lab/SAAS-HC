@@ -218,6 +218,7 @@ long int** compute_distances(void)
 }
 
 
+
 long int** compute_nn_lists( void )
 /*    
       FUNCTION: computes nearest neighbor lists of depth nn for each city
@@ -236,6 +237,8 @@ long int** compute_nn_lists( void )
     if ( nn >= instance.n )
         nn = instance.n - 1;
     DEBUG ( assert( instance.n > nn ); )
+
+    nn = instance.n - 1;
 
     TRACE ( printf("nn = %ld ... \n",nn); )
 

@@ -117,24 +117,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named acothop
+# Target rules for targets named acothop_nc
 
 # Build rule for target.
-acothop: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 acothop
-.PHONY : acothop
+acothop_nc: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 acothop_nc
+.PHONY : acothop_nc
 
 # fast build rule for target.
-acothop/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/build
-.PHONY : acothop/fast
+acothop_nc/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/build
+.PHONY : acothop_nc/fast
 
 acothop.o: acothop.cpp.o
 .PHONY : acothop.o
 
 # target to build an object file
 acothop.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/acothop.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/acothop.cpp.o
 .PHONY : acothop.cpp.o
 
 acothop.i: acothop.cpp.i
@@ -142,7 +142,7 @@ acothop.i: acothop.cpp.i
 
 # target to preprocess a source file
 acothop.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/acothop.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/acothop.cpp.i
 .PHONY : acothop.cpp.i
 
 acothop.s: acothop.cpp.s
@@ -150,7 +150,7 @@ acothop.s: acothop.cpp.s
 
 # target to generate assembly for a file
 acothop.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/acothop.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/acothop.cpp.s
 .PHONY : acothop.cpp.s
 
 ants.o: ants.cpp.o
@@ -158,7 +158,7 @@ ants.o: ants.cpp.o
 
 # target to build an object file
 ants.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/ants.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/ants.cpp.o
 .PHONY : ants.cpp.o
 
 ants.i: ants.cpp.i
@@ -166,7 +166,7 @@ ants.i: ants.cpp.i
 
 # target to preprocess a source file
 ants.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/ants.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/ants.cpp.i
 .PHONY : ants.cpp.i
 
 ants.s: ants.cpp.s
@@ -174,7 +174,7 @@ ants.s: ants.cpp.s
 
 # target to generate assembly for a file
 ants.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/ants.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/ants.cpp.s
 .PHONY : ants.cpp.s
 
 inout.o: inout.cpp.o
@@ -182,7 +182,7 @@ inout.o: inout.cpp.o
 
 # target to build an object file
 inout.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/inout.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/inout.cpp.o
 .PHONY : inout.cpp.o
 
 inout.i: inout.cpp.i
@@ -190,7 +190,7 @@ inout.i: inout.cpp.i
 
 # target to preprocess a source file
 inout.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/inout.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/inout.cpp.i
 .PHONY : inout.cpp.i
 
 inout.s: inout.cpp.s
@@ -198,7 +198,7 @@ inout.s: inout.cpp.s
 
 # target to generate assembly for a file
 inout.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/inout.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/inout.cpp.s
 .PHONY : inout.cpp.s
 
 ls.o: ls.cpp.o
@@ -206,7 +206,7 @@ ls.o: ls.cpp.o
 
 # target to build an object file
 ls.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/ls.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/ls.cpp.o
 .PHONY : ls.cpp.o
 
 ls.i: ls.cpp.i
@@ -214,7 +214,7 @@ ls.i: ls.cpp.i
 
 # target to preprocess a source file
 ls.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/ls.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/ls.cpp.i
 .PHONY : ls.cpp.i
 
 ls.s: ls.cpp.s
@@ -222,7 +222,7 @@ ls.s: ls.cpp.s
 
 # target to generate assembly for a file
 ls.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/ls.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/ls.cpp.s
 .PHONY : ls.cpp.s
 
 parse.o: parse.cpp.o
@@ -230,7 +230,7 @@ parse.o: parse.cpp.o
 
 # target to build an object file
 parse.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/parse.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/parse.cpp.o
 .PHONY : parse.cpp.o
 
 parse.i: parse.cpp.i
@@ -238,7 +238,7 @@ parse.i: parse.cpp.i
 
 # target to preprocess a source file
 parse.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/parse.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/parse.cpp.i
 .PHONY : parse.cpp.i
 
 parse.s: parse.cpp.s
@@ -246,7 +246,7 @@ parse.s: parse.cpp.s
 
 # target to generate assembly for a file
 parse.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/parse.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/parse.cpp.s
 .PHONY : parse.cpp.s
 
 thop.o: thop.cpp.o
@@ -254,7 +254,7 @@ thop.o: thop.cpp.o
 
 # target to build an object file
 thop.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/thop.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/thop.cpp.o
 .PHONY : thop.cpp.o
 
 thop.i: thop.cpp.i
@@ -262,7 +262,7 @@ thop.i: thop.cpp.i
 
 # target to preprocess a source file
 thop.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/thop.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/thop.cpp.i
 .PHONY : thop.cpp.i
 
 thop.s: thop.cpp.s
@@ -270,7 +270,7 @@ thop.s: thop.cpp.s
 
 # target to generate assembly for a file
 thop.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/thop.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/thop.cpp.s
 .PHONY : thop.cpp.s
 
 unix_timer.o: unix_timer.cpp.o
@@ -278,7 +278,7 @@ unix_timer.o: unix_timer.cpp.o
 
 # target to build an object file
 unix_timer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/unix_timer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/unix_timer.cpp.o
 .PHONY : unix_timer.cpp.o
 
 unix_timer.i: unix_timer.cpp.i
@@ -286,7 +286,7 @@ unix_timer.i: unix_timer.cpp.i
 
 # target to preprocess a source file
 unix_timer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/unix_timer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/unix_timer.cpp.i
 .PHONY : unix_timer.cpp.i
 
 unix_timer.s: unix_timer.cpp.s
@@ -294,7 +294,7 @@ unix_timer.s: unix_timer.cpp.s
 
 # target to generate assembly for a file
 unix_timer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/unix_timer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/unix_timer.cpp.s
 .PHONY : unix_timer.cpp.s
 
 utilities.o: utilities.cpp.o
@@ -302,7 +302,7 @@ utilities.o: utilities.cpp.o
 
 # target to build an object file
 utilities.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/utilities.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/utilities.cpp.o
 .PHONY : utilities.cpp.o
 
 utilities.i: utilities.cpp.i
@@ -310,7 +310,7 @@ utilities.i: utilities.cpp.i
 
 # target to preprocess a source file
 utilities.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/utilities.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/utilities.cpp.i
 .PHONY : utilities.cpp.i
 
 utilities.s: utilities.cpp.s
@@ -318,7 +318,7 @@ utilities.s: utilities.cpp.s
 
 # target to generate assembly for a file
 utilities.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop.dir/build.make CMakeFiles/acothop.dir/utilities.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/acothop_nc.dir/build.make CMakeFiles/acothop_nc.dir/utilities.cpp.s
 .PHONY : utilities.cpp.s
 
 # Help Target
@@ -329,7 +329,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... acothop"
+	@echo "... acothop_nc"
 	@echo "... acothop.o"
 	@echo "... acothop.i"
 	@echo "... acothop.s"
