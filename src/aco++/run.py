@@ -1,11 +1,8 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-import itertools
 import os
-import multiprocessing
+import argparse
 import math
-from tqdm import tqdm
+from pathlib import Path
+from tabulate import tabulate
 
 parameter_configurations = {
     "eil51_01_bsc": {
@@ -394,251 +391,121 @@ parameter_configurations = {
     },
 }
 
-random_seeds = [
-    269070,
-    99470,
-    126489,
-    644764,
-    547617,
-    642580,
-    73456,
-    462018,
-    858990,
-    756112,
-    701531,
-    342080,
-    613485,
-    131654,
-    886148,
-    909040,
-    146518,
-    782904,
-    3075,
-    974703,
-    170425,
-    531298,
-    253045,
-    488197,
-    394197,
-    519912,
-    606939,
-    480271,
-    117561,
-    900952,
-    968235,
-    345118,
-    750253,
-    420440,
-    761205,
-    130467,
-    928803,
-    768798,
-    640300,
-    871462,
-    639622,
-    90614,
-    187822,
-    594363,
-    193911,
-    846042,
-    680779,
-    344008,
-    759862,
-    661168,
-    223420,
-    959508,
-    62985,
-    349296,
-    910428,
-    964420,
-    422964,
-    384194,
-    985214,
-    57575,
-    639619,
-    90505,
-    435236,
-    465842,
-    102567,
-    189997,
-    741017,
-    611828,
-    699223,
-    335142,
-    52119,
-    49256,
-    324523,
-    348215,
-    651525,
-    517999,
-    830566,
-    958538,
-    880422,
-    390645,
-    148265,
-    807740,
-    934464,
-    524847,
-    408760,
-    668587,
-    257030,
-    751580,
-    90477,
-    594476,
-    571216,
-    306614,
-    308010,
-    661191,
-    890429,
-    425031,
-    69108,
-    435783,
-    17725,
-    335928,
-]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ants", type=int)
+    parser.add_argument("--alpha", type=float)
+    parser.add_argument("--beta", type=float)
+    parser.add_argument("--rho", type=float)
+    parser.add_argument("--ptries", type=int)
+    parser.add_argument("--localsearch", type=int)
+    parser.add_argument("--time", type=float)
+    parser.add_argument("--random_seed", default=269070, type=float)
+    parser.add_argument("--instance_name", type=str)
+    parser.add_argument("--postfix", type=str)
+    parser.add_argument("--run_only", action="store_true")
+    parser.add_argument("--build_only", action="store_true")
 
+    args = parser.parse_args()
+    assert not (args.run_only and args.build_only)
 
-def launcher(
-    tsp_base,
-    number_of_items_per_city,
-    knapsack_type,
-    knapsack_size,
-    maximum_travel_time,
-    repetition,
-    runtime_factor="1t",
-):
-    if knapsack_size != "inf":
-        knapsack_size = "%02d" % (knapsack_size,)
-    inputfile = "../../instances/%s-thop/%s_%02d_%s_%s_%02d.thop" % (
-        tsp_base,
-        tsp_base,
-        number_of_items_per_city,
-        knapsack_type,
-        knapsack_size,
-        maximum_travel_time,
-    )
+    if args.instance_name:
+        if args.instance_name[-5:] == ".thop":
+            instance_name = args.instance_name
+        else:
+            instance_name = args.instance_name + ".thop"
+    if args.postfix:
+        if args.postfix[0] == "_":
+            postfix = args.postfix
+        else:
+            postfix = "_" + args.postfix
+    else:
+        postfix = ""
 
-    if repetition == 0:
-        print(
-            float(runtime_factor.replace("t", ""))
-            * math.ceil(
-                (int("".join(filter(lambda x: x.isdigit(), tsp_base))) - 2)
-                * number_of_items_per_city
-                / 10.0
-            ),
-            inputfile,
-        )
+    if not args.run_only:
+        os.system("cmake .")
+        os.system("make")
+        os.rename("./acothop", f"./acothop{postfix}")
+    if args.build_only:
+        exit(0)
 
-    outputfile = "../../solutions/aco++/%s-thop/%s_%02d_%s_%s_%02d_%02d.thop.sol" % (
-        tsp_base,
-        tsp_base,
-        number_of_items_per_city,
-        knapsack_type,
-        knapsack_size,
-        maximum_travel_time,
-        repetition + 1,
-    )
+    tsp_base = instance_name.split("_")[0]
+    number_of_items_per_city = int(instance_name.split("_")[1])
+    knapsack_type = instance_name.split("_")[2]
     parameter_configuration_key = "%s_%02d_%s" % (
         tsp_base,
         number_of_items_per_city,
         knapsack_type,
     )
 
-    os.system(
-        "./acothop --mmas --tries 1 --seed %d --time %.1f --inputfile %s --outputfile %s %s --log"
-        % (
-            random_seeds[repetition],
-            float(runtime_factor.replace("t", ""))
-            * math.ceil(
-                (int("".join(filter(lambda x: x.isdigit(), tsp_base))) - 2)
-                * number_of_items_per_city
-                / 10.0
-            ),
-            inputfile,
-            outputfile,
-            " ".join(
-                "%s %s" % (k, v)
-                for k, v in parameter_configurations[
-                    parameter_configuration_key
-                ].items()
-            ),
+    ants = (
+        args.ants
+        if args.ants
+        else float(parameter_configurations[parameter_configuration_key]["--ants"])
+    )
+    alpha = (
+        args.alpha
+        if args.alpha
+        else float(parameter_configurations[parameter_configuration_key]["--alpha"])
+    )
+    beta = (
+        args.beta
+        if args.beta
+        else float(parameter_configurations[parameter_configuration_key]["--beta"])
+    )
+    rho = (
+        args.rho
+        if args.rho
+        else float(parameter_configurations[parameter_configuration_key]["--rho"])
+    )
+    ptries = (
+        args.ptries
+        if args.ptries
+        else int(parameter_configurations[parameter_configuration_key]["--ptries"])
+    )
+    localsearch = (
+        args.localsearch
+        if args.localsearch
+        else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
+    )
+
+    random_seed = args.random_seed
+    if args.time:
+        time = args.time
+    else:
+        time = float(1) * math.ceil(
+            (int("".join(filter(lambda x: x.isdigit(), tsp_base))) - 2)
+            * number_of_items_per_city
+            / 10.0
         )
+
+    configurations = [
+        [
+            "random seed",
+            "ants",
+            "alpha",
+            "beta",
+            "rho",
+            "ptries",
+            "localsearch",
+            "time limit",
+        ],
+        [random_seed, ants, alpha, beta, rho, ptries, localsearch, time],
+    ]
+    instance_info = [
+        ["tsp base", "number of items per city", "knapsack type"],
+        [tsp_base, number_of_items_per_city, knapsack_type],
+    ]
+    print(tabulate(instance_info, headers="firstrow", tablefmt="fancy_grid"))
+    print(tabulate(configurations, headers="firstrow", tablefmt="fancy_grid"))
+
+    executable_path = f"./acothop{postfix}"
+    input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
+    output_path = Path(
+        f"../../solutions/temp/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
+    command = f"{executable_path} --mmas --tries 1 --seed {random_seed} --time {time} --inputfile {input_path} --outputfile {output_path} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries} --localsearch {localsearch} --log"
+    print(command)
 
-
-if __name__ == "__main__":
-    tsp_base = [
-        "eil51",
-        "pr107",
-        "a280",
-        "dsj1000",
-    ]
-    number_of_items_per_city = [
-        1,
-        3,
-        5,
-        10,
-    ]
-    knapsack_type = [
-        "bsc",
-        "unc",
-        "usw",
-    ]
-    knapsack_size = [
-        1,
-        5,
-        10,
-    ]
-    maximum_travel_time = [
-        1,
-        2,
-        3,
-    ]
-    number_of_runs = 30
-
-    for _tsp_base in tsp_base:
-        os.makedirs(f"../../solutions/aco++/{_tsp_base}-thop", exist_ok=True)
-    os.system("make clean")
-    os.system("make")
-
-    pbar = tqdm(
-        total=len(tsp_base)
-        * len(number_of_items_per_city)
-        * len(knapsack_type)
-        * len(knapsack_size)
-        * len(maximum_travel_time)
-        * number_of_runs
-    )
-    pool = multiprocessing.Pool(processes=max(1, multiprocessing.cpu_count() // 2))
-
-    for _product in itertools.product(
-        tsp_base,
-        number_of_items_per_city,
-        knapsack_type,
-        knapsack_size,
-        maximum_travel_time,
-    ):
-        (
-            _tsp_base,
-            _number_of_items_per_city,
-            _knapsack_type,
-            _knapsack_size,
-            _maximum_travel_time,
-        ) = _product
-        for repetition in range(number_of_runs):
-            pbar.update(1)
-            pool.apply_async(
-                launcher,
-                args=(
-                    _tsp_base,
-                    _number_of_items_per_city,
-                    _knapsack_type,
-                    _knapsack_size,
-                    _maximum_travel_time,
-                    repetition,
-                ),
-            )
-
-    pool.close()
-    pool.join()
-    pbar.close()
+    os.makedirs(output_path.parent, exist_ok=True)
+    os.system(command=command)
