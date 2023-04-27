@@ -451,9 +451,8 @@ void pheromone_trail_update(void)
     if (adaptive_evaporation_flag)
     {
         update_rho();
-        _evaporation();
     }
-    else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
+    if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
     {
         if (ls_flag)
         {
@@ -470,6 +469,7 @@ void pheromone_trail_update(void)
         {
             /* if no local search is used, evaporate all pheromone trails */
             evaporation();
+            // alternative_global_evaporation();
         }
     }
 

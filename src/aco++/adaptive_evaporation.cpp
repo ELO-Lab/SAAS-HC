@@ -7,24 +7,15 @@
 
 // Hyperparameters
 bool adaptive_evaporation_flag = true;
-double min_rho = 0;
-double max_rho = 1;
+float min_rho = 0;
+float max_rho = 1;
 
-long int num_edge;
-double min_entropy;
-double max_entropy;
-double rho_diff_over_entropy_diff;
+const float rho_diff = max_rho - min_rho;
 
-void init_adaptive_evaporation(void) {
-    num_edge = instance.n - 2; // a route has maxium (instance.n-2) edges
-    min_entropy = -log2(1.0 / num_edge);
-    max_entropy = -log2(1.0 / (num_edge * n_ants));
-    rho_diff_over_entropy_diff = (max_rho - min_rho) / (max_entropy - min_entropy);
-}
-
-void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence)
+void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence, long int &total_edge_count)
 {
     occurence.clear();
+    total_edge_count = 0;
     std::pair<long int, long int> edge;
     long int i, j;
 
@@ -37,35 +28,41 @@ void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurenc
                 continue;
             }
             edge = std::make_pair(ant[i].tour[j], ant[i].tour[j + 1]);
-            if (occurence.count(edge) == 0)
+            if (occurence.find(edge) == occurence.end())
             {
                 occurence[edge] = 0;
             }
             occurence[edge] += 1;
+            total_edge_count += 1;
         }
     }
 }
 
-void calculate_entropy(double &entropy)
+void calculate_entropy(float &entropy, const std::map<std::pair<long int, long int>, long int> &occurence, const long int &total_edge_count)
 {
-    std::map<std::pair<long int, long int>, long int> occurence;
-    count_ant_edges(occurence);
     entropy = 0;
     for (const auto &item : occurence)
     {
-        const double p_ij = item.second * 1.0 / (num_edge * n_ants);
+        const float p_ij = item.second * 1.0 / total_edge_count;
         entropy -= p_ij * log2(p_ij);
     }
 }
 
 void update_rho(void)
 {
-    double entropy;
-    calculate_entropy(entropy);
-    rho = min_rho + rho_diff_over_entropy_diff * (entropy - min_entropy);
+    std::map<std::pair<long int, long int>, long int> occurence;
+    long int total_edge_count;
+    float entropy, min_entropy, max_entropy;
+
+    count_ant_edges(occurence, total_edge_count);
+    calculate_entropy(entropy, occurence, total_edge_count);
+
+    min_entropy = -log2(n_ants * 1.0 / total_edge_count);
+    max_entropy = -log2(1.0 / total_edge_count);
+    rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
 }
 
-void _evaporation(void)
+void alternative_global_evaporation(void)
 /*
       FUNCTION:      implements the adaptive pheromone trail evaporation
       INPUT:         none
@@ -74,7 +71,7 @@ void _evaporation(void)
  */
 {
     long int i, j;
-    const double evaporation_factor = 1 - rho;
+    const float evaporation_factor = 1 - rho;
 
     for (i = 0; i <= instance.n - 1; i++)
     {
