@@ -6,9 +6,8 @@
 #include "ants.h"
 
 // Hyperparameters
-bool adaptive_evaporation_flag = true;
-float min_rho = 0;
-float max_rho = 1;
+float min_rho = 0.01;
+float max_rho = 0.99;
 
 const float rho_diff = max_rho - min_rho;
 
@@ -21,12 +20,13 @@ void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurenc
 
     for (i = 0; i < n_ants; i++)
     {
-        for (j = 0; j < ant[i].tour_size - 1; j++)
+        for (j = 0; j <= ant[i].tour_size - 3; j++)
         {
-            if (ant[i].tour[j] == instance.n - 1 || ant[i].tour[j + 1] == instance.n - 1)
-            {
-                continue;
-            }
+            // if (ant[i].tour[j] < ant[i].tour[j + 1]) {
+            //     edge = std::make_pair(ant[i].tour[j], ant[i].tour[j + 1]);
+            // } else {
+            //     edge = std::make_pair(ant[i].tour[j+1], ant[i].tour[j]);
+            // }
             edge = std::make_pair(ant[i].tour[j], ant[i].tour[j + 1]);
             if (occurence.find(edge) == occurence.end())
             {
@@ -59,26 +59,6 @@ void update_rho(void)
 
     min_entropy = -log2(n_ants * 1.0 / total_edge_count);
     max_entropy = -log2(1.0 / total_edge_count);
-    rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-}
-
-void alternative_global_evaporation(void)
-/*
-      FUNCTION:      implements the adaptive pheromone trail evaporation
-      INPUT:         none
-      OUTPUT:        none
-      (SIDE)EFFECTS: pheromones are reduced by factor rho
- */
-{
-    long int i, j;
-    const float evaporation_factor = 1 - rho;
-
-    for (i = 0; i <= instance.n - 1; i++)
-    {
-        for (j = i + 1; j <= instance.n - 1; j++)
-        {
-            pheromone[i][j] = evaporation_factor * pheromone[i][j];
-            pheromone[j][i] = evaporation_factor * pheromone[j][i];
-        }
-    }
+    // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
 }

@@ -503,29 +503,28 @@ void pheromone_trail_update(void)
 {
     /* Simulate the pheromone evaporation of all pheromones; this is not necessary
        for ACS (see also ACO Book) */
-    if (adaptive_evaporation_flag)
-    {
-        update_rho();
-    }
-    if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
-    {
-        if (ls_flag)
-        {
-            if (mmas_flag)
-                mmas_evaporation_nn_list();
-            else
-                evaporation_nn_list();
-            /* evaporate only pheromones on arcs of candidate list to make the
-               pheromone evaporation faster for being able to tackle large TSP
-               instances. For MMAS additionally check lower pheromone trail limits.
-             */
-        }
-        else
-        {
-            /* if no local search is used, evaporate all pheromone trails */
-            evaporation();
-            // alternative_global_evaporation();
-        }
+    // if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
+    // {
+    //     if (ls_flag)
+    //     {
+    //         if (mmas_flag)
+    //             mmas_evaporation_nn_list();
+    //         else
+    //             evaporation_nn_list();
+    //         /* evaporate only pheromones on arcs of candidate list to make the
+    //            pheromone evaporation faster for being able to tackle large TSP
+    //            instances. For MMAS additionally check lower pheromone trail limits.
+    //          */
+    //     }
+    //     else
+    //     {
+    //         /* if no local search is used, evaporate all pheromone trails */
+    //         evaporation();
+    //     }
+    // }
+    update_rho();
+    if (not acs_flag) {
+        evaporation();
     }
 
     /* Next, apply the pheromone deposit for the various ACO algorithms */
@@ -545,22 +544,25 @@ void pheromone_trail_update(void)
     /* check pheromone trail limits for MMAS; not necessary if local
      search is used, because in the local search case lower pheromone trail
      limits are checked in procedure mmas_evaporation_nn_list */
-    if (mmas_flag && !ls_flag)
+    if (mmas_flag)
         check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
-    {
-        if (ls_flag)
-        {
-            compute_nn_list_total_information();
-        }
-        else
-        {
-            compute_total_information();
-        }
+    // if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
+    // {
+    //     if (ls_flag)
+    //     {
+    //         compute_nn_list_total_information();
+    //     }
+    //     else
+    //     {
+    //         compute_total_information();
+    //     }
+    // }
+    if (not acs_flag) {
+        compute_total_information();
     }
 }
 

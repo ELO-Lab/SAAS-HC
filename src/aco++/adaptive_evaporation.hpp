@@ -7,6 +7,5 @@ extern float min_rho;
 extern float max_rho;
 
 void update_rho(void);
-void alternative_global_evaporation(void);
 
 #endif
