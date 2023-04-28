@@ -397,7 +397,6 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float)
     parser.add_argument("--beta", type=float)
     parser.add_argument("--rho", type=float)
-    parser.add_argument("--tries", type=int)
     parser.add_argument("--ptries", type=int)
     parser.add_argument("--localsearch", type=int)
     parser.add_argument("--time", type=float)
@@ -407,6 +406,7 @@ if __name__ == "__main__":
     parser.add_argument("--run_only", action="store_true")
     parser.add_argument("--build_only", action="store_true")
     parser.add_argument("--not_mmas", action="store_true")
+    parser.add_argument("--tries", default=1, type=int)
 
     args = parser.parse_args()
     assert not (args.run_only and args.build_only)
@@ -471,8 +471,6 @@ if __name__ == "__main__":
         else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
     )
 
-    tries = args.tries if args.tries else 1
-
     random_seed = args.random_seed
     if args.time:
         time = args.time
@@ -485,7 +483,6 @@ if __name__ == "__main__":
 
     configurations = [
         [
-            "tries",
             "random seed",
             "ants",
             "alpha",
@@ -495,7 +492,7 @@ if __name__ == "__main__":
             "localsearch",
             "time limit",
         ],
-        [tries, random_seed, ants, alpha, beta, rho, ptries, localsearch, time],
+        [random_seed, ants, alpha, beta, rho, ptries, localsearch, time],
     ]
     instance_info = [
         ["tsp base", "number of items per city", "knapsack type"],
@@ -509,7 +506,7 @@ if __name__ == "__main__":
     output_path = Path(
         f"../../solutions/temp/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
-    command = f"{executable_path} --tries {tries} --seed {random_seed} --time {time} --inputfile {input_path} --outputfile {output_path} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries} --localsearch {localsearch} --log"
+    command = f"{executable_path} --tries {args.tries} --seed {random_seed} --time {time} --inputfile {input_path} --outputfile {output_path} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries} --localsearch {localsearch} --log"
     if not args.not_mmas:
         command += " --mmas"
     print(command)
