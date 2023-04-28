@@ -126,6 +126,10 @@ void compute_total_information( void );
 
 void compute_nn_list_total_information( void );
 
+void update_cluter_total ( void );
+
+void create_cluster ( void );
+
 /* Ants' solution construction */
 
 void ant_empty_memory( ant_struct *a );
@@ -139,6 +143,8 @@ void neighbour_choose_best_next( ant_struct *a, long int phase );
 void choose_closest_next( ant_struct *a, long int phase );
 
 void neighbour_choose_and_move_to_next( ant_struct *a , long int phase );
+
+void node_clustering_move (ant_struct *a, long int phase);
 
 /* Auxiliary procedures related to ants */
 

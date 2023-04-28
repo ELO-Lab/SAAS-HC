@@ -57,6 +57,10 @@
 #include <assert.h>
 #include <limits.h>
 #include <time.h>
+#include <iostream>
+
+#include <vector>
+#include <cmath>
 
 #include "inout.h"
 #include "thop.h"
@@ -70,6 +74,18 @@ ant_struct *prev_ls_ant;
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
 ant_struct *global_best_ant;
+
+// using namespace std;
+
+std::vector<std::vector<std::vector<int>>> cluster_chunk;
+std::vector<std::vector<int>>clusters;
+std::vector<int>cluster;
+
+std::vector<std::vector<double>> total_cluster;
+std::vector<double> t_cluster;
+
+int n_sector = 24;
+int n_size = 32;
 
 double   **pheromone;
 double   **total;
@@ -258,6 +274,132 @@ void compute_nn_list_total_information( void )
             total[h][i] = total[i][h];
         }
     }
+}
+
+bool check_in_sector(point a, point b, int n_sector, int sector_index){
+    double angle_1 = (2 * M_PI / n_sector) * (sector_index);
+    double angle_2 = (2 * M_PI / n_sector) * (sector_index + 1);
+
+    double x1 = 1;
+    double y1 = 0;
+    double x2 = b.x - a.x;
+    double y2 = b.y - a.y;
+    
+    double angle = atan2(x1*x2 + y1*y2, x1*y2 - y1*x2);
+
+    if (angle < 0) angle = 2 * M_PI + angle;
+
+    return angle_1 <= angle && angle < angle_2;
+}
+
+bool check_in_sector2(point a, point b, int n_sector, int sector_index){
+    float angle_r = (2 * M_PI / n_sector) * (sector_index);
+    float angle_l = (2 * M_PI / n_sector) * (sector_index + 1);
+
+    float right = b.y - (tan(angle_r) * (b.x - a.x) + a.y);
+    float left = b.y - (tan(angle_l) * (b.x - a.x) + a.y);
+
+    if (angle_r > M_PI / 2) right = -right;
+    if (angle_l > M_PI / 2) left = -left;
+
+    if (angle_r > (3 * M_PI / 2)) right = -right;
+    if (angle_l > (3 * M_PI / 2)) left = -left;
+
+    return left < 0 && right >= 0;
+}
+
+int find_closest_node_in_sector(int pivot_node, int n_sector, int sector_index){
+    int closest_node = -1;
+    double min_distance = MAXFLOAT;
+    for (int node = 0; node < instance.n - 1; node++) 
+        if (node!=pivot_node) {
+            bool in_sector = check_in_sector(instance.nodeptr[pivot_node], instance.nodeptr[node], n_sector, sector_index);
+            if (in_sector && instance.distance[pivot_node][node] < min_distance){
+                closest_node = node;
+                min_distance = instance.distance[pivot_node][node];
+            }
+        }
+
+    return closest_node;
+}
+
+int find_closest_node(int pivot_node, const std::vector<bool> &visited){
+    int closest_node = -1;
+    double min_distance = MAXFLOAT;
+    for (int node = 0; node < instance.n - 1; node++) if (!visited[node]){
+        if (instance.distance[pivot_node][node] < min_distance){
+            closest_node = node;
+            min_distance = instance.distance[pivot_node][node];
+        }
+    }
+
+    return closest_node;
+}
+
+void update_cluter_total ( void ){
+    total_cluster.clear();
+    for (int i = 0; i < instance.n; i++){
+        total_cluster.push_back(t_cluster);
+        for (int c = 0; c < cluster_chunk[i].size(); c++){
+            double p = 0;
+            double h = 0;
+            for (int v = 0; v < cluster_chunk[i][c].size(); v++){
+                p += pheromone[i][v];
+                h += pheromone[i][v];
+            }
+
+            p /= cluster_chunk[i][c].size();
+            h *= cluster_chunk[i][c].size();
+
+            total_cluster[i].push_back(pow(p, alpha) * pow(h,beta));
+        }
+    }
+}
+
+void create_cluster ( void ){
+
+    cluster_chunk.clear();
+    
+    for (int i = 0; i < instance.n; i++){
+        cluster_chunk.push_back(clusters);
+        // Node curr_node = nodes[i];
+        std::vector<bool> visited (instance.n, false);
+        int nb_visited = 0;
+        visited[i] = true; 
+        nb_visited ++;
+
+        int cluster_index = 0;
+        cluster_chunk[i].push_back(cluster);
+
+        for (int j = 0; j < n_sector; j++){
+            int node = find_closest_node_in_sector(i, n_sector, j);
+            if (node != -1) {
+                cluster_chunk[i][cluster_index].push_back(node);
+                nb_visited ++;
+                visited[node] = true;
+            }
+        }
+
+        while (nb_visited < instance.n){
+            while (cluster_chunk[i][cluster_index].size() < n_size){
+                int node = find_closest_node(i, visited);
+                if (node != -1) {
+                    cluster_chunk[i][cluster_index].push_back(node);
+                    nb_visited ++;
+                    visited[node] = true;
+                }
+                if (nb_visited == instance.n-1) break;
+            }
+            if (nb_visited < instance.n-1){
+                cluster_index ++;
+                cluster_chunk[i].push_back(cluster);
+            }else{
+                break;
+            }
+        }
+    }
+
+    // update_cluter_total();
 }
 
 /****************************************************************
@@ -473,6 +615,78 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
         a->tour[phase] = help; /* instance.nn_list[current_city][i]; */
         a->visited[help] = TRUE;
     }
+}
+
+void node_clustering_move (ant_struct *a, long int phase){
+
+    q_0 = 0.98;
+    if ( (q_0 > 0.0) && (ran01( &seed ) < q_0)  ) {
+        choose_best_next(a, phase);
+        return;
+    }
+
+    int first = 1;
+    long int current_city = a->tour[phase-1];
+
+    // select cluster
+    double lp = 0;
+    std::vector<double> pC;
+    int cluster_size = total_cluster[current_city].size();
+    for (int i = 0; i < cluster_size; i++){
+        lp = lp + total_cluster[current_city][i];
+        pC.push_back(lp);
+    }
+    
+    int selected_cluster = 0;
+    double rnd = ran01( &seed );
+    rnd *= lp;
+    while(rnd >= pC[selected_cluster] && selected_cluster < cluster_size-1) 
+        selected_cluster++;
+
+    // if (selected_cluster == cluster_size){
+    //     choose_best_next(a, phase);
+    //     return;
+    // }
+
+    std::vector<long int> candidates;
+    while(true){
+        for (int i = 0; i < cluster_chunk[current_city][selected_cluster].size(); i++){
+            long int city = cluster_chunk[current_city][selected_cluster][i];
+            if (a->visited[city]) continue;
+
+            candidates.push_back(city);
+        }
+
+        if (candidates.size() != 0) break;
+
+        if (first == 1 && selected_cluster != 0) {
+            selected_cluster = 0;
+            first = 0;
+        }
+        else selected_cluster ++;
+    }
+
+    // select next city
+    std::vector<double> total_candidates;
+    lp = 0;
+    for (int i = 0; i < candidates.size(); i++){
+        lp = lp + total[current_city][candidates[i]];
+        total_candidates.push_back(lp);
+    }
+    
+    int selected_city = 0;
+    rnd = ran01( &seed );
+    rnd *= lp;
+    while(total_candidates[selected_city] <= rnd && selected_city < candidates.size()-1) 
+        selected_city++;
+
+    // if (selected_city == candidates.size()){
+    //     neighbour_choose_best_next(a, phase);
+    //     return;
+    // }
+
+    a->tour[phase] = candidates[selected_city];
+    a->visited[candidates[selected_city]] = TRUE;
 }
 
 /**************************************************************************
