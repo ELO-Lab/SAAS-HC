@@ -619,10 +619,11 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
 
 void node_clustering_move (ant_struct *a, long int phase){
 
-    // if ( (q_0 > 0.0) && (ran01( &seed ) < q_0)  ) {
-    //     neighbour_choose_best_next(a, phase);
-    //     return;
-    // }
+    q_0 = 0.98;
+    if ( (q_0 > 0.0) && (ran01( &seed ) < q_0)  ) {
+        choose_best_next(a, phase);
+        return;
+    }
 
     int first = 1;
     long int current_city = a->tour[phase-1];
