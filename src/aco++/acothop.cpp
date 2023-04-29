@@ -544,8 +544,8 @@ void pheromone_trail_update(void)
     /* check pheromone trail limits for MMAS; not necessary if local
      search is used, because in the local search case lower pheromone trail
      limits are checked in procedure mmas_evaporation_nn_list */
-    if (mmas_flag)
-        check_pheromone_trail_limits();
+    // if (mmas_flag)
+    //     check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
