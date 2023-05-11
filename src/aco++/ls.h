@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -52,12 +52,12 @@
 
 extern long int ls_flag;
 
-extern long int nn_ls; 
+extern long int nn_ls;
 
-extern long int dlb_flag; 
+extern long int dlb_flag;
 
-void two_opt_first( long int *tour, long int t_size );
+void two_opt_first(long int *tour, long int t_size);
 
-void two_h_opt_first( long int *tour, long int t_size );
+void two_h_opt_first(long int *tour, long int t_size);
 
-void three_opt_first( long int *tour, long int t_size );
+void three_opt_first(long int *tour, long int t_size);

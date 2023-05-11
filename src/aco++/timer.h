@@ -25,8 +25,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -53,7 +53,11 @@
 
  ***************************************************************************/
 
-typedef enum type_timer {REAL, VIRTUAL} TIMER_TYPE;
+typedef enum type_timer
+{
+      REAL,
+      VIRTUAL
+} TIMER_TYPE;
 
 void start_timers(void);
 double elapsed_time(TIMER_TYPE type);
