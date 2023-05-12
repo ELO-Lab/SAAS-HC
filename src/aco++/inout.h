@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -50,38 +50,37 @@
 
  ***************************************************************************/
 
+#define PROG_ID_STR "\nACO algorithms for the TSP, v1.03\n"
+#define CALL_SYNTAX_STR "call syntax:  acotsp <param-list>\n"
 
-#define PROG_ID_STR      "\nACO algorithms for the TSP, v1.03\n"
-#define CALL_SYNTAX_STR  "call syntax:  acotsp <param-list>\n"
-
-#define LINE_BUF_LEN     255
+#define LINE_BUF_LEN 255
 
 extern long int *best_in_try;
 extern long int *best_found_at;
-extern double   *time_best_found;
-extern double   *time_total_run;   
+extern double *time_best_found;
+extern double *time_total_run;
 
-extern long int n_try;        /* number of try */
-extern long int n_tours;      /* number of constructed tours */
-extern long int iteration;    /* iteration counter */
-extern long int restart_iteration;    /* iteration counter */
-extern double   restart_time; /* remember when restart was done if any */
+extern long int n_try;             /* number of try */
+extern long int n_tours;           /* number of constructed tours */
+extern long int iteration;         /* iteration counter */
+extern long int restart_iteration; /* iteration counter */
+extern double restart_time;        /* remember when restart was done if any */
 
-extern long int max_tries;    /* maximum number of independent tries */
-extern long int max_tours;    /* maximum number of tour constructions in one try */
+extern long int max_tries; /* maximum number of independent tries */
+extern long int max_tours; /* maximum number of tour constructions in one try */
 
 extern long int max_packing_tries; /* number of tries to construct a good packing plan from a give tour */
 
-extern double   lambda;       /* Parameter to determine branching factor */
-extern double   branch_fac;   /* If branching factor < branch_fac => update trails */
+extern double lambda;     /* Parameter to determine branching factor */
+extern double branch_fac; /* If branching factor < branch_fac => update trails */
 
-extern double   max_time;     /* maximal allowed run time of a try  */
-extern double   time_used;    /* time used until some given event */
-extern double   time_passed;  /* time passed until some moment*/
-extern long int optimal;      /* optimal solution value or bound to find */
+extern double max_time;    /* maximal allowed run time of a try  */
+extern double time_used;   /* time used until some given event */
+extern double time_passed; /* time passed until some moment*/
+extern long int optimal;   /* optimal solution value or bound to find */
 
-extern double mean_ants;      /* average tour length */
-extern double stddev_ants;    /* stddev of tour lengths */
+extern double mean_ants;        /* average tour length */
+extern double stddev_ants;      /* stddev of tour lengths */
 extern double branching_factor; /* average node branching factor when searching */
 extern double found_branching;  /* branching factor when best solution is found */
 
@@ -93,10 +92,10 @@ extern FILE *log_tries_file;
 
 extern char input_name_buf[LINE_BUF_LEN];
 extern char output_name_buf[LINE_BUF_LEN];
-extern int  opt;
+extern int opt;
 extern long int log_flag;
-extern long int output_flag; 
-extern long int calibration_mode; 
+extern long int output_flag;
+extern long int calibration_mode;
 
 void init_program(long int argc, char **argv);
 

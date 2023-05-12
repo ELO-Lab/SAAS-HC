@@ -503,9 +503,11 @@ void pheromone_trail_update(void)
 {
     /* Simulate the pheromone evaporation of all pheromones; this is not necessary
        for ACS (see also ACO Book) */
-    if (adaptive_evaporation_flag) {
+    if (adaptive_evaporation_flag)
+    {
         update_rho();
-        if (not acs_flag) {
+        if (not acs_flag)
+        {
             evaporation();
         }
     }
@@ -552,7 +554,8 @@ void pheromone_trail_update(void)
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if (adaptive_evaporation_flag && not acs_flag) {
+    if (adaptive_evaporation_flag && not acs_flag)
+    {
         compute_total_information();
     }
     else if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
