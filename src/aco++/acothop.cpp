@@ -504,9 +504,10 @@ void pheromone_trail_update(void)
     /* Simulate the pheromone evaporation of all pheromones; this is not necessary
        for ACS (see also ACO Book) */
     if (adaptive_evaporation_flag) {
-    update_rho();
-    if (not acs_flag) {
-        evaporation();
+        update_rho();
+        if (not acs_flag) {
+            evaporation();
+        }
     }
     else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
     {
