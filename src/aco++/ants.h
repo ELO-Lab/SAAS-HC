@@ -110,6 +110,10 @@ extern long int u_gb;            /* every u_gb iterations update with best-so-fa
 
 extern double   trail_0;         /* initial pheromone trail level in ACS  and BWAS */
 
+extern int node_clustering;
+extern int n_sector;
+extern int cluster_size;
+
 /* Pheromone manipulation etc. */
 
 void init_pheromone_trails ( double initial_trail );

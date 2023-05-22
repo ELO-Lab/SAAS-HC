@@ -1,5 +1,6 @@
 #include <cmath>
 #include <map>
+#include <iostream>
 
 #include "adaptive_evaporation.hpp"
 #include "thop.h"
@@ -61,4 +62,5 @@ void update_rho(void)
     max_entropy = -log2(1.0 / total_edge_count);
     // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
     rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    // std::cout << "min_ent " << min_entropy <<" entropy " << entropy << " max_ent " <<  max_entropy << " rho " << rho << std::endl;
 }

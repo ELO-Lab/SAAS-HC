@@ -65,6 +65,8 @@
 #include "ls.h"
 #include "parse.h"
 
+#include "adaptive_evaporation_rate.h"
+
 long int *best_in_try;
 long int *best_found_at;
 double *time_best_found;
@@ -432,6 +434,12 @@ void set_default_parameters(void)
     acs_flag = FALSE;
     ras_ranks = 0;
     elitist_ants = 0;
+
+    node_clustering = FALSE;
+    n_sector = 24;
+    cluster_size = 32;
+
+    adaptive_evaporation_flag = FALSE;
 }
 
 void set_default_as_parameters(void)

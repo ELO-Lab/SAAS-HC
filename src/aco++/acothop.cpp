@@ -57,6 +57,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <iostream>
 
 #include "ants.h"
 #include "utilities.h"
@@ -65,6 +66,7 @@
 #include "timer.h"
 #include "ls.h"
 #include "adaptive_evaporation.hpp"
+#include "adaptive_evaporation_rate.h"
 
 long int termination_condition(void)
 /*
@@ -492,77 +494,72 @@ void acs_global_update(void)
     global_acs_pheromone_update(best_so_far_ant);
 }
 
-void pheromone_trail_update(void)
-/*
+void pheromone_trail_update( void )  
+/*    
       FUNCTION:       manage global pheromone trail update for the ACO algorithms
       INPUT:          none
       OUTPUT:         none
-      (SIDE)EFFECTS:  pheromone trails are evaporated and pheromones are deposited
+      (SIDE)EFFECTS:  pheromone trails are evaporated and pheromones are deposited 
                       according to the rules defined by the various ACO algorithms.
  */
 {
     /* Simulate the pheromone evaporation of all pheromones; this is not necessary
        for ACS (see also ACO Book) */
-    // if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
-    // {
-    //     if (ls_flag)
-    //     {
-    //         if (mmas_flag)
-    //             mmas_evaporation_nn_list();
-    //         else
-    //             evaporation_nn_list();
-    //         /* evaporate only pheromones on arcs of candidate list to make the
-    //            pheromone evaporation faster for being able to tackle large TSP
-    //            instances. For MMAS additionally check lower pheromone trail limits.
-    //          */
-    //     }
-    //     else
-    //     {
-    //         /* if no local search is used, evaporate all pheromone trails */
-    //         evaporation();
-    //     }
-    // }
-    update_rho();
-    if (not acs_flag) {
-        evaporation();
+
+    if (adaptive_evaporation_flag == TRUE){
+        // update_rho();
+        update_evaporation_rate();
+    }else{
+        if ( as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag ) {
+            if ( ls_flag ) {
+                if ( mmas_flag )
+                    mmas_evaporation_nn_list();
+                else
+                    evaporation_nn_list();
+                /* evaporate only pheromones on arcs of candidate list to make the
+                pheromone evaporation faster for being able to tackle large TSP 
+                instances. For MMAS additionally check lower pheromone trail limits.
+                */
+            } else {
+                /* if no local search is used, evaporate all pheromone trails */
+                evaporation();
+            }
+        }
     }
 
+    
+
     /* Next, apply the pheromone deposit for the various ACO algorithms */
-    if (as_flag)
+    if ( as_flag )
         as_update();
-    else if (eas_flag)
+    else if ( eas_flag )
         eas_update();
-    else if (ras_flag)
+    else if ( ras_flag )
         ras_update();
-    else if (mmas_flag)
+    else if ( mmas_flag )
         mmas_update();
-    else if (bwas_flag)
+    else if ( bwas_flag )
         bwas_update();
-    else if (acs_flag)
+    else if ( acs_flag )
         acs_global_update();
 
     /* check pheromone trail limits for MMAS; not necessary if local
      search is used, because in the local search case lower pheromone trail
      limits are checked in procedure mmas_evaporation_nn_list */
-    // if (mmas_flag)
-    //     check_pheromone_trail_limits();
+
+    if (adaptive_evaporation_flag != TRUE)
+        if ( mmas_flag && !ls_flag )
+            check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
-     the pheromone update for all ACO algorithms except ACS; in the ACS case
+     the pheromone update for all ACO algorithms except ACS; in the ACS case 
      this is already done in the pheromone update procedures of ACS */
-    // if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
-    // {
-    //     if (ls_flag)
-    //     {
-    //         compute_nn_list_total_information();
-    //     }
-    //     else
-    //     {
-    //         compute_total_information();
-    //     }
-    // }
-    if (not acs_flag) {
-        compute_total_information();
+    if ( as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag ) {
+        if ( ls_flag ) {
+            compute_nn_list_total_information();
+        } else {
+            compute_total_information();
+        }
     }
 }
 
@@ -600,7 +597,12 @@ int main(int argc, char *argv[])
         while (!termination_condition())
         {
             // construct_solutions();
-            construct_node_clustering_solution();
+            if (node_clustering == TRUE){
+                std::cout<<"using node clusering" << std::endl;
+                construct_node_clustering_solution();
+            }else
+                construct_solutions();
+                
             if (ls_flag > 0)
             {
                 for (k = 0; k < n_ants; k++)
