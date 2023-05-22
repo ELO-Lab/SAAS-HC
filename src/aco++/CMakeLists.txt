@@ -5,4 +5,6 @@ project(ACO++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-O3 -w")
 
-add_executable(acothop thop.cpp utilities.cpp ants.cpp inout.cpp unix_timer.cpp ls.cpp parse.cpp acothop.cpp)
+file(GLOB ACOPP_SRC "*.cpp")
+
+add_executable(acothop ${ACOPP_SRC})
