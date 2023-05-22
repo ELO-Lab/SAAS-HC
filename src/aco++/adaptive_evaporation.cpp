@@ -9,7 +9,6 @@
 // Hyperparameters
 float min_rho = 0.01;
 float max_rho = 0.99;
-bool adaptive_evaporation_flag = true;
 
 const float rho_diff = max_rho - min_rho;
 
