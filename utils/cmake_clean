@@ -1,5 +1,0 @@
-rm -rf $1/build
-rm -rf $1/CMakeFiles
-rm -f $1/cmake_install.cmake
-rm -f $1/CMakeCache.txt
-rm -f $1/Makefile

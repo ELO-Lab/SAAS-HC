@@ -3,6 +3,6 @@
 #ifndef HDR_PARSE
 #define HDR_PARSE 1
 
-extern int parse_commandline (int argc, char *argv []);
+extern int parse_commandline(int argc, char *argv[]);
 
 #endif

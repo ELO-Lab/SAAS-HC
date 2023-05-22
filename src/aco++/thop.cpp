@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -50,7 +50,6 @@
 
  ***************************************************************************/
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -67,27 +66,27 @@
 
 struct problem instance;
 
-static double dtrunc (double x)
+static double dtrunc(double x)
 {
     int k;
 
-    k = (int) x;
-    x = (double) k;
+    k = (int)x;
+    x = (double)k;
     return x;
 }
 
-long int  (*distance)(long int, long int);  /* function pointer */
+long int (*distance)(long int, long int); /* function pointer */
 
-/*    
-      FUNCTION: the following four functions implement different ways of 
+/*
+      FUNCTION: the following four functions implement different ways of
                 computing distances for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
  */
 
-long int round_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute Euclidean distances between two nodes rounded to next 
+long int round_distance(long int i, long int j)
+/*
+      FUNCTION: compute Euclidean distances between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -96,14 +95,14 @@ long int round_distance (long int i, long int j)
 {
     double xd = instance.nodeptr[i].x - instance.nodeptr[j].x;
     double yd = instance.nodeptr[i].y - instance.nodeptr[j].y;
-    double r  = sqrt(xd*xd + yd*yd) + 0.5;
+    double r = sqrt(xd * xd + yd * yd) + 0.5;
 
-    return (long int) r;
+    return (long int)r;
 }
 
-long int ceil_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute ceiling distance between two nodes rounded to next 
+long int ceil_distance(long int i, long int j)
+/*
+      FUNCTION: compute ceiling distance between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -112,14 +111,14 @@ long int ceil_distance (long int i, long int j)
 {
     double xd = instance.nodeptr[i].x - instance.nodeptr[j].x;
     double yd = instance.nodeptr[i].y - instance.nodeptr[j].y;
-    double r  = sqrt(xd*xd + yd*yd);
+    double r = sqrt(xd * xd + yd * yd);
 
-    return (long int)(ceil (r));
+    return (long int)(ceil(r));
 }
 
-long int geo_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute geometric distance between two nodes rounded to next 
+long int geo_distance(long int i, long int j)
+/*
+      FUNCTION: compute geometric distance between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -132,33 +131,32 @@ long int geo_distance (long int i, long int j)
     double q1, q2, q3;
     long int dd;
     double x1 = instance.nodeptr[i].x, x2 = instance.nodeptr[j].x,
-            y1 = instance.nodeptr[i].y, y2 = instance.nodeptr[j].y;
+           y1 = instance.nodeptr[i].y, y2 = instance.nodeptr[j].y;
 
-    deg = dtrunc (x1);
+    deg = dtrunc(x1);
     min = x1 - deg;
     lati = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
-    deg = dtrunc (x2);
+    deg = dtrunc(x2);
     min = x2 - deg;
     latj = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
 
-    deg = dtrunc (y1);
+    deg = dtrunc(y1);
     min = y1 - deg;
     longi = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
-    deg = dtrunc (y2);
+    deg = dtrunc(y2);
     min = y2 - deg;
     longj = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
 
-    q1 = cos (longi - longj);
-    q2 = cos (lati - latj);
-    q3 = cos (lati + latj);
-    dd = (int) (6378.388 * acos (0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0);
+    q1 = cos(longi - longj);
+    q2 = cos(lati - latj);
+    q3 = cos(lati + latj);
+    dd = (int)(6378.388 * acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0);
     return dd;
-
 }
 
-long int att_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute ATT distance between two nodes rounded to next 
+long int att_distance(long int i, long int j)
+/*
+      FUNCTION: compute ATT distance between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -167,59 +165,62 @@ long int att_distance (long int i, long int j)
 {
     double xd = instance.nodeptr[i].x - instance.nodeptr[j].x;
     double yd = instance.nodeptr[i].y - instance.nodeptr[j].y;
-    double rij = sqrt ((xd * xd + yd * yd) / 10.0);
-    double tij = dtrunc (rij);
+    double rij = sqrt((xd * xd + yd * yd) / 10.0);
+    double tij = dtrunc(rij);
     long int dij;
 
     if (tij < rij)
-        dij = (int) tij + 1;
+        dij = (int)tij + 1;
     else
-        dij = (int) tij;
+        dij = (int)tij;
     return dij;
 }
 
-
-
-long int** compute_distances(void)
-/*    
+long int **compute_distances(void)
+/*
       FUNCTION: computes the matrix of all intercity distances
       INPUT:    none
       OUTPUT:   pointer to distance matrix, has to be freed when program stops
  */
 {
-    long int     i, j;
-    long int     **matrix;
+    long int i, j;
+    long int **matrix;
 
-    if((matrix = (long int **) malloc(sizeof(long int) * instance.n * instance.n + sizeof(long int *) * instance.n)) == NULL){
-        fprintf(stderr,"Out of memory, exit.");
+    if ((matrix = (long int **)malloc(sizeof(long int) * instance.n * instance.n + sizeof(long int *) * instance.n)) == NULL)
+    {
+        fprintf(stderr, "Out of memory, exit.");
         exit(1);
     }
-    for ( i = 0 ; i < instance.n ; i++ ) {
+    for (i = 0; i < instance.n; i++)
+    {
         matrix[i] = (long int *)(matrix + instance.n) + i * instance.n;
     }
 
     int max_distance = 0;
-    for ( i = 0 ; i < instance.n - 1 ; i++ ) {
-        for ( j = 0  ; j < instance.n - 1 ; j++ ) {
+    for (i = 0; i < instance.n - 1; i++)
+    {
+        for (j = 0; j < instance.n - 1; j++)
+        {
             matrix[i][j] = distance(i, j);
-            if ( matrix[i][j] > max_distance ) max_distance = matrix[i][j];
+            if (matrix[i][j] > max_distance)
+                max_distance = matrix[i][j];
         }
     }
 
-    for ( i = 0; i < instance.n ; i++ ) {
-        matrix[i][instance.n - 1] = matrix[instance.n - 1][i] = max_distance * ( instance.n - 1 );
+    for (i = 0; i < instance.n; i++)
+    {
+        matrix[i][instance.n - 1] = matrix[instance.n - 1][i] = max_distance * (instance.n - 1);
     }
     matrix[0][instance.n - 1] = matrix[instance.n - 1][0] = 0;
     matrix[instance.n - 2][instance.n - 1] = matrix[instance.n - 1][instance.n - 2] = 0;
 
-    //matrix[instance.n - 2][instance.n - 2] = matrix[instance.n - 1][instance.n - 1] = 0;
+    // matrix[instance.n - 2][instance.n - 2] = matrix[instance.n - 1][instance.n - 1] = 0;
 
     return matrix;
 }
 
-
-long int** compute_nn_lists( void )
-/*    
+long int **compute_nn_lists(void)
+/*
       FUNCTION: computes nearest neighbor lists of depth nn for each city
       INPUT:    none
       OUTPUT:   pointer to the nearest neighbor lists
@@ -230,43 +231,47 @@ long int** compute_nn_lists( void )
     long int *help_vector;
     long int **m_nnear;
 
-    TRACE ( printf("\n computing nearest neighbor lists, "); )
+    TRACE(printf("\n computing nearest neighbor lists, ");)
 
-    nn = MAX(nn_ls,nn_ants);
-    if ( nn >= instance.n )
+    nn = MAX(nn_ls, nn_ants);
+    if (nn >= instance.n)
         nn = instance.n - 1;
-    DEBUG ( assert( instance.n > nn ); )
+    DEBUG(assert(instance.n > nn);)
 
-    TRACE ( printf("nn = %ld ... \n",nn); )
+    TRACE(printf("nn = %ld ... \n", nn);)
 
-    if((m_nnear = (long int **) malloc(sizeof(long int) * instance.n * nn + instance.n * sizeof(long int *))) == NULL){
+    if ((m_nnear = (long int **)malloc(sizeof(long int) * instance.n * nn + instance.n * sizeof(long int *))) == NULL)
+    {
         exit(EXIT_FAILURE);
     }
-    distance_vector = (long int *) calloc(instance.n, sizeof(long int));
-    help_vector = (long int *) calloc(instance.n, sizeof(long int));
+    distance_vector = (long int *)calloc(instance.n, sizeof(long int));
+    help_vector = (long int *)calloc(instance.n, sizeof(long int));
 
-    for ( node = 0 ; node < instance.n ; node++ ) {  /* compute cnd-sets for all node */
+    for (node = 0; node < instance.n; node++)
+    { /* compute cnd-sets for all node */
         m_nnear[node] = (long int *)(m_nnear + instance.n) + node * nn;
 
-        for ( i = 0 ; i < instance.n ; i++ ) {  /* Copy distances from nodes to the others */
+        for (i = 0; i < instance.n; i++)
+        { /* Copy distances from nodes to the others */
             distance_vector[i] = instance.distance[node][i];
             help_vector[i] = i;
         }
-        distance_vector[node] = LONG_MAX;  /* city is not nearest neighbour */
+        distance_vector[node] = LONG_MAX; /* city is not nearest neighbour */
         sort2(distance_vector, help_vector, 0, instance.n - 1);
-        for ( i = 0 ; i < nn ; i++ ) {
+        for (i = 0; i < nn; i++)
+        {
             m_nnear[node][i] = help_vector[i];
         }
     }
     free(distance_vector);
     free(help_vector);
-    TRACE ( printf("\n    .. done\n"); )
+    TRACE(printf("\n    .. done\n");)
 
     return m_nnear;
 }
 
-long int compute_fitness( long int *t, char *visited, long int t_size, char *p ) 
-/*    
+long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
+/*
       FUNCTION: compute the fitness of the ThOP solution generated from tour t
       INPUT:    pointer to tour t and pointer to packing plan p
       OUTPUT:   fitness of the ThOP solution generated from tour t
@@ -276,114 +281,128 @@ long int compute_fitness( long int *t, char *visited, long int t_size, char *p )
     int i, j, k, l;
 
     /* for ( i = 0; i <= instance.n; ++i) printf("%d", t[i]); printf("\n"); */
-    
-    if(t[0] != 0 || t[t_size-1] != 0 || t[t_size-3] != instance.n-2 || t[t_size-2] != instance.n-1) {
-        printf("error: compute_fitness\n"); exit(0);
-    } 
-    
+
+    if (t[0] != 0 || t[t_size - 1] != 0 || t[t_size - 3] != instance.n - 2 || t[t_size - 2] != instance.n - 1)
+    {
+        printf("error: compute_fitness\n");
+        exit(0);
+    }
+
     double par_a, par_b, par_c, par_sum;
     long int prev_city, curr_city;
     double _total_time;
-    long int _total_weight, total_weight, total_profit;    
+    long int _total_weight, total_weight, total_profit;
     int violate_max_time;
-    
-    const double v = ( instance.max_speed - instance.min_speed ) / instance.capacity_of_knapsack;
-    
-    long int *distance_accumulated = (long int *) malloc ( instance.n * sizeof(long int));
+
+    const double v = (instance.max_speed - instance.min_speed) / instance.capacity_of_knapsack;
+
+    long int *distance_accumulated = (long int *)malloc(instance.n * sizeof(long int));
 
     long int total_distance = 0;
 
-    for ( i = 0 ; i < t_size-1 ; i++ ) {
+    for (i = 0; i < t_size - 1; i++)
+    {
         distance_accumulated[t[i]] = total_distance;
-        total_distance += instance.distance[t[i]][t[i+1]];        
+        total_distance += instance.distance[t[i]][t[i + 1]];
     }
 
-    double *item_vector = (double *) malloc(instance.m * sizeof(double));
-    double *help_vector = (double *) malloc(instance.m * sizeof(double));
-    
-    long int *profit_accumulated = (long int *) malloc( instance.n * sizeof(long int));
-    long int *weight_accumulated = (long int *) malloc( instance.n * sizeof(long int));
-    
+    double *item_vector = (double *)malloc(instance.m * sizeof(double));
+    double *help_vector = (double *)malloc(instance.m * sizeof(double));
+
+    long int *profit_accumulated = (long int *)malloc(instance.n * sizeof(long int));
+    long int *weight_accumulated = (long int *)malloc(instance.n * sizeof(long int));
+
     long int best_packing_plan_profit = 0;
-    char *tmp_packing_plan = (char *) malloc(instance.m * sizeof(char));
-    
+    char *tmp_packing_plan = (char *)malloc(instance.m * sizeof(char));
+
     long int _try;
-        
-    for( _try = 0; _try < max_packing_tries; _try++) {
-        
-        for ( i = 0 ; i < instance.n ; i++ ) {
+
+    for (_try = 0; _try < max_packing_tries; _try++)
+    {
+
+        for (i = 0; i < instance.n; i++)
+        {
             profit_accumulated[i] = weight_accumulated[i] = 0;
         }
-        
-        par_a = ran01( &seed );  /* uniform random number between [0.0, 1.0] */
-        par_b = ran01( &seed );  /* uniform random number between [0.0, 1.0] */
-        par_c = ran01( &seed );  /* uniform random number between [0.0, 1.0] */
 
-        par_sum = (par_a + par_b + par_c); 
-        par_a /= par_sum; par_b /= par_sum; par_c /= par_sum;
-                
+        par_a = ran01(&seed); /* uniform random number between [0.0, 1.0] */
+        par_b = ran01(&seed); /* uniform random number between [0.0, 1.0] */
+        par_c = ran01(&seed); /* uniform random number between [0.0, 1.0] */
+
+        par_sum = (par_a + par_b + par_c);
+        par_a /= par_sum;
+        par_b /= par_sum;
+        par_c /= par_sum;
+
         l = 0;
 
-        for ( j = 0 ; j < instance.m ; j++ ) {
+        for (j = 0; j < instance.m; j++)
+        {
             tmp_packing_plan[j] = 0;
-            if (visited[instance.itemptr[j].id_city] == FALSE) continue;
-            item_vector[l] = ( 
-                                -1.0 * pow(instance.itemptr[j].profit, par_a)
-                            ) 
-                            / 
-                            ( 
-                                pow(instance.itemptr[j].weight, par_b) * pow((distance_accumulated[instance.n - 2] - distance_accumulated[instance.itemptr[j].id_city]), par_c)
-                            );
+            if (visited[instance.itemptr[j].id_city] == FALSE)
+                continue;
+            item_vector[l] = (-1.0 * pow(instance.itemptr[j].profit, par_a)) /
+                             (pow(instance.itemptr[j].weight, par_b) * pow((distance_accumulated[instance.n - 2] - distance_accumulated[instance.itemptr[j].id_city]), par_c));
             help_vector[l] = j;
             l++;
         }
 
-        sort2_double(item_vector, help_vector, 0, l-1);
+        sort2_double(item_vector, help_vector, 0, l - 1);
 
-        total_weight = 0, total_profit = 0;            
-        
-        for ( k = 0 ; k < l ; k++ ) {
+        total_weight = 0, total_profit = 0;
+
+        for (k = 0; k < l; k++)
+        {
 
             j = help_vector[k];
-                        
-            if ( total_weight + instance.itemptr[j].weight > instance.capacity_of_knapsack ) continue;
+
+            if (total_weight + instance.itemptr[j].weight > instance.capacity_of_knapsack)
+                continue;
 
             profit_accumulated[instance.itemptr[j].id_city] += instance.itemptr[j].profit;
-            weight_accumulated[instance.itemptr[j].id_city] += instance.itemptr[j].weight; 
-            
+            weight_accumulated[instance.itemptr[j].id_city] += instance.itemptr[j].weight;
+
             violate_max_time = FALSE;
             _total_time = _total_weight = 0;
             prev_city = 0;
-            for ( i = 1 ; i < t_size; i++ ) {
+            for (i = 1; i < t_size; i++)
+            {
                 curr_city = t[i];
-                if ( weight_accumulated[curr_city] == 0 && curr_city != instance.n - 2) continue;
-                _total_time += instance.distance[prev_city][curr_city] / ( instance.max_speed - v * _total_weight );    
-                if ( _total_time - EPSILON > instance.max_time ) {
-                    violate_max_time = TRUE; break;
-                }                
+                if (weight_accumulated[curr_city] == 0 && curr_city != instance.n - 2)
+                    continue;
+                _total_time += instance.distance[prev_city][curr_city] / (instance.max_speed - v * _total_weight);
+                if (_total_time - EPSILON > instance.max_time)
+                {
+                    violate_max_time = TRUE;
+                    break;
+                }
                 _total_weight += weight_accumulated[curr_city];
                 prev_city = curr_city;
             }
 
-            if ( violate_max_time == FALSE) {
-                total_profit += instance.itemptr[j].profit;     
+            if (violate_max_time == FALSE)
+            {
+                total_profit += instance.itemptr[j].profit;
                 total_weight += instance.itemptr[j].weight;
                 tmp_packing_plan[j] = 1;
             }
-            else {
+            else
+            {
                 profit_accumulated[instance.itemptr[j].id_city] -= instance.itemptr[j].profit;
-                weight_accumulated[instance.itemptr[j].id_city] -= instance.itemptr[j].weight; 
+                weight_accumulated[instance.itemptr[j].id_city] -= instance.itemptr[j].weight;
             }
         }
-        
-        if ( total_profit > best_packing_plan_profit) {
+
+        if (total_profit > best_packing_plan_profit)
+        {
             best_packing_plan_profit = total_profit;
-            for ( j = 0 ; j < instance.m ; j++ ) {
+            for (j = 0; j < instance.m; j++)
+            {
                 p[j] = tmp_packing_plan[j];
-            }            
+            }
         }
     }
-    
+
     free(distance_accumulated);
     free(item_vector);
     free(help_vector);

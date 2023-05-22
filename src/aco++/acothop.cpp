@@ -494,12 +494,12 @@ void acs_global_update(void)
     global_acs_pheromone_update(best_so_far_ant);
 }
 
-void pheromone_trail_update( void )  
-/*    
+void pheromone_trail_update(void)
+/*
       FUNCTION:       manage global pheromone trail update for the ACO algorithms
       INPUT:          none
       OUTPUT:         none
-      (SIDE)EFFECTS:  pheromone trails are evaporated and pheromones are deposited 
+      (SIDE)EFFECTS:  pheromone trails are evaporated and pheromones are deposited
                       according to the rules defined by the various ACO algorithms.
  */
 {
@@ -530,17 +530,17 @@ void pheromone_trail_update( void )
     
 
     /* Next, apply the pheromone deposit for the various ACO algorithms */
-    if ( as_flag )
+    if (as_flag)
         as_update();
-    else if ( eas_flag )
+    else if (eas_flag)
         eas_update();
-    else if ( ras_flag )
+    else if (ras_flag)
         ras_update();
-    else if ( mmas_flag )
+    else if (mmas_flag)
         mmas_update();
-    else if ( bwas_flag )
+    else if (bwas_flag)
         bwas_update();
-    else if ( acs_flag )
+    else if (acs_flag)
         acs_global_update();
 
     /* check pheromone trail limits for MMAS; not necessary if local
@@ -552,12 +552,16 @@ void pheromone_trail_update( void )
             check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
-     the pheromone update for all ACO algorithms except ACS; in the ACS case 
+     the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if ( as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag ) {
-        if ( ls_flag ) {
+    if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
+    {
+        if (ls_flag)
+        {
             compute_nn_list_total_information();
-        } else {
+        }
+        else
+        {
             compute_total_information();
         }
     }
