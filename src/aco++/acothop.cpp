@@ -57,6 +57,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <iostream>
 
 #include "ants.h"
 #include "utilities.h"
@@ -65,6 +66,7 @@
 #include "timer.h"
 #include "ls.h"
 #include "adaptive_evaporation.hpp"
+#include "adaptive_evaporation_rate.h"
 
 long int termination_condition(void)
 /*
@@ -531,6 +533,8 @@ void pheromone_trail_update(void)
         }
     }
 
+    
+
     /* Next, apply the pheromone deposit for the various ACO algorithms */
     if (as_flag)
         as_update();
@@ -604,8 +608,12 @@ int main(int argc, char *argv[])
         // printf("%dth try \n", n_try + 1);
         while (!termination_condition())
         {
-            // construct_solutions();
-            construct_node_clustering_solution();
+            if (node_clustering == TRUE){
+                std::cout<<"using node clusering" << std::endl;
+                construct_node_clustering_solution();
+            }else
+                construct_solutions();
+                
             if (ls_flag > 0)
             {
                 for (k = 0; k < n_ants; k++)

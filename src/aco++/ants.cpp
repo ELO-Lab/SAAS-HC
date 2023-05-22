@@ -83,8 +83,9 @@ std::vector<int> cluster;
 std::vector<std::vector<double>> total_cluster;
 std::vector<double> t_cluster;
 
-int n_sector = 24;
-int n_size = 32;
+int node_clustering;
+int n_sector; // = 24;
+int cluster_size; // = 32;
 
 double **pheromone;
 double **total;
@@ -412,10 +413,8 @@ void create_cluster(void)
             }
         }
 
-        while (nb_visited < instance.n)
-        {
-            while (cluster_chunk[i][cluster_index].size() < n_size)
-            {
+        while (nb_visited < instance.n){
+            while (cluster_chunk[i][cluster_index].size() < cluster_size){
                 int node = find_closest_node(i, visited);
                 if (node != -1)
                 {
