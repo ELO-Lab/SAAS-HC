@@ -116,7 +116,7 @@
     "  -h, --help            display this help text and exit\n"
 
 #define STR_HELP_LOGITER \
-    "  ---logiter            log each iteration\n"
+    "  --logiter            log each iteration\n"
 
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
