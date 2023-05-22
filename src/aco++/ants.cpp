@@ -56,8 +56,8 @@
 #include <assert.h>
 #include <limits.h>
 #include <time.h>
-#include <iostream>
 
+#include <iostream>
 #include <vector>
 #include <cmath>
 
@@ -83,9 +83,9 @@ std::vector<int> cluster;
 std::vector<std::vector<double>> total_cluster;
 std::vector<double> t_cluster;
 
-int node_clustering;
-int n_sector; // = 24;
-int cluster_size; // = 32;
+int node_clustering_flag;
+int n_sector;
+int cluster_size;
 
 double **pheromone;
 double **total;
@@ -413,8 +413,10 @@ void create_cluster(void)
             }
         }
 
-        while (nb_visited < instance.n){
-            while (cluster_chunk[i][cluster_index].size() < cluster_size){
+        while (nb_visited < instance.n)
+        {
+            while (cluster_chunk[i][cluster_index].size() < cluster_size)
+            {
                 int node = find_closest_node(i, visited);
                 if (node != -1)
                 {

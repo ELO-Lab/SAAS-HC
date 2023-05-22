@@ -507,32 +507,33 @@ void pheromone_trail_update(void)
     if (adaptive_evaporation_flag)
     {
         update_rho();
-        if (not acs_flag)
-        {
-            evaporation();
-        }
     }
-    else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
+    if (not acs_flag)
     {
-        if (ls_flag)
+        if (node_clustering_flag == TRUE)
         {
-            if (mmas_flag)
-                mmas_evaporation_nn_list();
-            else
-                evaporation_nn_list();
-            /* evaporate only pheromones on arcs of candidate list to make the
-               pheromone evaporation faster for being able to tackle large TSP
-               instances. For MMAS additionally check lower pheromone trail limits.
-             */
-        }
-        else
-        {
-            /* if no local search is used, evaporate all pheromone trails */
             evaporation();
         }
+        else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
+        {
+            if (ls_flag)
+            {
+                if (mmas_flag)
+                    mmas_evaporation_nn_list();
+                else
+                    evaporation_nn_list();
+                /* evaporate only pheromones on arcs of candidate list to make the
+                pheromone evaporation faster for being able to tackle large TSP
+                instances. For MMAS additionally check lower pheromone trail limits.
+                */
+            }
+            else
+            {
+                /* if no local search is used, evaporate all pheromone trails */
+                evaporation();
+            }
+        }
     }
-
-    
 
     /* Next, apply the pheromone deposit for the various ACO algorithms */
     if (as_flag)
@@ -551,25 +552,28 @@ void pheromone_trail_update(void)
     /* check pheromone trail limits for MMAS; not necessary if local
      search is used, because in the local search case lower pheromone trail
      limits are checked in procedure mmas_evaporation_nn_list */
-    if (!adaptive_evaporation_flag && (mmas_flag && !ls_flag))
+    if (mmas_flag && !ls_flag && !adaptive_evaporation_flag)
         check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if (adaptive_evaporation_flag && not acs_flag)
+    if (not acs_flag)
     {
-        compute_total_information();
-    }
-    else if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
-    {
-        if (ls_flag)
-        {
-            compute_nn_list_total_information();
-        }
-        else
+        if (node_clustering_flag == TRUE)
         {
             compute_total_information();
+        }
+        else if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
+        {
+            if (ls_flag)
+            {
+                compute_nn_list_total_information();
+            }
+            else
+            {
+                compute_total_information();
+            }
         }
     }
 }
@@ -607,12 +611,14 @@ int main(int argc, char *argv[])
         // printf("%dth try \n", n_try + 1);
         while (!termination_condition())
         {
-            if (node_clustering == TRUE){
-                std::cout<<"using node clusering" << std::endl;
+            if (node_clustering_flag == TRUE)
+            {
+                std::cout << "using node clusering" << std::endl;
                 construct_node_clustering_solution();
-            }else
+            }
+            else
                 construct_solutions();
-                
+
             if (ls_flag > 0)
             {
                 for (k = 0; k < n_ants; k++)

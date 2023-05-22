@@ -53,11 +53,12 @@
 #ifndef _THOP_H_
 #define _THOP_H_
 
+#define M_PI 3.14159265358979323846264
 #define RRR 6378.388
+
 #ifndef PI /* as in stroustrup */
 #define PI 3.14159265358979323846
 #endif
-
 #ifndef LINE_BUF_LEN
 #define LINE_BUF_LEN 255
 #endif

@@ -57,6 +57,7 @@
 #include <math.h>
 #include <limits.h>
 #include <time.h>
+
 #include "inout.h"
 #include "thop.h"
 #include "timer.h"
@@ -64,8 +65,7 @@
 #include "ants.h"
 #include "ls.h"
 #include "parse.h"
-
-#include "adaptive_evaporation_rate.h"
+#include "adaptive_evaporation.hpp"
 
 long int *best_in_try;
 long int *best_found_at;
@@ -435,7 +435,7 @@ void set_default_parameters(void)
     ras_ranks = 0;
     elitist_ants = 0;
 
-    node_clustering = FALSE;
+    node_clustering_flag = FALSE;
     n_sector = 24;
     cluster_size = 32;
 

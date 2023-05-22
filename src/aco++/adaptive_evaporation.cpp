@@ -1,6 +1,5 @@
 #include <cmath>
 #include <map>
-#include <iostream>
 
 #include "adaptive_evaporation.hpp"
 #include "thop.h"
@@ -9,6 +8,7 @@
 // Hyperparameters
 float min_rho = 0.01;
 float max_rho = 0.99;
+bool adaptive_evaporation_flag;
 
 const float rho_diff = max_rho - min_rho;
 
@@ -29,6 +29,7 @@ void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurenc
             //     edge = std::make_pair(ant[i].tour[j+1], ant[i].tour[j]);
             // }
             edge = std::make_pair(ant[i].tour[j], ant[i].tour[j + 1]);
+
             if (occurence.find(edge) == occurence.end())
             {
                 occurence[edge] = 0;
@@ -60,7 +61,7 @@ void update_rho(void)
 
     min_entropy = -log2(n_ants * 1.0 / total_edge_count);
     max_entropy = -log2(1.0 / total_edge_count);
+    
     // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
     rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-    // std::cout << "min_ent " << min_entropy <<" entropy " << entropy << " max_ent " <<  max_entropy << " rho " << rho << std::endl;
 }

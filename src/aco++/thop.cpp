@@ -62,8 +62,6 @@
 #include "ls.h"
 #include "utilities.h"
 
-#define M_PI 3.14159265358979323846264
-
 struct problem instance;
 
 static double dtrunc(double x)
