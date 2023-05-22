@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 from tabulate import tabulate
 import subprocess
+from datetime import datetime
 
 parameter_configurations = {
     "eil51_01_bsc": {
@@ -414,6 +415,7 @@ if __name__ == "__main__":
     parser.add_argument("--sector", default=24, type=int)
     parser.add_argument("--clustersize", default=32, type=int)
     parser.add_argument("--silent", action="store_true")
+    parser.add_argument("--logiter", action="store_true")
 
     args = parser.parse_args()
     assert not (args.run_only and args.build_only)
@@ -546,7 +548,7 @@ if __name__ == "__main__":
     output_path = Path(
         f"../../solutions/temp/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
-    command = f"{executable_path} --tries {args.tries} --seed {random_seed} --time {time} --inputfile {input_path} --outputfile {output_path} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries}{f' --nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''}{' --adaptevapo' if adaptevapo else ''} --localsearch {localsearch} --log"
+    command = f"{executable_path} --tries {args.tries} --seed {random_seed} --time {time} --inputfile {input_path} --outputfile {output_path} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries}{f' --nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''}{' --adaptevapo' if adaptevapo else ''}{' --logiter' if args.logiter else ''}  --localsearch {localsearch} --log"
     if not args.not_mmas:
         command += " --mmas"
     if not args.silent:
@@ -554,5 +556,7 @@ if __name__ == "__main__":
 
     os.makedirs(output_path.parent, exist_ok=True)
     # os.system(command=command)
+    print("start:", datetime.now())
     returned_output = subprocess.check_output(command, shell=True)
+    print("end:  ", datetime.now())
     print(str(returned_output).split(": ")[1][:-3])

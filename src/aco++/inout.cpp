@@ -105,6 +105,7 @@ char input_name_buf[LINE_BUF_LEN];
 char output_name_buf[LINE_BUF_LEN];
 int opt;
 long int log_flag; /* --log was given in the command-line.  */
+long int logiter_flag; /* --log was given in the command-line.  */
 long int output_flag;
 long int calibration_mode;
 
@@ -163,13 +164,19 @@ void init_program(long int argc, char *argv[])
     {
         sprintf(temp_buffer, "%s.log", output_name_buf);
         log_file = fopen(temp_buffer, "w");
-
+    }
+    else
+    {
+        log_file = NULL;
+    }
+    
+    if (!logiter_flag)
+    {
         sprintf(temp_buffer, "%s.tries.log", output_name_buf);
         log_tries_file = fopen(temp_buffer, "w");
     }
     else
     {
-        log_file = NULL;
         log_tries_file = NULL;
     }
 

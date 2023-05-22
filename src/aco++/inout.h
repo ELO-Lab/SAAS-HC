@@ -94,6 +94,7 @@ extern char input_name_buf[LINE_BUF_LEN];
 extern char output_name_buf[LINE_BUF_LEN];
 extern int opt;
 extern long int log_flag;
+extern long int logiter_flag;
 extern long int output_flag;
 extern long int calibration_mode;
 
