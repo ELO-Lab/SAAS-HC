@@ -418,7 +418,6 @@ if __name__ == "__main__":
     parser.add_argument("--logiter", action="store_true")
 
     args = parser.parse_args()
-    assert not (args.run_only and args.build_only)
 
     if args.instance_name:
         if args.instance_name[-5:] == ".thop":
@@ -433,12 +432,20 @@ if __name__ == "__main__":
     else:
         postfix = ""
 
+    assert not (args.run_only and args.build_only)
     if not args.run_only:
         os.system("cmake .")
         os.system("make")
         os.rename("./acothop", f"./acothop{postfix}")
     if args.build_only:
         exit(0)
+
+    if args.aaco_nc:
+        args.nodeclustering = True
+        args.adaptevapo = True
+    if args.adaptevapo:
+        args.rho = 0.5
+        args.not_mmas = False
 
     tsp_base = instance_name.split("_")[0]
     number_of_items_per_city = int(instance_name.split("_")[1])
@@ -481,12 +488,8 @@ if __name__ == "__main__":
     )
 
     random_seed = args.random_seed
-    if args.aaco_nc:
-        nodeclustering = True
-        adaptevapo = True
-    else:
-        nodeclustering = args.nodeclustering
-        adaptevapo = args.adaptevapo
+    nodeclustering = args.nodeclustering
+    adaptevapo = args.adaptevapo
     sector = args.sector
     clustersize = args.clustersize
     if args.time:
@@ -548,15 +551,33 @@ if __name__ == "__main__":
     output_path = Path(
         f"../../solutions/temp/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
-    command = f"{executable_path} --tries {args.tries} --seed {random_seed} --time {time} --inputfile {input_path} --outputfile {output_path} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries}{f' --nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''}{' --adaptevapo' if adaptevapo else ''}{' --logiter' if args.logiter else ''}  --localsearch {localsearch} --log"
-    if not args.not_mmas:
-        command += " --mmas"
+    command = f"{executable_path} \
+--tries {args.tries} \
+--seed {random_seed} \
+--time {time} \
+--inputfile {input_path} \
+--outputfile {output_path} \
+--ants {ants} \
+--alpha {alpha} \
+--beta {beta} \
+--rho {rho} \
+--ptries {ptries} \
+--localsearch {localsearch} \
+--log \
+{'--mmas' if not args.not_mmas else ''} \
+{'--adaptevapo' if adaptevapo else ''} \
+{f'--nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''} \
+{'--logiter' if args.logiter else ''}"
     if not args.silent:
         print(command)
 
     os.makedirs(output_path.parent, exist_ok=True)
-    # os.system(command=command)
-    print("start:", datetime.now())
+    start = datetime.now()
     returned_output = subprocess.check_output(command, shell=True)
-    print("end:  ", datetime.now())
-    print(str(returned_output).split(": ")[1][:-3])
+    end = datetime.now()
+
+    if not args.silent:
+        print(f"Start at {start}")
+        print(f"End at {end}")
+        print(f"Run in {end - start}")
+        print("Best profit:", str(returned_output).split(": ")[1][:-3])
