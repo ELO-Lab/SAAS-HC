@@ -409,9 +409,10 @@ if __name__ == "__main__":
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
     parser.add_argument("--nodeclustering", action="store_true")
+    parser.add_argument("--adaptevapo", action="store_true")
+    parser.add_argument("--aaco_nc", action="store_true")
     parser.add_argument("--sector", default=24, type=int)
     parser.add_argument("--clustersize", default=32, type=int)
-    parser.add_argument("--adaptevapo", action="store_true")
     parser.add_argument("--silent", action="store_true")
 
     args = parser.parse_args()
@@ -478,8 +479,12 @@ if __name__ == "__main__":
     )
 
     random_seed = args.random_seed
-    nodeclustering = args.nodeclustering
-    adaptevapo = args.adaptevapo
+    if args.aaco_nc:
+        nodeclustering = True
+        adaptevapo = True
+    else:
+        nodeclustering = args.nodeclustering
+        adaptevapo = args.adaptevapo
     sector = args.sector
     clustersize = args.clustersize
     if args.time:
@@ -502,7 +507,7 @@ if __name__ == "__main__":
             "localsearch",
             "time limit",
         ],
-        [random_seed, ants, alpha, beta, rho, ptries, localsearch, time]
+        [random_seed, ants, alpha, beta, rho, ptries, localsearch, time],
     ]
     instance_info = [
         ["tsp base", "number of items per city", "knapsack type"],
@@ -512,28 +517,29 @@ if __name__ == "__main__":
     if not args.silent:
         print(tabulate(instance_info, headers="firstrow", tablefmt="fancy_grid"))
         print(tabulate(configurations, headers="firstrow", tablefmt="fancy_grid"))
-    
+
         if args.nodeclustering:
             nodeclustering_config = [
-                [
-                    "node clustering",
-                    "sector",
-                    "cluster size"
-                ],
-                [nodeclustering, sector, clustersize]
+                ["node clustering", "sector", "cluster size"],
+                [nodeclustering, sector, clustersize],
             ]
-            print(tabulate(nodeclustering_config, headers="firstrow", tablefmt="fancy_grid"))
-        
+            print(
+                tabulate(
+                    nodeclustering_config, headers="firstrow", tablefmt="fancy_grid"
+                )
+            )
+
         if args.adaptevapo:
             adaptevapo_config = [
                 [
                     "adaptive evaporation",
                     "initial evaporation rate",
                 ],
-                [adaptevapo, rho]
+                [adaptevapo, rho],
             ]
-            print(tabulate(adaptevapo_config, headers="firstrow", tablefmt="fancy_grid"))
-
+            print(
+                tabulate(adaptevapo_config, headers="firstrow", tablefmt="fancy_grid")
+            )
 
     executable_path = f"./acothop{postfix}"
     input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
@@ -543,9 +549,10 @@ if __name__ == "__main__":
     command = f"{executable_path} --tries {args.tries} --seed {random_seed} --time {time} --inputfile {input_path} --outputfile {output_path} --ants {ants} --alpha {alpha} --beta {beta} --rho {rho} --ptries {ptries}{f' --nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''}{' --adaptevapo' if adaptevapo else ''} --localsearch {localsearch} --log"
     if not args.not_mmas:
         command += " --mmas"
-    if not args.silent: print(command)
+    if not args.silent:
+        print(command)
 
     os.makedirs(output_path.parent, exist_ok=True)
     # os.system(command=command)
     returned_output = subprocess.check_output(command, shell=True)
-    print(str(returned_output).split(': ')[1][:-3])
+    print(str(returned_output).split(": ")[1][:-3])
