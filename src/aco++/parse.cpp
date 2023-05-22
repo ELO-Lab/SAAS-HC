@@ -127,6 +127,8 @@
 
 #define STR_HELP_ADAPTIVE_EVAPORATION \
     "      --adaptevapo      using adaptive evaporation mode\n"
+#define STR_HELP_LOGITER \
+    "  --logiter            log each iteration\n"
 
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
@@ -160,6 +162,7 @@ static const char *const STR_HELP[] = {
     STR_HELP_SECTOR,
     STR_HELP_CLUSTER_SIZE,
     STR_HELP_ADAPTIVE_EVAPORATION,
+    STR_HELP_LOGITER,
     NULL};
 
 struct options
@@ -245,6 +248,9 @@ struct options
 
     /* Set to 1 if option --help (-h) has been specified.  */
     unsigned int opt_help : 1;
+
+    /* Set to 1 if option --help (-h) has been specified.  */
+    unsigned int opt_logiter : 1;
 
     /* Set to 1 if option --calibration mode has been specified.  */
     unsigned int opt_calibration : 1;
@@ -363,6 +369,7 @@ parse_options(struct options *const options, const char *const program_name,
     static const char *const optstr__bwas = "bwas";
     static const char *const optstr__acs = "acs";
     static const char *const optstr__log = "log";
+    static const char *const optstr__logiter = "logiter";
     static const char *const optstr__help = "help";
     static const char *const optstr__calibration = "calibration";
     static const char *const optstr__nodeclustering = "nodeclustering";
@@ -396,6 +403,7 @@ parse_options(struct options *const options, const char *const program_name,
     options->opt_bwas = 0;
     options->opt_acs = 0;
     options->opt_log = 0;
+    options->opt_logiter = 0;
     options->opt_help = 0;
     options->opt_calibration = 0;
     options->opt_nodeclustering = 0;
@@ -673,6 +681,16 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_unexpec_arg_long;
                     }
                     options->opt_log = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__logiter + 1, option_len - 1) == 0)
+                {
+                    if (argument != 0)
+                    {
+                        option = optstr__logiter;
+                        goto error_unexpec_arg_long;
+                    }
+                    options->opt_logiter = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -1214,6 +1232,7 @@ int parse_commandline(int argc, char *argv[])
     calibration_mode = options.opt_calibration;
 
     log_flag = !options.opt_log;
+    logiter_flag = !options.opt_logiter;
 
     if (options.opt_time)
     {
