@@ -439,7 +439,9 @@ if __name__ == "__main__":
     if not args.run_only:
         os.system("cmake .")
         os.system("make")
-        os.rename("./acothop", f"./acothop{postfix}")
+        os.rename(
+            "./acothop", f"./acothop{postfix if not args.experiment else '_experiment'}"
+        )
     if args.build_only:
         exit(0)
 
@@ -552,7 +554,7 @@ if __name__ == "__main__":
     if args.exec:
         executable_path = args.exec
     else:
-        executable_path = f"./acothop{postfix}"
+        executable_path = f"./acothop{postfix if not args.experiment else 'experiment'}"
     input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
     output_path = Path(
         f"../../solutions/{'temp' if not args.experiment else 'experiment'}/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
@@ -582,7 +584,7 @@ if __name__ == "__main__":
     start = datetime.now()
     result = subprocess.run(command.split(), stdout=subprocess.PIPE)
     returned_output = result.stdout.decode()
-    best_profit = str(returned_output).split(": ")[1][:-3]
+    best_profit = str(returned_output).split(": ")[1]
     end = datetime.now()
 
     if args.silent <= -1:

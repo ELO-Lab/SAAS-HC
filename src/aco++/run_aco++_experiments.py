@@ -3,396 +3,12 @@
 
 import itertools
 import os
+import subprocess
 import multiprocessing
-import math
 from tqdm import tqdm
-
-parameter_configurations = {
-    "eil51_01_bsc": {
-        "--ants": " 500",
-        "--alpha": "0.66",
-        "--beta": "4.42",
-        "--rho": "0.90",
-        "--ptries": "2",
-        "--localsearch": "0",
-    },
-    "eil51_01_unc": {
-        "--ants": "1000",
-        "--alpha": "0.69",
-        "--beta": "4.29",
-        "--rho": "0.75",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "eil51_01_usw": {
-        "--ants": " 100",
-        "--alpha": "0.92",
-        "--beta": "2.90",
-        "--rho": "0.19",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "eil51_03_bsc": {
-        "--ants": " 200",
-        "--alpha": "0.78",
-        "--beta": "3.65",
-        "--rho": "0.92",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "eil51_03_unc": {
-        "--ants": " 200",
-        "--alpha": "0.89",
-        "--beta": "3.01",
-        "--rho": "0.14",
-        "--ptries": "1",
-        "--localsearch": "0",
-    },
-    "eil51_03_usw": {
-        "--ants": " 100",
-        "--alpha": "0.80",
-        "--beta": "5.26",
-        "--rho": "0.84",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "eil51_05_bsc": {
-        "--ants": " 500",
-        "--alpha": "0.79",
-        "--beta": "3.12",
-        "--rho": "0.35",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "eil51_05_unc": {
-        "--ants": " 100",
-        "--alpha": "0.88",
-        "--beta": "3.65",
-        "--rho": "0.78",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "eil51_05_usw": {
-        "--ants": " 500",
-        "--alpha": "0.99",
-        "--beta": "1.38",
-        "--rho": "0.34",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "eil51_10_bsc": {
-        "--ants": " 200",
-        "--alpha": "0.88",
-        "--beta": "5.09",
-        "--rho": "0.86",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "eil51_10_unc": {
-        "--ants": " 100",
-        "--alpha": "0.87",
-        "--beta": "4.32",
-        "--rho": "0.94",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "eil51_10_usw": {
-        "--ants": " 100",
-        "--alpha": "0.86",
-        "--beta": "3.89",
-        "--rho": "0.59",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "pr107_01_bsc": {
-        "--ants": " 200",
-        "--alpha": "1.64",
-        "--beta": "1.67",
-        "--rho": "0.18",
-        "--ptries": "4",
-        "--localsearch": "1",
-    },
-    "pr107_01_unc": {
-        "--ants": "1000",
-        "--alpha": "2.87",
-        "--beta": "3.92",
-        "--rho": "0.34",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "pr107_01_usw": {
-        "--ants": " 500",
-        "--alpha": "0.93",
-        "--beta": "2.59",
-        "--rho": "0.60",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "pr107_03_bsc": {
-        "--ants": " 200",
-        "--alpha": "1.08",
-        "--beta": "2.90",
-        "--rho": "0.36",
-        "--ptries": "4",
-        "--localsearch": "1",
-    },
-    "pr107_03_unc": {
-        "--ants": " 500",
-        "--alpha": "1.08",
-        "--beta": "5.43",
-        "--rho": "0.46",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "pr107_03_usw": {
-        "--ants": " 500",
-        "--alpha": "0.92",
-        "--beta": "2.35",
-        "--rho": "0.68",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "pr107_05_bsc": {
-        "--ants": "1000",
-        "--alpha": "1.38",
-        "--beta": "2.60",
-        "--rho": "0.29",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "pr107_05_unc": {
-        "--ants": "1000",
-        "--alpha": "3.54",
-        "--beta": "4.54",
-        "--rho": "0.20",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "pr107_05_usw": {
-        "--ants": " 500",
-        "--alpha": "1.00",
-        "--beta": "1.73",
-        "--rho": "0.51",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "pr107_10_bsc": {
-        "--ants": " 100",
-        "--alpha": "0.87",
-        "--beta": "2.97",
-        "--rho": "0.74",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "pr107_10_unc": {
-        "--ants": " 200",
-        "--alpha": "0.91",
-        "--beta": "2.80",
-        "--rho": "0.63",
-        "--ptries": "4",
-        "--localsearch": "1",
-    },
-    "pr107_10_usw": {
-        "--ants": "  20",
-        "--alpha": "0.90",
-        "--beta": "3.20",
-        "--rho": "0.12",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "a280_01_bsc": {
-        "--ants": " 200",
-        "--alpha": "0.71",
-        "--beta": "6.93",
-        "--rho": "0.42",
-        "--ptries": "2",
-        "--localsearch": "0",
-    },
-    "a280_01_unc": {
-        "--ants": " 200",
-        "--alpha": "1.16",
-        "--beta": "1.79",
-        "--rho": "0.42",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "a280_01_usw": {
-        "--ants": " 200",
-        "--alpha": "0.84",
-        "--beta": "3.83",
-        "--rho": "0.39",
-        "--ptries": "2",
-        "--localsearch": "0",
-    },
-    "a280_03_bsc": {
-        "--ants": " 100",
-        "--alpha": "0.67",
-        "--beta": "7.12",
-        "--rho": "0.53",
-        "--ptries": "1",
-        "--localsearch": "0",
-    },
-    "a280_03_unc": {
-        "--ants": " 200",
-        "--alpha": "0.75",
-        "--beta": "4.10",
-        "--rho": "0.74",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "a280_03_usw": {
-        "--ants": "  20",
-        "--alpha": "0.80",
-        "--beta": "5.83",
-        "--rho": "0.25",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "a280_05_bsc": {
-        "--ants": "1000",
-        "--alpha": "0.66",
-        "--beta": "6.46",
-        "--rho": "0.31",
-        "--ptries": "1",
-        "--localsearch": "0",
-    },
-    "a280_05_unc": {
-        "--ants": " 200",
-        "--alpha": "0.84",
-        "--beta": "5.89",
-        "--rho": "0.24",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "a280_05_usw": {
-        "--ants": " 200",
-        "--alpha": "0.86",
-        "--beta": "7.94",
-        "--rho": "0.42",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "a280_10_bsc": {
-        "--ants": " 200",
-        "--alpha": "0.77",
-        "--beta": "5.71",
-        "--rho": "0.27",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "a280_10_unc": {
-        "--ants": " 200",
-        "--alpha": "0.86",
-        "--beta": "6.12",
-        "--rho": "0.30",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "a280_10_usw": {
-        "--ants": " 200",
-        "--alpha": "0.77",
-        "--beta": "6.30",
-        "--rho": "0.35",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "dsj1000_01_bsc": {
-        "--ants": " 200",
-        "--alpha": "4.30",
-        "--beta": "9.18",
-        "--rho": "0.27",
-        "--ptries": "4",
-        "--localsearch": "1",
-    },
-    "dsj1000_01_unc": {
-        "--ants": "  50",
-        "--alpha": "8.33",
-        "--beta": "6.39",
-        "--rho": "0.10",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "dsj1000_01_usw": {
-        "--ants": " 100",
-        "--alpha": "2.49",
-        "--beta": "6.19",
-        "--rho": "0.37",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "dsj1000_03_bsc": {
-        "--ants": "  50",
-        "--alpha": "0.99",
-        "--beta": "5.16",
-        "--rho": "0.81",
-        "--ptries": "4",
-        "--localsearch": "1",
-    },
-    "dsj1000_03_unc": {
-        "--ants": " 100",
-        "--alpha": "2.71",
-        "--beta": "8.81",
-        "--rho": "0.25",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "dsj1000_03_usw": {
-        "--ants": " 100",
-        "--alpha": "0.90",
-        "--beta": "5.03",
-        "--rho": "0.84",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "dsj1000_05_bsc": {
-        "--ants": "  20",
-        "--alpha": "0.88",
-        "--beta": "6.10",
-        "--rho": "0.69",
-        "--ptries": "3",
-        "--localsearch": "1",
-    },
-    "dsj1000_05_unc": {
-        "--ants": " 100",
-        "--alpha": "5.93",
-        "--beta": "8.50",
-        "--rho": "0.12",
-        "--ptries": "5",
-        "--localsearch": "1",
-    },
-    "dsj1000_05_usw": {
-        "--ants": " 100",
-        "--alpha": "0.88",
-        "--beta": "6.18",
-        "--rho": "0.83",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-    "dsj1000_10_bsc": {
-        "--ants": " 500",
-        "--alpha": "3.20",
-        "--beta": "7.89",
-        "--rho": "0.21",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "dsj1000_10_unc": {
-        "--ants": " 500",
-        "--alpha": "2.94",
-        "--beta": "7.96",
-        "--rho": "0.26",
-        "--ptries": "1",
-        "--localsearch": "1",
-    },
-    "dsj1000_10_usw": {
-        "--ants": " 500",
-        "--alpha": "4.04",
-        "--beta": "7.82",
-        "--rho": "0.39",
-        "--ptries": "2",
-        "--localsearch": "1",
-    },
-}
+import argparse
+import parser
+from datetime import datetime
 
 random_seeds = [
     269070,
@@ -499,85 +115,77 @@ random_seeds = [
 
 
 def launcher(
-    tsp_base,
-    number_of_items_per_city,
-    knapsack_type,
-    knapsack_size,
-    maximum_travel_time,
+    instance_name,
     repetition,
-    runtime_factor="1t",
 ):
-    if knapsack_size != "inf":
-        knapsack_size = "%02d" % (knapsack_size,)
-    inputfile = "../../instances/%s-thop/%s_%02d_%s_%s_%02d.thop" % (
-        tsp_base,
-        tsp_base,
-        number_of_items_per_city,
-        knapsack_type,
-        knapsack_size,
-        maximum_travel_time,
-    )
+    global aaco_nc_flag, number_of_runs, pbar
 
-    if repetition == 0:
-        print(
-            float(runtime_factor.replace("t", ""))
-            * math.ceil(
-                (int("".join(filter(lambda x: x.isdigit(), tsp_base))) - 2)
-                * number_of_items_per_city
-                / 10.0
-            ),
-            inputfile,
-        )
+    _random_seed = str(random_seeds[repetition])
+    postfix = str(repetition + 1) if repetition + 1 >= 10 else f"0{repetition+1}"
+    command = [
+        "python",
+        "run.py",
+        "--experiment",
+        "--instance_name",
+        instance_name,
+        "--run_only",
+        "--exec",
+        "./acothop_experiment",
+        "--random_seed",
+        _random_seed,
+        "--postfix",
+        postfix,
+        "--silent",
+        "2",
+        # "-1",
+    ]
+    if aaco_nc_flag:
+        command += ["--aaco_nc"]
+    subprocess.run(command)
+    # result = subprocess.run(command, stdout=subprocess.PIPE)
+    # pbar.write(result.stdout.decode())
 
-    outputfile = "../../solutions/aco++/%s-thop/%s_%02d_%s_%s_%02d_%02d.thop.sol" % (
-        tsp_base,
-        tsp_base,
-        number_of_items_per_city,
-        knapsack_type,
-        knapsack_size,
-        maximum_travel_time,
-        repetition + 1,
-    )
-    parameter_configuration_key = "%s_%02d_%s" % (
-        tsp_base,
-        number_of_items_per_city,
-        knapsack_type,
-    )
+    if repetition == number_of_runs - 1:
+        print(f"{instance_name} is completed at {datetime.now()}")
+    #     pbar.update(number_of_runs)
+    # pbar.write(f"{repetition} {instance_name} is completed at {datetime.now()}")
+    # pbar.update(1)
 
-    os.system(
-        "./acothop --mmas --tries 1 --seed %d --time %.1f --inputfile %s --outputfile %s %s --log"
-        % (
-            random_seeds[repetition],
-            float(runtime_factor.replace("t", ""))
-            * math.ceil(
-                (int("".join(filter(lambda x: x.isdigit(), tsp_base))) - 2)
-                * number_of_items_per_city
-                / 10.0
-            ),
-            inputfile,
-            outputfile,
-            " ".join(
-                "%s %s" % (k, v)
-                for k, v in parameter_configurations[
-                    parameter_configuration_key
-                ].items()
-            ),
-        )
+
+def build():
+    result = subprocess.run(
+        "python ../../utils/cmake_clean.py .".split(), stdout=subprocess.PIPE
     )
+    print(result.stdout.decode())
+    result = subprocess.run(
+        "python run.py --build_only --experiment".split(),
+        stdout=subprocess.PIPE,
+    )
+    print(result.stdout.decode())
+    result = subprocess.run(
+        "rm -r ../../solutions/experiment/aco++".split(), stdout=subprocess.PIPE
+    )
+    print(result.stdout.decode())
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--aaco_nc", action="store_true")
+    args = parser.parse_args()
+    global aaco_nc_flag
+    aaco_nc_flag = args.aaco_nc
+
     tsp_base = [
-        "eil51",
-        "pr107",
-        "a280",
+        # "eil51",
+        # "pr107",
+        # "a280",
         "dsj1000",
     ]
     number_of_items_per_city = [
-        1,
-        3,
-        5,
-        10,
+        "01",
+        "03",
+        "05",
+        "10",
     ]
     knapsack_type = [
         "bsc",
@@ -585,31 +193,34 @@ if __name__ == "__main__":
         "usw",
     ]
     knapsack_size = [
-        1,
-        5,
-        10,
+        "01",
+        "05",
+        "10",
     ]
     maximum_travel_time = [
-        1,
-        2,
-        3,
+        "01",
+        "02",
+        "03",
     ]
+    global number_of_runs
     number_of_runs = 30
+    # number_of_runs = 2
 
-    for _tsp_base in tsp_base:
-        os.makedirs(f"../../solutions/aco++/{_tsp_base}-thop", exist_ok=True)
-    os.system("make clean")
-    os.system("make")
+    build()
 
-    pbar = tqdm(
-        total=len(tsp_base)
-        * len(number_of_items_per_city)
-        * len(knapsack_type)
-        * len(knapsack_size)
-        * len(maximum_travel_time)
-        * number_of_runs
-    )
+    # global pbar
+    # pbar = tqdm(
+    #     total=len(tsp_base)
+    #     * len(number_of_items_per_city)
+    #     * len(knapsack_type)
+    #     * len(knapsack_size)
+    #     * len(maximum_travel_time)
+    #     * number_of_runs,
+    #     position=0,
+    #     leave=True,
+    # )
     pool = multiprocessing.Pool(processes=max(1, multiprocessing.cpu_count() // 2))
+    # pool = multiprocessing.Pool(processes=1)
 
     for _product in itertools.product(
         tsp_base,
@@ -618,27 +229,21 @@ if __name__ == "__main__":
         knapsack_size,
         maximum_travel_time,
     ):
-        (
-            _tsp_base,
-            _number_of_items_per_city,
-            _knapsack_type,
-            _knapsack_size,
-            _maximum_travel_time,
-        ) = _product
+        instance_name = "_".join(_product)
         for repetition in range(number_of_runs):
-            pbar.update(1)
             pool.apply_async(
                 launcher,
                 args=(
-                    _tsp_base,
-                    _number_of_items_per_city,
-                    _knapsack_type,
-                    _knapsack_size,
-                    _maximum_travel_time,
+                    instance_name,
                     repetition,
                 ),
             )
+            # launcher(
+            #     instance_name,
+            #     repetition,
+            # )
+        # pbar.write(f"{instance_name} is completed at {datetime.now()}")
 
     pool.close()
     pool.join()
-    pbar.close()
+    # pbar.close()
