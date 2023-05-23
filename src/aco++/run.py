@@ -399,6 +399,7 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float)
     parser.add_argument("--beta", type=float)
     parser.add_argument("--rho", type=float)
+    parser.add_argument("-q", default=-1, type=float)
     parser.add_argument("--ptries", type=int)
     parser.add_argument("--localsearch", type=int)
     parser.add_argument("--time", type=float)
@@ -413,9 +414,9 @@ if __name__ == "__main__":
     parser.add_argument("--adaptevapo", action="store_true")
     parser.add_argument("--aaco_nc", action="store_true")
     parser.add_argument("--sector", default=24, type=int)
-    parser.add_argument("--clustersize", default=32, type=int)
-    parser.add_argument("--silent", action="store_true")
-    parser.add_argument("--logiter", action="store_true")
+    parser.add_argument("--cluster_size", default=32, type=int)
+    parser.add_argument("--silent", default=-1, type=int)
+    parser.add_argument("--log_iter", action="store_true")
 
     args = parser.parse_args()
 
@@ -491,7 +492,7 @@ if __name__ == "__main__":
     nodeclustering = args.nodeclustering
     adaptevapo = args.adaptevapo
     sector = args.sector
-    clustersize = args.clustersize
+    clustersize = args.cluster_size
     if args.time:
         time = args.time
     else:
@@ -519,7 +520,7 @@ if __name__ == "__main__":
         [tsp_base, number_of_items_per_city, knapsack_type],
     ]
 
-    if not args.silent:
+    if args.silent == -1:
         print(tabulate(instance_info, headers="firstrow", tablefmt="fancy_grid"))
         print(tabulate(configurations, headers="firstrow", tablefmt="fancy_grid"))
 
@@ -564,11 +565,12 @@ if __name__ == "__main__":
 --ptries {ptries} \
 --localsearch {localsearch} \
 --log \
+{f'--q0 {args.q}' if args.q != -1 else ''} \
 {'--mmas' if not args.not_mmas else ''} \
 {'--adaptevapo' if adaptevapo else ''} \
 {f'--nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''} \
-{'--logiter' if args.logiter else ''}"
-    if not args.silent:
+{'--logiter' if args.log_iter else ''}"
+    if args.silent == -1:
         print(command)
 
     os.makedirs(output_path.parent, exist_ok=True)
@@ -576,8 +578,11 @@ if __name__ == "__main__":
     returned_output = subprocess.check_output(command, shell=True)
     end = datetime.now()
 
-    if not args.silent:
+    if args.silent == -1:
         print(f"Start at {start}")
         print(f"End at {end}")
         print(f"Run in {end - start}")
         print("Best profit:", str(returned_output).split(": ")[1][:-3])
+    
+    if args.silent == 1:
+        print(str(returned_output).split(": ")[1][:-3])
