@@ -522,7 +522,7 @@ if __name__ == "__main__":
         [tsp_base, number_of_items_per_city, knapsack_type],
     ]
 
-    if args.silent == -1:
+    if args.silent <= 0:
         print(tabulate(instance_info, headers="firstrow", tablefmt="fancy_grid"))
         print(tabulate(configurations, headers="firstrow", tablefmt="fancy_grid"))
 
