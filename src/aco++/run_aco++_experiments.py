@@ -117,7 +117,7 @@ random_seeds = [
 def launcher(arg):
     
     instance_name, repetition = arg
-    global aaco_nc_flag, number_of_runs, pbar
+    global aaco_nc_flag, number_of_runs
 
     _random_seed = str(random_seeds[repetition])
     postfix = str(repetition + 1) if repetition + 1 >= 10 else f"0{repetition+1}"
@@ -138,14 +138,15 @@ def launcher(arg):
     if aaco_nc_flag:
         command += ["--aaco_nc"]
 
+    output = ''
     if repetition != number_of_runs - 1:
         command += ["--silent", "2"]
         subprocess.run(command)
     else:
         result = subprocess.run(command, stdout=subprocess.PIPE)
-        print(result.stdout.decode())
+        output = result.stdout.decode()
 
-    return (instance_name, repetition)
+    return (instance_name, repetition, output)
 
 
 def clean_and_build():
@@ -168,10 +169,10 @@ def imap_unordered_bar(func, args, total, n_processes = 2):
     
     with tqdm(total=total, desc='outer') as pbar:
         for i, result in tqdm(enumerate(p.imap_unordered(func, args)), desc='iner', disable=True):
-            # pbar.write(res)
-            instance_name, repetition = result
+            instance_name, repetition, output = result
             if (repetition == number_of_runs - 1):
                 pbar.write(f"{instance_name} is completed at {datetime.now()}")
+                pbar.write(output)
                 pbar.update(number_of_runs)
     pbar.close()
     p.close()
@@ -213,7 +214,7 @@ if __name__ == "__main__":
     ]
     global number_of_runs
     number_of_runs = 30
-    # number_of_runs = 2
+    # number_of_runs = 3
 
     clean_and_build()
 
