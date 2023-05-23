@@ -135,24 +135,22 @@ def launcher(
         _random_seed,
         "--postfix",
         postfix,
-        "--silent",
-        "2",
-        # "-1",
     ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
-    subprocess.run(command)
-    # result = subprocess.run(command, stdout=subprocess.PIPE)
-    # pbar.write(result.stdout.decode())
 
-    if repetition == number_of_runs - 1:
-        print(f"{instance_name} is completed at {datetime.now()}")
-    #     pbar.update(number_of_runs)
-    # pbar.write(f"{repetition} {instance_name} is completed at {datetime.now()}")
-    # pbar.update(1)
+    if repetition != number_of_runs - 1:
+        command += ["--silent", "2"]
+        subprocess.run(command)
+        return
+
+    result = subprocess.run(command, stdout=subprocess.PIPE)
+    print(result.stdout.decode())
+    print(f"{instance_name} is completed at {datetime.now()}")
+    # pbar.update(number_of_runs)
 
 
-def build():
+def clean_and_build():
     result = subprocess.run(
         "python ../../utils/cmake_clean.py .".split(), stdout=subprocess.PIPE
     )
@@ -206,7 +204,7 @@ if __name__ == "__main__":
     number_of_runs = 30
     # number_of_runs = 2
 
-    build()
+    clean_and_build()
 
     # global pbar
     # pbar = tqdm(
