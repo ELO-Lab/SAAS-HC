@@ -1650,6 +1650,7 @@ int parse_commandline(int argc, char *argv[])
     if (options.opt_nodeclustering)
     {
         node_clustering_flag = TRUE;
+        if (!options.opt_q0) q_0 = 0.98;
     }
 
     if (options.opt_sector)

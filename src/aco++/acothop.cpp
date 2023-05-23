@@ -613,7 +613,7 @@ int main(int argc, char *argv[])
         {
             if (node_clustering_flag == TRUE)
             {
-                std::cout << "using node clusering" << std::endl;
+                // std::cout << "using node clusering" << std::endl;
                 construct_node_clustering_solution();
             }
             else
