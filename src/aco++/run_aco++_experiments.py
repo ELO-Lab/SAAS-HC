@@ -115,9 +115,8 @@ random_seeds = [
 
 
 def launcher(arg):
-    
     instance_name, repetition = arg
-    global aaco_nc_flag, number_of_runs
+    global aaco_nc_flag, number_of_runs, sol_dir
 
     _random_seed = str(random_seeds[repetition])
     postfix = str(repetition + 1) if repetition + 1 >= 10 else f"0{repetition+1}"
@@ -125,22 +124,23 @@ def launcher(arg):
         "python3",
         "run.py",
         "--experiment",
-        "--instance_name",
-        instance_name,
-        "--run_only",
-        "--exec",
-        "./acothop_experiment",
-        "--random_seed",
-        _random_seed,
+        "--sol_dir",
+        sol_dir,
         "--postfix",
         postfix,
+        "--run_only",
+        "--instance_name",
+        instance_name,
+        "--random_seed",
+        _random_seed,
     ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
 
-    output = ''
+    output = ""
     if repetition != number_of_runs - 1:
         command += ["--silent", "2"]
+        # command += ["--silent", "-1"]
         subprocess.run(command)
     else:
         result = subprocess.run(command, stdout=subprocess.PIPE)
@@ -150,27 +150,33 @@ def launcher(arg):
 
 
 def clean_and_build():
-    result = subprocess.run(
-        "python3 ../../utils/cmake_clean.py .".split(), stdout=subprocess.PIPE
-    )
-    print(result.stdout.decode())
-    result = subprocess.run(
-        "python3 run.py --build_only --experiment".split(),
-        stdout=subprocess.PIPE,
-    )
-    print(result.stdout.decode())
-    result = subprocess.run(
-        "rm -r ../../solutions/experiment/aco++".split(), stdout=subprocess.PIPE
-    )
+    print("=========   CLEAN AND BUILD   =========")
+    command = "python3 ../../utils/cmake_clean.py ."
+    print(f"$ {command}")
+    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
     print(result.stdout.decode())
 
-def imap_unordered_bar(func, args, total, n_processes = 2):
+    command = "python3 run.py --build_only --experiment"
+    print(f"$ {command}")
+    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+    print(result.stdout.decode())
+
+    command = f"rm -r {sol_dir}"
+    print(f"$ {command}")
+    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+    print(result.stdout.decode())
+    print("======================================")
+
+
+def imap_unordered_bar(func, args, total, n_processes=2):
     p = multiprocessing.Pool(n_processes)
-    
-    with tqdm(total=total, desc='outer') as pbar:
-        for i, result in tqdm(enumerate(p.imap_unordered(func, args)), desc='iner', disable=True):
+
+    with tqdm(total=total, desc="outer") as pbar:
+        for i, result in tqdm(
+            enumerate(p.imap_unordered(func, args)), desc="iner", disable=True
+        ):
             instance_name, repetition, output = result
-            if (repetition == number_of_runs - 1):
+            if repetition == number_of_runs - 1:
                 pbar.write(f"{instance_name} is completed at {datetime.now()}")
                 pbar.write(output)
                 pbar.update(number_of_runs)
@@ -178,12 +184,16 @@ def imap_unordered_bar(func, args, total, n_processes = 2):
     p.close()
     p.join()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--aaco_nc", action="store_true")
+    parser.add_argument("--sol_dir", required=True, type=str)
     args = parser.parse_args()
-    global aaco_nc_flag
+
+    global aaco_nc_flag, sol_dir
     aaco_nc_flag = args.aaco_nc
+    sol_dir = args.sol_dir
 
     tsp_base = [
         "eil51",
@@ -220,13 +230,15 @@ if __name__ == "__main__":
 
     n_processes = max(1, multiprocessing.cpu_count() // 2)
 
-    total=len(tsp_base) \
-        * len(number_of_items_per_city) \
-        * len(knapsack_type) \
-        * len(knapsack_size) \
-        * len(maximum_travel_time) \
+    total = (
+        len(tsp_base)
+        * len(number_of_items_per_city)
+        * len(knapsack_type)
+        * len(knapsack_size)
+        * len(maximum_travel_time)
         * number_of_runs
-    
+    )
+
     args = []
     for _product in itertools.product(
         tsp_base,
@@ -238,5 +250,5 @@ if __name__ == "__main__":
         instance_name = "_".join(_product)
         for repetition in range(number_of_runs):
             args.append((instance_name, repetition))
-            
+
     imap_unordered_bar(launcher, args, total, n_processes)
