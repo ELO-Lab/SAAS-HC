@@ -419,8 +419,11 @@ if __name__ == "__main__":
     parser.add_argument("--log_iter", action="store_true")
     parser.add_argument("--exec", type=str)
     parser.add_argument("--experiment", action="store_true")
+    parser.add_argument("--debug", action="store_true")
 
     args = parser.parse_args()
+    assert not (args.run_only and args.build_only)
+    assert not (args.debug and args.experiment)
 
     if args.instance_name:
         if args.instance_name[-5:] == ".thop":
@@ -435,13 +438,27 @@ if __name__ == "__main__":
     else:
         postfix = ""
 
-    assert not (args.run_only and args.build_only)
-    if not args.run_only:
-        os.system("cmake .")
-        os.system("make")
-        os.rename(
-            "./acothop", f"./acothop{postfix if not args.experiment else '_experiment'}"
+    if args.exec:
+        executable_path = args.exec
+    else:
+        executable_path = (
+            f"./acothop{postfix if not args.experiment else '_experiment'}"
         )
+    if not args.run_only:
+        command = f"cmake . -DCMAKE_BUILD_TYPE={'Release' if not args.debug else 'Debug'}".split()
+        build_result = subprocess.run(command, stdout=subprocess.PIPE)
+        build_output = f"$ {' '.join(command)}\n{build_result.stdout.decode()}\n"
+
+        command = ["make"]
+        build_result = subprocess.run(command, stdout=subprocess.PIPE)
+        build_output = (
+            f"{build_output}\n$ {' '.join(command)}\n{build_result.stdout.decode()}\n"
+        )
+
+        if args.silent <= 0:
+            print(build_output)
+
+        os.rename("./acothop", executable_path)
     if args.build_only:
         exit(0)
 
@@ -551,10 +568,6 @@ if __name__ == "__main__":
                 tabulate(adaptevapo_config, headers="firstrow", tablefmt="fancy_grid")
             )
 
-    if args.exec:
-        executable_path = args.exec
-    else:
-        executable_path = f"./acothop{postfix if not args.experiment else 'experiment'}"
     input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
     output_path = Path(
         f"../../solutions/{'temp' if not args.experiment else 'experiment'}/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
@@ -578,7 +591,7 @@ if __name__ == "__main__":
 {f'--nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''} \
 {'--logiter' if args.log_iter else ''}"
     if args.silent <= 0:
-        print(command)
+        print(f"$ {command}")
 
     os.makedirs(output_path.parent, exist_ok=True)
     start = datetime.now()
