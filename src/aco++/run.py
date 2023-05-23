@@ -415,8 +415,10 @@ if __name__ == "__main__":
     parser.add_argument("--aaco_nc", action="store_true")
     parser.add_argument("--sector", default=24, type=int)
     parser.add_argument("--cluster_size", default=32, type=int)
-    parser.add_argument("--silent", default=-1, type=int)
+    parser.add_argument("--silent", default=0, type=int)
     parser.add_argument("--log_iter", action="store_true")
+    parser.add_argument("--exec", type=str)
+    parser.add_argument("--experiment", action="store_true")
 
     args = parser.parse_args()
 
@@ -547,10 +549,13 @@ if __name__ == "__main__":
                 tabulate(adaptevapo_config, headers="firstrow", tablefmt="fancy_grid")
             )
 
-    executable_path = f"./acothop{postfix}"
+    if args.exec:
+        executable_path = args.exec
+    else:
+        executable_path = f"./acothop{postfix}"
     input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
     output_path = Path(
-        f"../../solutions/temp/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
+        f"../../solutions/{'temp' if not args.experiment else 'experiment'}/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
     command = f"{executable_path} \
 --tries {args.tries} \
@@ -570,19 +575,23 @@ if __name__ == "__main__":
 {'--adaptevapo' if adaptevapo else ''} \
 {f'--nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''} \
 {'--logiter' if args.log_iter else ''}"
-    if args.silent == -1:
+    if args.silent <= 0:
         print(command)
 
     os.makedirs(output_path.parent, exist_ok=True)
     start = datetime.now()
-    returned_output = subprocess.check_output(command, shell=True)
+    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+    returned_output = result.stdout.decode()
+    best_profit = str(returned_output).split(": ")[1][:-3]
     end = datetime.now()
 
-    if args.silent == -1:
+    if args.silent <= -1:
+        print(returned_output)
+    if args.silent <= 0:
         print(f"Start at {start}")
         print(f"End at {end}")
         print(f"Run in {end - start}")
-        print("Best profit:", str(returned_output).split(": ")[1][:-3])
-    
+        print("Best profit:", best_profit)
+
     if args.silent == 1:
-        print(str(returned_output).split(": ")[1][:-3])
+        print(best_profit)
