@@ -135,7 +135,9 @@ def check_solution(input_file, solution_file):
     return D, T, W, current_profit
 
 
-def DTW_table(solution_folder, instace_folder, tsp_bases=None, num_item_each_city_list=None):
+def DTW_table(
+    solution_folder, instace_folder, tsp_bases=None, num_item_each_city_list=None
+):
     from pathlib import Path
     import numpy as np
     import pandas as pd
@@ -153,7 +155,9 @@ def DTW_table(solution_folder, instace_folder, tsp_bases=None, num_item_each_cit
     Tss = []
     Wss = []
 
-    for _tsp_base, _num_item_each_city in itertools.product(tsp_bases, num_item_each_city_list):
+    for _tsp_base, _num_item_each_city in itertools.product(
+        tsp_bases, num_item_each_city_list
+    ):
         print(_tsp_base, _num_item_each_city)
         ls = list(
             (solution_folder / _tsp_base).glob(
@@ -302,3 +306,90 @@ def normalize_single_file(log_path):
         csvwriter.writerow(header)
         csvwriter.writerows(table)
     print(csv_file)
+
+
+def profit_table(solution_folder):
+    from pathlib import Path
+    import pandas as pd
+    import itertools
+    import os
+    from tqdm import tqdm
+
+    solution_folder = Path(solution_folder)
+
+    tsp_base = [
+        "eil51",
+        "pr107",
+        "a280",
+        "dsj1000",
+    ]
+    number_of_items_per_city = [
+        "01",
+        "03",
+        "05",
+        "10",
+    ]
+    knapsack_type = [
+        "bsc",
+        "unc",
+        "usw",
+    ]
+    knapsack_size = [
+        "01",
+        "05",
+        "10",
+    ]
+    maximum_travel_time = [
+        "01",
+        "02",
+        "03",
+    ]
+    number_of_runs = 30
+
+    pbar = tqdm(
+        total=len(tsp_base)
+        * len(number_of_items_per_city)
+        * len(knapsack_type)
+        * len(knapsack_size)
+        * len(maximum_travel_time)
+        * number_of_runs
+    )
+    res_table = {}
+
+    for _product in itertools.product(
+        tsp_base,
+        number_of_items_per_city,
+        knapsack_type,
+        knapsack_size,
+        maximum_travel_time,
+    ):
+        col_name = "_".join(map(str, _product))
+        col_values = []
+        _tsp_base = _product[0]
+
+        for repeat_time in range(1, number_of_runs + 1):
+            pbar.update(1)
+            repeat_time = str(repeat_time) if repeat_time >= 10 else f"0{repeat_time}"
+
+            file_path = (
+                solution_folder
+                / f"{_tsp_base}-thop"
+                / f"{col_name}_{repeat_time}.thop.sol.log"
+            )
+            if not os.path.isfile(file_path):
+                print("haha")
+                continue
+
+            with open(file_path, "r") as f:
+                best_profit = f.readlines()[-1].split(",")[1]
+                best_profit = best_profit.split(" ")[-1]
+                col_values.append(int(best_profit))
+
+        if len(col_values) == 0:
+            continue
+        res_table[col_name] = col_values
+
+    pbar.close()
+    res_table = pd.DataFrame(res_table)
+    print(res_table.describe().T.to_markdown())
+    return res_table
