@@ -417,6 +417,7 @@ if __name__ == "__main__":
     parser.add_argument("--cluster_size", default=32, type=int)
     parser.add_argument("--silent", default=-1, type=int)
     parser.add_argument("--log_iter", action="store_true")
+    parser.add_argument("--save_ter_log", type=str)
 
     args = parser.parse_args()
 
@@ -575,14 +576,19 @@ if __name__ == "__main__":
 
     os.makedirs(output_path.parent, exist_ok=True)
     start = datetime.now()
-    returned_output = subprocess.check_output(command, shell=True)
+    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+    returned_output = result.stdout.decode()
     end = datetime.now()
 
     if args.silent == -1:
         print(f"Start at {start}")
         print(f"End at {end}")
         print(f"Run in {end - start}")
-        print("Best profit:", str(returned_output).split(": ")[1][:-3])
+        print("Best profit:", str(returned_output).split(": ")[1])
     
     if args.silent == 1:
-        print(str(returned_output).split(": ")[1][:-3])
+        print(str(returned_output).split(": ")[1])
+
+    if args.save_ter_log:
+        with open(args.save_ter_log, 'w') as f:
+            f.write(str(returned_output))
