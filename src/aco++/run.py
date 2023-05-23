@@ -420,10 +420,12 @@ if __name__ == "__main__":
     parser.add_argument("--exec", type=str)
     parser.add_argument("--experiment", action="store_true")
     parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--sol_dir", type=str)
 
     args = parser.parse_args()
     assert not (args.run_only and args.build_only)
     assert not (args.debug and args.experiment)
+    assert not (not args.sol_dir and args.experiment and not args.build_only)
 
     if args.instance_name:
         if args.instance_name[-5:] == ".thop":
@@ -438,12 +440,12 @@ if __name__ == "__main__":
     else:
         postfix = ""
 
+    if args.experiment:
+        args.exec = "./acothop_experiment"
     if args.exec:
         executable_path = args.exec
     else:
-        executable_path = (
-            f"./acothop{postfix if not args.experiment else '_experiment'}"
-        )
+        executable_path = f"./acothop{postfix}"
     if not args.run_only:
         command = f"cmake . -DCMAKE_BUILD_TYPE={'Release' if not args.debug else 'Debug'}".split()
         build_result = subprocess.run(command, stdout=subprocess.PIPE)
@@ -509,6 +511,7 @@ if __name__ == "__main__":
         else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
     )
 
+    sol_dir = args.sol_dir if not args.sol_dir else Path("../../solutions/temp/aco++")
     random_seed = args.random_seed
     nodeclustering = args.nodeclustering
     adaptevapo = args.adaptevapo
@@ -570,7 +573,7 @@ if __name__ == "__main__":
 
     input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
     output_path = Path(
-        f"../../solutions/{'temp' if not args.experiment else 'experiment'}/aco++/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
+        f"{sol_dir}/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
     command = f"{executable_path} \
 --tries {args.tries} \
