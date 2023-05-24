@@ -449,11 +449,11 @@ if __name__ == "__main__":
         executable_path = f"./acothop{postfix}"
     if not args.run_only:
         command = f"cmake . -DCMAKE_BUILD_TYPE={'Release' if not args.debug else 'Debug'}".split()
-        build_result = subprocess.run(command, stdout=subprocess.PIPE)
+        build_result = subprocess.run(command, capture_output=True, check=True)
         build_output = f"$ {' '.join(command)}\n{build_result.stdout.decode()}\n"
 
         command = ["make"]
-        build_result = subprocess.run(command, stdout=subprocess.PIPE)
+        build_result = subprocess.run(command, capture_output=True, check=True)
         build_output = (
             f"{build_output}\n$ {' '.join(command)}\n{build_result.stdout.decode()}\n"
         )
@@ -512,7 +512,7 @@ if __name__ == "__main__":
         else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
     )
 
-    sol_dir = args.sol_dir if not args.sol_dir else Path("../../solutions/temp/aco++")
+    sol_dir = args.sol_dir if args.sol_dir else Path("../../solutions/temp/aco++")
     random_seed = args.random_seed
     nodeclustering = args.nodeclustering
     adaptevapo = args.adaptevapo
@@ -572,40 +572,80 @@ if __name__ == "__main__":
                 tabulate(adaptevapo_config, headers="firstrow", tablefmt="fancy_grid")
             )
 
-    input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
     output_path = Path(
         f"{sol_dir}/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
-    command = f"{executable_path} \
---tries {args.tries} \
---seed {random_seed} \
---time {time} \
---inputfile {input_path} \
---outputfile {output_path} \
---ants {ants} \
---alpha {alpha} \
---beta {beta} \
---rho {rho} \
---ptries {ptries} \
---localsearch {localsearch} \
---log \
-{f'--q0 {args.q}' if args.q != -1 else ''} \
-{'--mmas' if not args.not_mmas else ''} \
-{'--adaptevapo' if adaptevapo else ''} \
-{f'--nodeclustering --sector {sector} --clustersize {clustersize}' if nodeclustering else ''} \
-{'--logiter' if args.log_iter else ''}"
-    if args.silent <= 0:
-        print(f"$ {command}")
-
     os.makedirs(output_path.parent, exist_ok=True)
+    # output_path = "\\ ".join(str(output_path).split(" "))
+
+    input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
+    command = [
+        executable_path,
+        "--tries",
+        args.tries,
+        "--seed",
+        random_seed,
+        "--time",
+        time,
+        "--inputfile",
+        input_path,
+        "--outputfile",
+        output_path,
+        # f'"{output_path}"',
+        "--ants",
+        ants,
+        "--alpha",
+        alpha,
+        "--beta",
+        beta,
+        "--rho",
+        rho,
+        "--ptries",
+        ptries,
+        "--localsearch",
+        localsearch,
+        "--log",
+    ]
+    if args.q != -1:
+        command += ["--q0", args.q]
+    if not args.not_mmas:
+        command += ["--mmas"]
+    if args.adaptevapo:
+        command += ["--adaptevapo"]
+    if args.nodeclustering:
+        command += [
+            "--nodeclustering",
+            "--sector",
+            sector,
+            "--clustersize",
+            clustersize,
+        ]
+    if args.log_iter:
+        command += ["--logiter"]
+    command = list(map(str, command))
+
+    if args.silent <= 0:
+        print(f"$ {' '.join(command)}")
+
     start = datetime.now()
-    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
-    returned_output = result.stdout.decode()
-    best_profit = str(returned_output).split(": ")[1]
+    # result = subprocess.run(command, capture_output=True, check=True)
+    result = subprocess.run(command, capture_output=True)
+    assert (
+        result.returncode == 0
+    ), f"""
+returncode: {result.returncode}
+stderr:
+{result.stderr.decode()}
+stdout:
+{result.stdout.decode()}
+"""
     end = datetime.now()
+    stdout_log = result.stdout.decode()
+    best_profit = str(stdout_log).split(": ")[1]
 
     if args.silent <= -1:
-        print(returned_output)
+        print("stdout:")
+        print(stdout_log)
     if args.silent <= 0:
         print(f"Start at {start}")
         print(f"End at {end}")
