@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 import itertools
 import os
 import subprocess
@@ -9,6 +6,7 @@ from tqdm import tqdm
 import argparse
 import parser
 from datetime import datetime
+import yaml
 
 random_seeds = [
     269070,
@@ -115,8 +113,8 @@ random_seeds = [
 
 
 def launcher(arg):
+    global aaco_nc_flag, number_of_runs, sol_dir, debug_log
     instance_name, repetition = arg
-    global aaco_nc_flag, number_of_runs, sol_dir
 
     _random_seed = str(random_seeds[repetition])
     postfix = str(repetition + 1) if repetition + 1 >= 10 else f"0{repetition+1}"
@@ -137,35 +135,36 @@ def launcher(arg):
     if aaco_nc_flag:
         command += ["--aaco_nc"]
 
-    output = ""
+    stdout_log = ""
     if repetition != number_of_runs - 1:
-        command += ["--silent", "2"]
-        # command += ["--silent", "-1"]
-        subprocess.run(command)
+        command += ["--silent", "2" if not debug_log else "-1"]
+        if debug_log:
+            print(f"$ {' '.join(command)}")
+        subprocess.run(command, check=True)
     else:
-        result = subprocess.run(command, stdout=subprocess.PIPE)
-        output = result.stdout.decode()
+        result = subprocess.run(command, capture_output=True, check=True)
+        stdout_log = result.stdout.decode()
 
-    return (instance_name, repetition, output)
+    return (instance_name, repetition, stdout_log)
 
 
-def clean_and_build():
-    print("=========   CLEAN AND BUILD   =========")
-    command = "python3 ../../utils/cmake_clean.py ."
-    print(f"$ {command}")
-    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+def build():
+    # print("=========   CLEAN AND BUILD   =========")
+
+    # command = ["python3", "../../utils/cmake_clean.py", "."]
+    # print(f"$ {' '.join(command)}")
+    # result = subprocess.run(command, capture_output=True, check=True)
+    # print(result.stdout.decode())
+
+    command = ["python3", "run.py", "--build_only", "--experiment"]
+    print(f"$ {' '.join(command)}")
+    result = subprocess.run(command, capture_output=True, check=True)
     print(result.stdout.decode())
 
-    command = "python3 run.py --build_only --experiment"
-    print(f"$ {command}")
-    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
-    print(result.stdout.decode())
-
-    command = f"rm -r {sol_dir}"
-    print(f"$ {command}")
-    result = subprocess.run(command.split(), stdout=subprocess.PIPE)
-    print(result.stdout.decode())
-    print("======================================")
+    # command = ["rm", "-rf", sol_dir]
+    # print(f"$ {' '.join(command)}")
+    # result = subprocess.run(command, check=True)
+    # print("======================================")
 
 
 def imap_unordered_bar(func, args, total, n_processes=2):
@@ -175,25 +174,35 @@ def imap_unordered_bar(func, args, total, n_processes=2):
         for i, result in tqdm(
             enumerate(p.imap_unordered(func, args)), desc="iner", disable=True
         ):
-            instance_name, repetition, output = result
+            instance_name, repetition, stdout_log = result
+            pbar.update(1)
             if repetition == number_of_runs - 1:
                 pbar.write(f"{instance_name} is completed at {datetime.now()}")
-                pbar.write(output)
-                pbar.update(number_of_runs)
+                pbar.write(stdout_log)
     pbar.close()
     p.close()
     p.join()
 
 
-if __name__ == "__main__":
+def get_argument():
     parser = argparse.ArgumentParser()
     parser.add_argument("--aaco_nc", action="store_true")
     parser.add_argument("--sol_dir", required=True, type=str)
+    parser.add_argument("--debug_log", action="store_true")
     args = parser.parse_args()
 
-    global aaco_nc_flag, sol_dir
+    global aaco_nc_flag, sol_dir, debug_log
     aaco_nc_flag = args.aaco_nc
     sol_dir = args.sol_dir
+    debug_log = args.debug_log
+
+
+if __name__ == "__main__":
+    global number_of_runs, debug_log, sol_dir
+
+    get_argument()
+    assert not os.path.isfile(sol_dir)
+    assert not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
     tsp_base = [
         "eil51",
@@ -222,13 +231,25 @@ if __name__ == "__main__":
         "02",
         "03",
     ]
-    global number_of_runs
     number_of_runs = 30
-    # number_of_runs = 3
+    if debug_log:
+        number_of_runs = 3
 
-    clean_and_build()
+    instances = {
+        "tsp_base": tsp_base,
+        "number_of_items_per_city": number_of_items_per_city,
+        "knapsack_type": knapsack_type,
+        "knapsack_size": knapsack_size,
+        "maximum_travel_time": maximum_travel_time,
+        "number_of_runs": number_of_runs,
+    }
+    print(yaml.dump(instances))
+
+    build()
 
     n_processes = max(1, multiprocessing.cpu_count() // 2)
+    # if debug_log:
+    #     n_processes = 1
 
     total = (
         len(tsp_base)
