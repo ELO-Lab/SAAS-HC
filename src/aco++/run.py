@@ -399,7 +399,7 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float)
     parser.add_argument("--beta", type=float)
     parser.add_argument("--rho", type=float)
-    parser.add_argument("-q", default=-1, type=float)
+    parser.add_argument("--q0", type=float)
     parser.add_argument("--ptries", type=int)
     parser.add_argument("--localsearch", type=int)
     parser.add_argument("--time", type=float)
@@ -605,8 +605,8 @@ if __name__ == "__main__":
         localsearch,
         "--log",
     ]
-    if args.q != -1:
-        command += ["--q0", args.q]
+    if args.q0 != None:
+        command += ["--q0", args.q0]
     if not args.not_mmas:
         command += ["--mmas"]
     if args.adaptevapo:
