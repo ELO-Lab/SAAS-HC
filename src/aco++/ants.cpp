@@ -56,6 +56,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <time.h>
+#include <float.h>
 
 #include <iostream>
 #include <vector>
@@ -329,7 +330,7 @@ bool check_in_sector2(point a, point b, int n_sector, int sector_index)
 int find_closest_node_in_sector(int pivot_node, int n_sector, int sector_index)
 {
     int closest_node = -1;
-    double min_distance = MAXFLOAT;
+    double min_distance = FLT_MAX;
     for (int node = 0; node < instance.n - 1; node++)
         if (node != pivot_node)
         {
@@ -347,7 +348,7 @@ int find_closest_node_in_sector(int pivot_node, int n_sector, int sector_index)
 int find_closest_node(int pivot_node, const std::vector<bool> &visited)
 {
     int closest_node = -1;
-    double min_distance = MAXFLOAT;
+    double min_distance = FLT_MAX;
     for (int node = 0; node < instance.n - 1; node++)
         if (!visited[node])
         {
