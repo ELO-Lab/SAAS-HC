@@ -113,11 +113,12 @@ random_seeds = [
 
 
 def launcher(arg):
-    global aaco_nc_flag, number_of_runs, sol_dir, debug_log
+    global aaco_nc_flag, number_of_runs, sol_dir, debug_log, postfix
     instance_name, repetition = arg
 
     _random_seed = str(random_seeds[repetition])
-    postfix = str(repetition + 1) if repetition + 1 >= 10 else f"0{repetition+1}"
+    temp_postfix = str(repetition + 1) if repetition + 1 >= 10 else f"0{repetition+1}"
+    temp_postfix += f"_{postfix}"
     command = [
         "python3",
         "run.py",
@@ -125,7 +126,7 @@ def launcher(arg):
         "--sol_dir",
         sol_dir,
         "--postfix",
-        postfix,
+        temp_postfix,
         "--run_only",
         "--instance_name",
         instance_name,
@@ -186,49 +187,53 @@ def imap_unordered_bar(func, args, total, n_processes=2):
 
 def get_argument():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--aaco_nc", action="store_true")
+    parser.add_argument("--aaco_nc", required=True, action="store_true")
     parser.add_argument("--sol_dir", required=True, type=str)
     parser.add_argument("--debug_log", action="store_true")
+    parser.add_argument("--exist_ok", action="store_true")
+    parser.add_argument("--postfix", default="", type=str)
     args = parser.parse_args()
 
-    global aaco_nc_flag, sol_dir, debug_log
+    global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix
     aaco_nc_flag = args.aaco_nc
     sol_dir = args.sol_dir
     debug_log = args.debug_log
+    exist_ok = args.exist_ok
+    postfix = args.postfix
 
 
 if __name__ == "__main__":
-    global number_of_runs, debug_log, sol_dir
+    global number_of_runs, debug_log, sol_dir, exist_ok
 
     get_argument()
     assert not os.path.isfile(sol_dir)
-    assert not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
+    assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
     tsp_base = [
         "eil51",
-        "pr107",
-        "a280",
-        "dsj1000",
+        # "pr107",
+        # "a280",
+        # "dsj1000",
     ]
     number_of_items_per_city = [
-        "01",
-        "03",
-        "05",
+        # "01",
+        # "03",
+        # "05",
         "10",
     ]
     knapsack_type = [
-        "bsc",
-        "unc",
+        # "bsc",
+        # "unc",
         "usw",
     ]
     knapsack_size = [
-        "01",
-        "05",
+        # "01",
+        # "05",
         "10",
     ]
     maximum_travel_time = [
-        "01",
-        "02",
+        # "01",
+        # "02",
         "03",
     ]
     number_of_runs = 30
