@@ -187,7 +187,7 @@ def imap_unordered_bar(func, args, total, n_processes=2):
 
 def get_argument():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--aaco_nc", required=True, action="store_true")
+    parser.add_argument("--aaco_nc", action="store_true")
     parser.add_argument("--sol_dir", required=True, type=str)
     parser.add_argument("--debug_log", action="store_true")
     parser.add_argument("--exist_ok", action="store_true")
@@ -211,29 +211,29 @@ if __name__ == "__main__":
 
     tsp_base = [
         "eil51",
-        # "pr107",
-        # "a280",
-        # "dsj1000",
+        "pr107",
+        "a280",
+        "dsj1000",
     ]
     number_of_items_per_city = [
-        # "01",
-        # "03",
-        # "05",
+        "01",
+        "03",
+        "05",
         "10",
     ]
     knapsack_type = [
-        # "bsc",
-        # "unc",
+        "bsc",
+        "unc",
         "usw",
     ]
     knapsack_size = [
-        # "01",
-        # "05",
+        "01",
+        "05",
         "10",
     ]
     maximum_travel_time = [
-        # "01",
-        # "02",
+        "01",
+        "02",
         "03",
     ]
     number_of_runs = 30
