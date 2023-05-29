@@ -61,6 +61,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <map>
+#include <string>
 
 #include "inout.h"
 #include "thop.h"

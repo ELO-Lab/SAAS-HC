@@ -411,10 +411,11 @@ if __name__ == "__main__":
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
     parser.add_argument("--nodeclustering", action="store_true")
-    parser.add_argument("--adaptevapo", action="store_true")
+    parser.add_argument("--adapt_evap", action="store_true")
     parser.add_argument("--aaco_nc", action="store_true")
-    parser.add_argument("--sector", default=24, type=int)
-    parser.add_argument("--cluster_size", default=32, type=int)
+    parser.add_argument("--n_cluster", default=4, type=int)
+    parser.add_argument("--cluster_size", default=16, type=int)
+    parser.add_argument("--sector", default=8, type=int)
     parser.add_argument("--silent", default=0, type=int)
     parser.add_argument("--log_iter", action="store_true")
     parser.add_argument("--save_ter_log", type=str)
@@ -467,8 +468,8 @@ if __name__ == "__main__":
 
     if args.aaco_nc:
         args.nodeclustering = True
-        args.adaptevapo = True
-    if args.adaptevapo:
+        args.adapt_evap = True
+    if args.adapt_evap:
         args.rho = 0.5
         args.not_mmas = False
 
@@ -515,9 +516,10 @@ if __name__ == "__main__":
     sol_dir = args.sol_dir if args.sol_dir else Path("../../solutions/temp/aco++")
     random_seed = args.random_seed
     nodeclustering = args.nodeclustering
-    adaptevapo = args.adaptevapo
+    adapt_evap = args.adapt_evap
     sector = args.sector
     clustersize = args.cluster_size
+    n_cluster = args.n_cluster
     if args.time:
         time = args.time
     else:
@@ -551,8 +553,8 @@ if __name__ == "__main__":
 
         if args.nodeclustering:
             nodeclustering_config = [
-                ["node clustering", "sector", "cluster size"],
-                [nodeclustering, sector, clustersize],
+                ["node clustering", "number of cluster", "cluster size", "sector"],
+                [nodeclustering, n_cluster, clustersize, sector],
             ]
             print(
                 tabulate(
@@ -560,16 +562,16 @@ if __name__ == "__main__":
                 )
             )
 
-        if args.adaptevapo:
-            adaptevapo_config = [
+        if args.adapt_evap:
+            adapt_evap_config = [
                 [
                     "adaptive evaporation",
                     "initial evaporation rate",
                 ],
-                [adaptevapo, rho],
+                [adapt_evap, rho],
             ]
             print(
-                tabulate(adaptevapo_config, headers="firstrow", tablefmt="fancy_grid")
+                tabulate(adapt_evap_config, headers="firstrow", tablefmt="fancy_grid")
             )
 
     output_path = Path(
@@ -610,8 +612,8 @@ if __name__ == "__main__":
         command += ["--q0", args.q0]
     if not args.not_mmas:
         command += ["--mmas"]
-    if args.adaptevapo:
-        command += ["--adaptevapo"]
+    if args.adapt_evap:
+        command += ["--adapt_evap"]
     if args.nodeclustering:
         command += [
             "--nodeclustering",
@@ -619,6 +621,8 @@ if __name__ == "__main__":
             sector,
             "--clustersize",
             clustersize,
+            "--n_cluster",
+            n_cluster
         ]
     if args.log_iter:
         command += ["--logiter"]
@@ -654,3 +658,7 @@ stdout:
 
     if args.silent == 1:
         print(best_profit)
+
+    if args.save_ter_log:
+        with open(args.save_ter_log, 'w') as f:
+            f.write(str(stdout_log))

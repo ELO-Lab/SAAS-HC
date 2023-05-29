@@ -124,6 +124,8 @@ void set_default_acs_parameters(void);
 
 void set_default_ls_parameters(void);
 
+void set_default_node_clustering_parameters(void);
+
 void save_best_thop_solution(void);
 
 void write_report(void);

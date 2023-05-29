@@ -559,6 +559,14 @@ void set_default_ls_parameters(void)
     }
 }
 
+void set_default_node_clustering_parameters(void){
+    n_cluster = 4;
+    cluster_size = 16;
+    n_sector = 8;
+
+    q_0 = 0.98f;
+}
+
 void save_best_thop_solution(void)
 {
 

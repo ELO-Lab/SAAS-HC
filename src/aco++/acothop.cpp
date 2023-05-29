@@ -513,7 +513,7 @@ void pheromone_trail_update(void)
     {
         if (node_clustering_flag == TRUE)
         {
-            evaporation();
+            evaporation_nc_list();
         }
         else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
         {

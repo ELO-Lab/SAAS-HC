@@ -126,10 +126,14 @@
 #define STR_HELP_CLUSTER_SIZE \
     "      --clustersize     number of nodes per cluster\n"
 
+#define STR_HELP_NUMBER_CLUSTER \
+    "      --n_cluster       number of nodes per cluster\n"
+
 #define STR_HELP_ADAPTIVE_EVAPORATION \
-    "      --adaptevapo      using adaptive evaporation mode\n"
+    "      --adapt_evap      using adaptive evaporation mode\n"
+
 #define STR_HELP_LOGITER \
-    "  --logiter            log each iteration\n"
+    "      --logiter         log each iteration\n"
 
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
@@ -162,6 +166,7 @@ static const char *const STR_HELP[] = {
     STR_HELP_NODECLUSTERING,
     STR_HELP_SECTOR,
     STR_HELP_CLUSTER_SIZE,
+    STR_HELP_NUMBER_CLUSTER,
     STR_HELP_ADAPTIVE_EVAPORATION,
     STR_HELP_LOGITER,
     NULL};
@@ -265,8 +270,11 @@ struct options
     /* Set to 1 if option --clustersize mode has been specified.  */
     unsigned int opt_clustersize : 1;
 
-    /* Set to 1 if option --adaptevapo mode has been specified.  */
-    unsigned int opt_adaptevapo : 1;
+    /* Set to 1 if option --n_cluster mode has been specified.  */
+    unsigned int opt_n_cluster : 1;
+
+    /* Set to 1 if option --adapt_evap mode has been specified.  */
+    unsigned int opt_adapt_evap : 1;
 
     /* Argument to option --inputfile (-i).  */
     const char *arg_inputfile;
@@ -334,8 +342,11 @@ struct options
     /* Argument to option --clustersize.  */
     const char *arg_clustersize;
 
-    /* Argument to option --adaptevapo.  */
-    const char *arg_adaptevapo;
+    /* Argument to option --n_cluster.  */
+    const char *arg_n_cluster;
+
+    /* Argument to option --adapt_evap.  */
+    const char *arg_adapt_evap;
 };
 
 /* Parse command line options.  Return index of first non-option argument,
@@ -376,7 +387,8 @@ parse_options(struct options *const options, const char *const program_name,
     static const char *const optstr__nodeclustering = "nodeclustering";
     static const char *const optstr__sector = "sector";
     static const char *const optstr__clustersize = "clustersize";
-    static const char *const optstr__adaptevapo = "adaptevapo";
+    static const char *const optstr__n_cluster = "n_cluster";
+    static const char *const optstr__adapt_evap = "adapt_evap";
     int i = 0;
     options->opt_inputfile = 0;
     options->opt_outputfile = 0;
@@ -410,7 +422,8 @@ parse_options(struct options *const options, const char *const program_name,
     options->opt_nodeclustering = 0;
     options->opt_sector = 0;
     options->opt_clustersize = 0;
-    options->opt_adaptevapo = 0;
+    options->opt_n_cluster = 0;
+    options->opt_adapt_evap = 0;
 
     options->arg_inputfile = 0;
     options->arg_outputfile = 0;
@@ -434,7 +447,8 @@ parse_options(struct options *const options, const char *const program_name,
     options->arg_nodeclustering = 0;
     options->arg_sector = 0;
     options->arg_clustersize = 0;
-    options->arg_adaptevapo = 0;
+    options->arg_n_cluster = 0;
+    options->arg_adapt_evap = 0;
     while (++i < argc)
     {
         const char *option = argv[i];
@@ -514,14 +528,14 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_as = 1;
                     break;
                 }
-                else if (strncmp(option + 1, optstr__adaptevapo + 1, option_len - 1) == 0)
+                else if (strncmp(option + 1, optstr__adapt_evap + 1, option_len - 1) == 0)
                 {
                     if (argument != 0)
                     {
-                        option = optstr__adaptevapo;
+                        option = optstr__adapt_evap;
                         goto error_unexpec_arg_long;
                     }
-                    options->opt_adaptevapo = 1;
+                    options->opt_adapt_evap = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -748,6 +762,22 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_unexpec_arg_long;
                     }
                     options->opt_nodeclustering = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__n_cluster + 1, option_len - 1) == 0)
+                {
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_n_cluster = argument;
+                    else if (++i < argc)
+                        options->arg_n_cluster = argv[i];
+                    else
+                    {
+                        option = optstr__n_cluster;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_n_cluster = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -1460,6 +1490,13 @@ int parse_commandline(int argc, char *argv[])
         set_default_ls_parameters();
     }
 
+    
+    if (options.opt_nodeclustering)
+    {
+        node_clustering_flag = TRUE;
+        set_default_node_clustering_parameters();
+    }
+
     if (options.opt_ants)
     {
         n_ants = atol(options.arg_ants);
@@ -1648,11 +1685,6 @@ int parse_commandline(int argc, char *argv[])
                 dlb_flag ? 1 : 0, dlb_flag ? "use" : "not use");
     }
     */
-    if (options.opt_nodeclustering)
-    {
-        node_clustering_flag = TRUE;
-        if (!options.opt_q0) q_0 = 0.98;
-    }
 
     if (options.opt_sector)
     {
@@ -1664,7 +1696,12 @@ int parse_commandline(int argc, char *argv[])
         cluster_size = atol(options.arg_clustersize);
     }
 
-    if (options.opt_adaptevapo)
+    if (options.opt_n_cluster)
+    {
+        n_cluster = atol(options.arg_n_cluster);
+    }
+
+    if (options.opt_adapt_evap)
     {
         adaptive_evaporation_flag = TRUE;
     }
