@@ -25,8 +25,9 @@ std::vector<std::vector<double>> total_cluster;
 std::vector<double> t_cluster;
 
 int node_clustering_flag;
-int n_sector;
+int n_cluster;
 int cluster_size;
+int n_sector;
 
 void evaporation_nc_list(void){
 
@@ -153,7 +154,7 @@ void create_cluster(void)
             }
         }
 
-        while (nb_visited < instance.n)
+        while (nb_visited < instance.n && cluster_chunk[i].size() < n_cluster)
         {
             while (cluster_chunk[i][cluster_index].size() < cluster_size)
             {
