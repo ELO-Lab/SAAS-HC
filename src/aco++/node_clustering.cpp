@@ -28,6 +28,21 @@ int node_clustering_flag;
 int n_sector;
 int cluster_size;
 
+void evaporation_nc_list(void){
+
+    TRACE(printf("pheromone evaporation nn_list\n"););
+
+    for (int i = 0; i < instance.n; i++)
+    {
+        for (int cur_cluster = 0; cur_cluster < cluster_chunk[i].size(); cur_cluster++)
+        {
+            for (int j = 0; j < cluster_chunk[i][cur_cluster].size(); j++){
+                int help_city = cluster_chunk[i][cur_cluster][j];
+                pheromone[i][help_city] = (1 - rho) * pheromone[i][help_city];
+            }
+        }
+    }
+}
 
 int find_closest_node(int pivot_node, const std::vector<bool> &visited)
 {
@@ -128,6 +143,10 @@ void create_cluster(void)
             int node = find_closest_node_in_sector(i, n_sector, j);
             if (node != -1)
             {
+                if (cluster_chunk[i][cluster_index].size() >= cluster_size) {
+                    cluster_index++;   
+                    cluster_chunk[i].push_back(cluster);
+                }
                 cluster_chunk[i][cluster_index].push_back(node);
                 nb_visited++;
                 visited[node] = true;
@@ -216,8 +235,12 @@ void node_clustering_move(ant_struct *a, long int phase)
             selected_cluster = 0;
             first = 0;
         }
-        else
+        else if (selected_cluster == cluster_chunk[current_city].size() - 1){
+            choose_best_next(a, phase);
+            return;
+        }else{
             selected_cluster++;
+        }
     }
 
     // select next city

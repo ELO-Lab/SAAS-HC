@@ -277,27 +277,6 @@ void compute_nn_list_total_information(void)
     }
 }
 
-bool check_in_sector2(point a, point b, int n_sector, int sector_index)
-{
-    float angle_r = (2 * M_PI / n_sector) * (sector_index);
-    float angle_l = (2 * M_PI / n_sector) * (sector_index + 1);
-
-    float right = b.y - (tan(angle_r) * (b.x - a.x) + a.y);
-    float left = b.y - (tan(angle_l) * (b.x - a.x) + a.y);
-
-    if (angle_r > M_PI / 2)
-        right = -right;
-    if (angle_l > M_PI / 2)
-        left = -left;
-
-    if (angle_r > (3 * M_PI / 2))
-        right = -right;
-    if (angle_l > (3 * M_PI / 2))
-        left = -left;
-
-    return left < 0 && right >= 0;
-}
-
 /****************************************************************
  ****************************************************************
 Procedures implementing solution construction and related things
