@@ -413,7 +413,7 @@ if __name__ == "__main__":
     parser.add_argument("--nodeclustering", action="store_true")
     parser.add_argument("--adapt_evap", action="store_true")
     parser.add_argument("--aaco_nc", action="store_true")
-    parser.add_argument("--n_cluster", default=4, type=int)
+    parser.add_argument("--n_cluster", default=1000, type=int)
     parser.add_argument("--cluster_size", default=16, type=int)
     parser.add_argument("--sector", default=8, type=int)
     parser.add_argument("--silent", default=0, type=int)
