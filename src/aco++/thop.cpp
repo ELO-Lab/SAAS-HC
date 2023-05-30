@@ -286,7 +286,7 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
         exit(0);
     }
 
-    double par_a, par_b, par_c, par_sum;
+    double par_sum;
     long int prev_city, curr_city;
     double _total_time;
     long int _total_weight, total_weight, total_profit;
@@ -322,10 +322,6 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
         {
             profit_accumulated[i] = weight_accumulated[i] = 0;
         }
-
-        par_a = ran01(&seed); /* uniform random number between [0.0, 1.0] */
-        par_b = ran01(&seed); /* uniform random number between [0.0, 1.0] */
-        par_c = ran01(&seed); /* uniform random number between [0.0, 1.0] */
 
         par_sum = (par_a + par_b + par_c);
         par_a /= par_sum;

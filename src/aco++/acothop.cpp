@@ -66,6 +66,7 @@
 #include "timer.h"
 #include "ls.h"
 #include "adaptive_evaporation.hpp"
+#include "es_ant.hpp"
 
 long int termination_condition(void)
 /*
