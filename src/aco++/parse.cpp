@@ -9,6 +9,7 @@
 #include "utilities.h"
 #include "ants.h"
 #include "ls.h"
+#include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 
 #ifndef STR_ERR_UNKNOWN_LONG_OPT

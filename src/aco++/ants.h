@@ -108,10 +108,6 @@ extern long int u_gb;    /* every u_gb iterations update with best-so-far ant; p
 
 extern double trail_0; /* initial pheromone trail level in ACS  and BWAS */
 
-extern int node_clustering_flag;
-extern int n_sector;
-extern int cluster_size;
-
 /* Pheromone manipulation etc. */
 
 void init_pheromone_trails(double initial_trail);
@@ -145,8 +141,6 @@ void neighbour_choose_best_next(ant_struct *a, long int phase);
 void choose_closest_next(ant_struct *a, long int phase);
 
 void neighbour_choose_and_move_to_next(ant_struct *a, long int phase);
-
-void node_clustering_move(ant_struct *a, long int phase);
 
 /* Auxiliary procedures related to ants */
 

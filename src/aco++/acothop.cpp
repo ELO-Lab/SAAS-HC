@@ -65,6 +65,7 @@
 #include "thop.h"
 #include "timer.h"
 #include "ls.h"
+#include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 
 long int termination_condition(void)

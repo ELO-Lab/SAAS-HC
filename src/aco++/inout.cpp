@@ -65,6 +65,7 @@
 #include "ants.h"
 #include "ls.h"
 #include "parse.h"
+#include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 
 long int *best_in_try;
