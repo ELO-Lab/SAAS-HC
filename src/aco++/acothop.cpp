@@ -65,6 +65,7 @@
 #include "thop.h"
 #include "timer.h"
 #include "ls.h"
+#include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 #include "es_ant.hpp"
 
@@ -513,7 +514,7 @@ void pheromone_trail_update(void)
     {
         if (node_clustering_flag == TRUE)
         {
-            evaporation();
+            evaporation_nc_list();
         }
         else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
         {

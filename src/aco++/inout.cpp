@@ -65,6 +65,7 @@
 #include "ants.h"
 #include "ls.h"
 #include "parse.h"
+#include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 
 long int *best_in_try;
@@ -106,7 +107,7 @@ FILE *log_tries_file;
 char input_name_buf[LINE_BUF_LEN];
 char output_name_buf[LINE_BUF_LEN];
 int opt;
-long int log_flag; /* --log was given in the command-line.  */
+long int log_flag;     /* --log was given in the command-line.  */
 long int logiter_flag; /* --log was given in the command-line.  */
 long int output_flag;
 long int calibration_mode;
@@ -171,7 +172,7 @@ void init_program(long int argc, char *argv[])
     {
         log_file = NULL;
     }
-    
+
     if (!logiter_flag)
     {
         sprintf(temp_buffer, "%s.tries.log", output_name_buf);
@@ -446,7 +447,7 @@ void set_default_parameters(void)
     n_sector = 24;
     cluster_size = 32;
 
-    adaptive_evaporation_flag = FALSE;
+    adaptive_evaporation_flag = false;
 }
 
 void set_default_as_parameters(void)
@@ -556,6 +557,14 @@ void set_default_ls_parameters(void)
     {
         elitist_ants = n_ants;
     }
+}
+
+void set_default_node_clustering_parameters(void){
+    n_cluster = 4;
+    cluster_size = 16;
+    n_sector = 8;
+
+    q_0 = 0.98f;
 }
 
 void save_best_thop_solution(void)

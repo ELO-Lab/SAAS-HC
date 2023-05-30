@@ -9,6 +9,9 @@
 float min_rho = 0.01;
 float max_rho = 0.99;
 bool adaptive_evaporation_flag;
+// float min_q_0 = 0.52;
+// float max_q_0 = 1;
+// float q_0_diff = max_q_0 - min_q_0;
 
 const float rho_diff = max_rho - min_rho;
 
@@ -61,7 +64,8 @@ void update_rho(void)
 
     min_entropy = -log2(n_ants * 1.0 / total_edge_count);
     max_entropy = -log2(1.0 / total_edge_count);
-    
+
     // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
     rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    // q_0 = min_q_0 + q_0_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
 }

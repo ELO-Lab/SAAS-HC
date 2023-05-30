@@ -308,14 +308,16 @@ def normalize_single_file(log_path):
     print(csv_file)
 
 
-def profit_table(solution_folder):
+def profit_table(solution_folder, save_folder, postfix=""):
     from pathlib import Path
     import pandas as pd
     import itertools
     import os
     from tqdm import tqdm
+    import pickle
 
     solution_folder = Path(solution_folder)
+    save_folder = Path(save_folder)
 
     tsp_base = [
         "eil51",
@@ -374,10 +376,9 @@ def profit_table(solution_folder):
             file_path = (
                 solution_folder
                 / f"{_tsp_base}-thop"
-                / f"{col_name}_{repeat_time}.thop.sol.log"
+                / f"{col_name}_{repeat_time}_{postfix}.thop.sol.log"
             )
             if not os.path.isfile(file_path):
-                print("haha")
                 continue
 
             with open(file_path, "r") as f:
@@ -391,5 +392,9 @@ def profit_table(solution_folder):
 
     pbar.close()
     res_table = pd.DataFrame(res_table)
-    print(res_table.describe().T.to_markdown())
+    with open(save_folder / f"profit_table_{postfix}.pkl", "wb") as f:
+        pickle.dump(res_table, f)
+    with open(save_folder / f"profit_table_{postfix}.md", "w") as f:
+        f.write(res_table.describe().T.to_markdown())
+
     return res_table

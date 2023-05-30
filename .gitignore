@@ -67,4 +67,4 @@ CMakeCache.txt
 CMakeFiles
 build
 temp*
-src/aco++/ter_log.log
+src/aco++/*.ter.log
