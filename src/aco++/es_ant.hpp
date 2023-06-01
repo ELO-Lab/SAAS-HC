@@ -7,14 +7,10 @@
 
 // Hyperparameters
 extern bool adapt_ant;
-extern double
-    cluster_alpha,
-    cluster_alpha_std,
-    cluster_beta, cluster_beta_std,
-    par_a, par_a_std,
-    par_b, par_b_std,
-    par_c, par_c_std,
-    rho_std, alpha_std, beta_std;
+extern double cluster_alpha, cluster_alpha_step_size, cluster_beta,
+    cluster_beta_step_size, par_a, par_a_step_size, par_b, par_b_step_size,
+    par_c, par_c_step_size, rho_step_size, alpha_step_size, beta_step_size;
+extern unsigned char n_generation_each_iteration;
 
 void es_ant_init(void);
 void es_construct_solution(void);
