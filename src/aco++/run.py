@@ -437,14 +437,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     assert not (args.run_only and args.build_only)
     assert not (args.no_log and (args.log_iter or args.save_ter_log))
-    assert not (
-        args.experiment
-        and (
-            args.debug
-            or (not args.run_only and not args.build_only)
-            or (args.run_only and not args.no_log and not args.sol_dir)
-        )
-    )
+    assert not (args.experiment and args.debug)
+    assert not (args.experiment and (not args.run_only and not args.build_only))
+    assert not (args.experiment and (args.run_only and not args.no_log and not args.sol_dir))
 
     if args.acopp_dir:
         acopp_dir = args.acopp_dir
@@ -498,8 +493,8 @@ if __name__ == "__main__":
 
     if args.aaco_nc:
         args.nodeclustering = True
-        args.adaptevapo = True
-    if args.adaptevapo:
+        args.adapt_evap = True
+    if args.adapt_evap:
         args.rho = 0.5
         args.not_mmas = False
 
@@ -550,7 +545,7 @@ if __name__ == "__main__":
     )
     random_seed = args.random_seed
     nodeclustering = args.nodeclustering
-    adaptevapo = args.adaptevapo
+    adapt_evap = args.adapt_evap
     if args.time:
         time = args.time
     else:
@@ -593,16 +588,16 @@ if __name__ == "__main__":
                 )
             )
 
-        if args.adaptevapo:
-            adaptevapo_config = [
+        if args.adapt_evap:
+            adapt_evap_config = [
                 [
                     "adaptive evaporation",
                     "initial evaporation rate",
                 ],
-                [adaptevapo, rho],
+                [adapt_evap, rho],
             ]
             print(
-                tabulate(adaptevapo_config, headers="firstrow", tablefmt="fancy_grid")
+                tabulate(adapt_evap_config, headers="firstrow", tablefmt="fancy_grid")
             )
 
     output_path = Path(
@@ -644,8 +639,8 @@ if __name__ == "__main__":
         command += ["--q0", args.q0]
     if not args.not_mmas:
         command += ["--mmas"]
-    if args.adaptevapo:
-        command += ["--adaptevapo"]
+    if args.adapt_evap:
+        command += ["--adapt_evap"]
     if args.nodeclustering:
         command += [
             "--nodeclustering",
