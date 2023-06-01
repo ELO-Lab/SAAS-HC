@@ -437,14 +437,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     assert not (args.run_only and args.build_only)
     assert not (args.no_log and (args.log_iter or args.save_ter_log))
-    assert not (
-        args.experiment
-        and (
-            args.debug
-            or (not args.run_only and not args.build_only)
-            or (args.run_only and not args.no_log and not args.sol_dir)
-        )
-    )
+    assert not (args.experiment and args.debug)
+    assert not (args.experiment and (not args.run_only and not args.build_only))
+    assert not (args.experiment and (args.run_only and not args.no_log and not args.sol_dir))
 
     if args.acopp_dir:
         acopp_dir = args.acopp_dir
@@ -550,7 +545,7 @@ if __name__ == "__main__":
     )
     random_seed = args.random_seed
     nodeclustering = args.nodeclustering
-    adaptevapo = args.adaptevapo
+    adapt_evap = args.adapt_evap
     if args.time:
         time = args.time
     else:
