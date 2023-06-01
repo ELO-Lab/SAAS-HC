@@ -395,6 +395,20 @@ parameter_configurations = {
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+
+    # run parameters
+    parser.add_argument("--instance_name", type=str)
+    parser.add_argument("--postfix", type=str)
+    parser.add_argument("--run_only", action="store_true")
+    parser.add_argument("--build_only", action="store_true")
+    parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--experiment", action="store_true")
+    parser.add_argument("--silent", default=0, type=int)
+    parser.add_argument("--exec", type=str)
+    parser.add_argument("--sol_dir", type=str)
+    parser.add_argument("--acopp_dir", type=str)
+
+    # aco++ parameters
     parser.add_argument("--ants", type=int)
     parser.add_argument("--alpha", type=float)
     parser.add_argument("--beta", type=float)
@@ -404,29 +418,39 @@ if __name__ == "__main__":
     parser.add_argument("--localsearch", type=int)
     parser.add_argument("--time", type=float)
     parser.add_argument("--random_seed", default=269070, type=float)
-    parser.add_argument("--instance_name", type=str)
-    parser.add_argument("--postfix", type=str)
-    parser.add_argument("--run_only", action="store_true")
-    parser.add_argument("--build_only", action="store_true")
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
-    parser.add_argument("--nodeclustering", action="store_true")
-    parser.add_argument("--adaptevapo", action="store_true")
+
+    # aaco_ncparameters
     parser.add_argument("--aaco_nc", action="store_true")
-    parser.add_argument("--sector", default=24, type=int)
-    parser.add_argument("--cluster_size", default=32, type=int)
-    parser.add_argument("--silent", default=0, type=int)
+    parser.add_argument("--adapt_evap", action="store_true")
+    parser.add_argument("--nodeclustering", action="store_true")
+    parser.add_argument("--n_cluster", default=1000, type=int)
+    parser.add_argument("--cluster_size", default=16, type=int)
+    parser.add_argument("--sector", default=8, type=int)
+
+    # log parameters
     parser.add_argument("--log_iter", action="store_true")
-    parser.add_argument("--exec", type=str)
-    parser.add_argument("--experiment", action="store_true")
-    parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--sol_dir", type=str)
+    parser.add_argument("--save_ter_log", type=str)
+    parser.add_argument("--no_log", action="store_true")
 
     args = parser.parse_args()
     assert not (args.run_only and args.build_only)
-    assert not (args.debug and args.experiment)
-    assert not (not args.sol_dir and args.experiment and not args.build_only)
+    assert not (args.no_log and (args.log_iter or args.save_ter_log))
+    assert not (
+        args.experiment
+        and (
+            args.debug
+            or (not args.run_only and not args.build_only)
+            or (args.run_only and not args.no_log and not args.sol_dir)
+        )
+    )
 
+    if args.acopp_dir:
+        acopp_dir = args.acopp_dir
+    else:
+        acopp_dir = Path("./")
+    assert os.path.isdir(acopp_dir)
     if args.instance_name:
         if args.instance_name[-5:] == ".thop":
             instance_name = args.instance_name
@@ -441,17 +465,25 @@ if __name__ == "__main__":
         postfix = ""
 
     if args.experiment:
-        args.exec = "./acothop_experiment"
+        args.exec = f"{acopp_dir}/acothop_experiment"
     if args.exec:
         executable_path = args.exec
     else:
-        executable_path = f"./acothop{postfix}"
+        executable_path = f"{acopp_dir}/acothop{postfix}"
     if not args.run_only:
-        command = f"cmake . -DCMAKE_BUILD_TYPE={'Release' if not args.debug else 'Debug'}".split()
+        command = [
+            "cmake",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
+            "-G",
+            "Unix Makefiles",
+            f"-S{acopp_dir}",
+            f"-B{acopp_dir}/build",
+            f"-DCMAKE_BUILD_TYPE:STRING={'Release' if not args.debug else 'Debug'}",
+        ]
         build_result = subprocess.run(command, capture_output=True, check=True)
         build_output = f"$ {' '.join(command)}\n{build_result.stdout.decode()}\n"
 
-        command = ["make"]
+        command = ["make", "-C", f"{acopp_dir}/build"]
         build_result = subprocess.run(command, capture_output=True, check=True)
         build_output = (
             f"{build_output}\n$ {' '.join(command)}\n{build_result.stdout.decode()}\n"
@@ -460,7 +492,7 @@ if __name__ == "__main__":
         if args.silent <= 0:
             print(build_output)
 
-        os.rename("./acothop", executable_path)
+        os.rename(f"{acopp_dir}/build/acothop", executable_path)
     if args.build_only:
         exit(0)
 
@@ -511,12 +543,14 @@ if __name__ == "__main__":
         else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
     )
 
-    sol_dir = args.sol_dir if args.sol_dir else Path("../../solutions/temp/aco++")
+    sol_dir = (
+        args.sol_dir
+        if args.sol_dir
+        else Path(f"{acopp_dir}/../../solutions/temp/aco++")
+    )
     random_seed = args.random_seed
     nodeclustering = args.nodeclustering
     adaptevapo = args.adaptevapo
-    sector = args.sector
-    clustersize = args.cluster_size
     if args.time:
         time = args.time
     else:
@@ -551,7 +585,7 @@ if __name__ == "__main__":
         if args.nodeclustering:
             nodeclustering_config = [
                 ["node clustering", "sector", "cluster size"],
-                [nodeclustering, sector, clustersize],
+                [nodeclustering, args.sector, args.cluster_size],
             ]
             print(
                 tabulate(
@@ -575,9 +609,8 @@ if __name__ == "__main__":
         f"{sol_dir}/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
     os.makedirs(output_path.parent, exist_ok=True)
-    # output_path = "\\ ".join(str(output_path).split(" "))
 
-    input_path = f"../../instances/{tsp_base}-thop/{instance_name}"
+    input_path = f"{acopp_dir}/../../instances/{tsp_base}-thop/{instance_name}"
     command = [
         executable_path,
         "--tries",
@@ -588,9 +621,6 @@ if __name__ == "__main__":
         time,
         "--inputfile",
         input_path,
-        "--outputfile",
-        output_path,
-        # f'"{output_path}"',
         "--ants",
         ants,
         "--alpha",
@@ -603,8 +633,13 @@ if __name__ == "__main__":
         ptries,
         "--localsearch",
         localsearch,
-        "--log",
     ]
+    if not args.no_log:
+        command += [
+            "--outputfile",
+            output_path,
+            "--log",
+        ]
     if args.q0 != None:
         command += ["--q0", args.q0]
     if not args.not_mmas:
@@ -615,9 +650,11 @@ if __name__ == "__main__":
         command += [
             "--nodeclustering",
             "--sector",
-            sector,
+            args.sector,
             "--clustersize",
-            clustersize,
+            args.cluster_size,
+            "--n_cluster",
+            args.n_cluster,
         ]
     if args.log_iter:
         command += ["--logiter"]
@@ -627,11 +664,12 @@ if __name__ == "__main__":
         print(f"$ {' '.join(command)}")
 
     start = datetime.now()
-    # result = subprocess.run(command, capture_output=True, check=True)
     result = subprocess.run(command, capture_output=True)
     assert (
         result.returncode == 0
     ), f"""
+command:
+{' '.join(command)}
 returncode: {result.returncode}
 stderr:
 {result.stderr.decode()}
@@ -653,3 +691,7 @@ stdout:
 
     if args.silent == 1:
         print(best_profit)
+
+    if args.save_ter_log:
+        with open(args.save_ter_log, "w") as f:
+            f.write(str(stdout_log))
