@@ -62,6 +62,8 @@
 #include "ls.h"
 #include "utilities.h"
 
+#include "es_ant.hpp"
+
 struct problem instance;
 
 static double dtrunc(double x)
