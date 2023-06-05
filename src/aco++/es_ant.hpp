@@ -1,5 +1,5 @@
-#ifndef _ADAPT_ANT_HPP_
-#define _ADAPT_ANT_HPP_
+#ifndef _ES_ANT_HPP_
+#define _ES_ANT_HPP_
 
 #define NODE_CLUSTERING_VERSION 0
 #if NODE_CLUSTERING_VERSION == 1

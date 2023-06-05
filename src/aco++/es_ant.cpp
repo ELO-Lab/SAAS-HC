@@ -74,7 +74,7 @@ void es_ant_init(void)
 	assert(!adaptive_evaporation_flag);
 	assert(max_packing_tries == 1);
 
-	long int i;
+	size_t i;
 	const int LAMBDA = -1;
 	std::vector<double> x0(ES_ANT_DIM), sigma(ES_ANT_DIM), lbounds(ES_ANT_DIM),
 		ubounds(ES_ANT_DIM);
@@ -184,7 +184,7 @@ void generation_run(void)
 void an_ant_run(long int &fitness)
 {
 
-	long int i;	   /* counter variable */
+	size_t i;	   /* counter variable */
 	long int step; /* counter of the number of construction steps */
 
 	ant_empty_memory(&ant[current_ant_idx]);
