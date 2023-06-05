@@ -57,6 +57,9 @@
 #ifndef PI /* as in stroustrup */
 #define PI 3.14159265358979323846
 #endif
+#ifndef LINE_BUF_LEN
+#define LINE_BUF_LEN 255
+#endif
 
 struct point
 {
