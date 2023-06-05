@@ -50,6 +50,8 @@
 
  ***************************************************************************/
 
+#include <vector>
+
 #define HEURISTIC(m, n) (1.0 / ((double)instance.distance[m][n] + 0.1))
 /* add a small constant to avoid division by zero if a distance is
 zero */
@@ -72,8 +74,24 @@ typedef struct
     long int tour_size;
 } ant_struct;
 
-extern ant_struct *ant; /* this (array of) struct will hold the colony */
-extern ant_struct *prev_ls_ant;
+class Ant_Swarm
+{
+public:
+    Ant_Swarm();
+    ~Ant_Swarm();
+    size_t size();
+    void resize(const size_t &);
+    ant_struct &operator[](size_t pos);
+
+private:
+    std::vector<ant_struct> ant_vec;
+
+    void allocate_ant(ant_struct &);
+    void free_ant(ant_struct &);
+};
+
+extern Ant_Swarm ant; /* this class will hold the colony */
+extern Ant_Swarm prev_ls_ant;
 extern ant_struct *best_so_far_ant;  /* struct that contains the best-so-far ant */
 extern ant_struct *restart_best_ant; /* struct that contains the restart-best ant */
 extern ant_struct *global_best_ant;  /* struct that contains the global-best ant */

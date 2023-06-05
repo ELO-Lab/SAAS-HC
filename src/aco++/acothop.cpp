@@ -96,13 +96,13 @@ void construct_solutions(void)
     TRACE(printf("construct solutions for all ants\n"););
 
     /* Mark all cities as unvisited */
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant_empty_memory(&ant[k]);
     }
 
     /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant[k].tour_size = 1;
         ant[k].tour[0] = 0;
@@ -114,7 +114,7 @@ void construct_solutions(void)
     while (step < instance.n - 2)
     {
         step++;
-        for (k = 0; k < n_ants; k++)
+        for (k = 0; k < ant.size(); k++)
         {
             if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
             { /* previous city is the last one */
@@ -127,7 +127,7 @@ void construct_solutions(void)
         }
     }
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
@@ -137,7 +137,7 @@ void construct_solutions(void)
         if (acs_flag)
             local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
     }
-    n_tours += n_ants;
+    n_tours += ant.size();
 }
 
 void construct_node_clustering_solution(void)
@@ -148,13 +148,13 @@ void construct_node_clustering_solution(void)
     TRACE(printf("construct solutions for all ants\n"););
 
     /* Mark all cities as unvisited */
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant_empty_memory(&ant[k]);
     }
 
     /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant[k].tour_size = 1;
         ant[k].tour[0] = 0;
@@ -169,7 +169,7 @@ void construct_node_clustering_solution(void)
     while (step < instance.n - 2)
     {
         step++;
-        for (k = 0; k < n_ants; k++)
+        for (k = 0; k < ant.size(); k++)
         {
             if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
             { /* previous city is the last one */
@@ -182,7 +182,7 @@ void construct_node_clustering_solution(void)
         }
     }
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
@@ -192,7 +192,7 @@ void construct_node_clustering_solution(void)
         if (acs_flag)
             local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
     }
-    n_tours += n_ants;
+    n_tours += ant.size();
 }
 
 void local_search(void)
@@ -214,7 +214,7 @@ void local_search(void)
 
     TRACE(printf("apply local search to all ants\n"););
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         switch (ls_flag)
         {
@@ -338,7 +338,7 @@ void as_update(void)
 
     TRACE(printf("Ant System pheromone deposit\n"););
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
         global_update_pheromone(&ant[k]);
 }
 
@@ -354,7 +354,7 @@ void eas_update(void)
 
     TRACE(printf("Elitist Ant System pheromone deposit\n"););
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
         global_update_pheromone(&ant[k]);
     global_update_pheromone_weighted(best_so_far_ant, elitist_ants);
 }
@@ -376,15 +376,15 @@ void ras_update(void)
 
     TRACE(printf("Rank-based Ant System pheromone deposit\n"););
 
-    help_b = (long int *)malloc(n_ants * sizeof(long int));
-    for (k = 0; k < n_ants; k++)
+    help_b = (long int *)malloc(ant.size() * sizeof(long int));
+    for (k = 0; k < ant.size(); k++)
         help_b[k] = ant[k].fitness;
 
     for (i = 0; i < ras_ranks - 1; i++)
     {
         b = help_b[0];
         target = 0;
-        for (k = 0; k < n_ants; k++)
+        for (k = 0; k < ant.size(); k++)
         {
             if (help_b[k] < b)
             {
@@ -623,12 +623,12 @@ int main(int argc, char *argv[])
 
             if (ls_flag > 0)
             {
-                for (k = 0; k < n_ants; k++)
+                for (k = 0; k < ant.size(); k++)
                 {
                     copy_from_to(&ant[k], &prev_ls_ant[k]);
                 }
                 local_search();
-                for (k = 0; k < n_ants; k++)
+                for (k = 0; k < ant.size(); k++)
                 {
                     if (ant[k].fitness > prev_ls_ant[k].fitness)
                     {
@@ -653,22 +653,6 @@ int main(int argc, char *argv[])
     free(best_found_at);
     free(time_best_found);
     free(time_total_run);
-
-    for (i = 0; i < n_ants; i++)
-    {
-        free(ant[i].tour);
-        free(ant[i].visited);
-        free(ant[i].packing_plan);
-    }
-    free(ant);
-
-    for (i = 0; i < n_ants; i++)
-    {
-        free(prev_ls_ant[i].tour);
-        free(prev_ls_ant[i].visited);
-        free(prev_ls_ant[i].packing_plan);
-    }
-    free(prev_ls_ant);
 
     free(best_so_far_ant->tour);
     free(best_so_far_ant->visited);
