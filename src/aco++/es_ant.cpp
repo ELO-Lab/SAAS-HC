@@ -1,5 +1,4 @@
-// #include <memory>
-
+#include <iostream>
 #include <Eigen/Dense>
 #include <libcmaes/cmaes.h>
 
@@ -7,12 +6,12 @@
 #include "inout.h"
 #include "utilities.h"
 #include "thop.h"
+#include "ls.h"
 
 #include "adaptive_evaporation.hpp"
-#include "es_ant.hpp"
 #include "node_clustering.h"
-
-using namespace libcmaes;
+#include "es_ant.hpp"
+#include "acothop.hpp"
 
 #define SEED_IDX 0
 #define PAR_A_IDX 1
@@ -25,10 +24,6 @@ using namespace libcmaes;
 #define CLUSTER_BETA_IDX 8
 #define RHO_IDX 9
 
-#define CMA_ALGO aBIPOP_CMAES
-#define STRATEGY_CLASS BIPOPCMAStrategy<ACovarianceUpdate, GenoPheno<pwqBoundStrategy>>
-#define PARAMETER_CLASS CMAParameters<GenoPheno<pwqBoundStrategy>>
-
 double
 	seed_stepsize_init,
 	par_a, par_a_stepsize_init,
@@ -38,12 +33,104 @@ double
 	cluster_beta, cluster_beta_stepsize_init,
 	alpha_stepsize_init, beta_stepsize_init,
 	rho_stepsize_init, q_0_stepsize_init;
-bool adapt_ant;
+bool es_ant_flag = true;
 long int current_ant_idx = 0;
 // long int n_generation_each_iteration;
-// long int cmaes_algo;
 
-ESOptimizer<STRATEGY_CLASS, PARAMETER_CLASS> optimizer;
+ESOPTIMIZER_CLASS *optim_ptr;
+
+void an_ant_run()
+{
+
+	size_t i;	   /* counter variable */
+	long int step; /* counter of the number of construction steps */
+
+	ant_empty_memory(&ant[current_ant_idx]);
+
+	/* Place the ants at initial city 0 and set the final city as n-1 */
+	ant[current_ant_idx].tour_size = 1;
+	ant[current_ant_idx].tour[0] = 0;
+	ant[current_ant_idx].visited[0] = TRUE;
+	ant[current_ant_idx].visited[instance.n - 1] = TRUE;
+
+	step = 0;
+	while (step < instance.n - 2)
+	{
+		step++;
+		if (ant[current_ant_idx].tour[ant[current_ant_idx].tour_size - 1] == instance.n - 2)
+		{ /* previous city is the last one */
+			continue;
+		}
+		neighbour_choose_and_move_to_next(&ant[current_ant_idx], step);
+		if (acs_flag)
+			local_acs_pheromone_update(&ant[current_ant_idx], step);
+		ant[current_ant_idx].tour_size++;
+	}
+
+	ant[current_ant_idx].tour[ant[current_ant_idx].tour_size++] = instance.n - 1;
+	ant[current_ant_idx].tour[ant[current_ant_idx].tour_size++] = ant[current_ant_idx].tour[0];
+	for (i = ant[current_ant_idx].tour_size; i < instance.n; i++)
+		ant[current_ant_idx].tour[i] = 0;
+	ant[current_ant_idx].fitness = compute_fitness(ant[current_ant_idx].tour, ant[current_ant_idx].visited, ant[current_ant_idx].tour_size, ant[current_ant_idx].packing_plan);
+	if (acs_flag)
+		local_acs_pheromone_update(&ant[current_ant_idx], ant[current_ant_idx].tour_size - 1);
+
+	n_tours += 1;
+}
+
+void an_ant_local_search()
+{
+	switch (ls_flag)
+	{
+	case 1:
+		two_opt_first(ant[current_ant_idx].tour, ant[current_ant_idx].tour_size); /* 2-opt local search */
+		break;
+	case 2:
+		two_h_opt_first(ant[current_ant_idx].tour, ant[current_ant_idx].tour_size); /* 2.5-opt local search */
+		break;
+	case 3:
+		three_opt_first(ant[current_ant_idx].tour, ant[current_ant_idx].tour_size); /* 3-opt local search */
+		break;
+	default:
+		fprintf(stderr, "type of local search procedure not correctly specified\n");
+		exit(1);
+	}
+	ant[current_ant_idx].fitness = compute_fitness(ant[current_ant_idx].tour, ant[current_ant_idx].visited, ant[current_ant_idx].tour_size, ant[current_ant_idx].packing_plan);
+}
+
+libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
+{
+	seed = (long int)x[SEED_IDX];
+	assert(seed == x[SEED_IDX]);
+	par_a = x[PAR_A_IDX];
+	par_b = x[PAR_B_IDX];
+	par_c = x[PAR_C_IDX];
+	q_0 = x[Q_0_IDX];
+#if NODE_CLUSTERING_VERSION == 1
+	alpha = x[ALPHA_IDX];
+	beta = x[BETA_IDX];
+	cluster_alpha = x[CLUSTER_ALPHA_IDX];
+	cluster_beta = x[CLUSTER_BETA_IDX];
+	rho = x[RHO_IDX];
+#endif
+
+	an_ant_run();
+
+	if (ls_flag > 0)
+	{
+		copy_from_to(&ant[current_ant_idx], &prev_ls_ant[current_ant_idx]);
+		an_ant_local_search();
+		{
+			if (ant[current_ant_idx].fitness > prev_ls_ant[current_ant_idx].fitness)
+			{
+				copy_from_to(&prev_ls_ant[current_ant_idx], &ant[current_ant_idx]);
+			}
+		}
+	}
+
+	current_ant_idx += 1;
+	return ant[current_ant_idx - 1].fitness;
+};
 
 void es_ant_set_default(void)
 {
@@ -68,14 +155,10 @@ void es_ant_set_default(void)
 #endif
 }
 
-void es_ant_init(void)
+void init_optimizer(void)
 {
-	assert(node_clustering_flag == NODE_CLUSTERING_VERSION);
-	assert(!adaptive_evaporation_flag);
-	assert(max_packing_tries == 1);
-
+	const long int LAMBDA = -1, CMAES_ALGO = aBIPOP_CMAES;
 	size_t i;
-	const int LAMBDA = -1;
 	std::vector<double> x0(ES_ANT_DIM), sigma(ES_ANT_DIM), lbounds(ES_ANT_DIM),
 		ubounds(ES_ANT_DIM);
 
@@ -137,87 +220,44 @@ void es_ant_init(void)
 		assert(x0[i] <= ubounds[i]);
 	}
 	PARAMETER_CLASS cmaparams(x0, sigma, LAMBDA, lbounds, ubounds, seed);
-	cmaparams.set_algo(CMA_ALGO);
-	ESOptimizer<STRATEGY_CLASS, PARAMETER_CLASS> abipop(es_evaluate, cmaparams);
-	optimizer = abipop;
+	cmaparams.set_algo(CMAES_ALGO);
+	optim_ptr = new ESOPTIMIZER_CLASS(es_evaluate, cmaparams);
 }
 
-FitFunc es_evaluate = [](const double *x, const int N)
+void es_ant_init(void)
 {
-	long int fitness;
-	seed = (long int)x[SEED_IDX];
-	assert(seed == x[SEED_IDX]);
-	par_a = x[PAR_A_IDX];
-	par_b = x[PAR_B_IDX];
-	par_c = x[PAR_C_IDX];
-	q_0 = x[Q_0_IDX];
-#if NODE_CLUSTERING_VERSION == 1
-	alpha = x[ALPHA_IDX];
-	beta = x[BETA_IDX];
-	cluster_alpha = x[CLUSTER_ALPHA_IDX];
-	cluster_beta = x[CLUSTER_BETA_IDX];
-	rho = x[RHO_IDX];
-#endif
+	assert(node_clustering_flag == NODE_CLUSTERING_VERSION);
+	assert(!adaptive_evaporation_flag);
+	assert(max_packing_tries == 1);
 
-	an_ant_run(&fitness);
+	init_optimizer();
+}
 
-	return fitness;
-};
+void generation_run(void)
+{
+	auto candidates = optim_ptr->ask();
+	const size_t pop_size = candidates.rows();
+	const size_t capacity_need = current_ant_idx + pop_size;
+	if (capacity_need > ant.size())
+	{
+		ant.resize(capacity_need);
+		prev_ls_ant.resize(capacity_need);
+	}
 
-void es_construct_solution(void)
+	candidates.row(SEED_IDX) = candidates.row(SEED_IDX).array().round();
+
+	optim_ptr->eval(candidates);
+	optim_ptr->tell();
+	optim_ptr->inc_iter();
+}
+
+void es_ant_construct_and_local_search(void)
 {
 	current_ant_idx = 0;
 	while (current_ant_idx < n_ants)
 	{
 		generation_run();
+		if (termination_condition())
+			return;
 	}
-	? ? ant.resize(current_ant_idx);
-}
-
-void generation_run(void)
-{
-	? = optimzer.get_solutions();
-	update solution x[SEED_IDX] = round(x[SEED_IDX]);
-	optimzer.eval();
-}
-
-void an_ant_run(long int &fitness)
-{
-
-	size_t i;	   /* counter variable */
-	long int step; /* counter of the number of construction steps */
-
-	ant_empty_memory(&ant[current_ant_idx]);
-
-	/* Place the ants at initial city 0 and set the final city as n-1 */
-	ant[current_ant_idx].tour_size = 1;
-	ant[current_ant_idx].tour[0] = 0;
-	ant[current_ant_idx].visited[0] = TRUE;
-	ant[current_ant_idx].visited[instance.n - 1] = TRUE;
-
-	step = 0;
-	while (step < instance.n - 2)
-	{
-		step++;
-		if (ant[current_ant_idx].tour[ant[current_ant_idx].tour_size - 1] == instance.n - 2)
-		{ /* previous city is the last one */
-			continue;
-		}
-		neighbour_choose_and_move_to_next(&ant[current_ant_idx], step);
-		if (acs_flag)
-			local_acs_pheromone_update(&ant[current_ant_idx], step);
-		ant[current_ant_idx].tour_size++;
-	}
-
-	ant[current_ant_idx].tour[ant[current_ant_idx].tour_size++] = instance.n - 1;
-	ant[current_ant_idx].tour[ant[current_ant_idx].tour_size++] = ant[current_ant_idx].tour[0];
-	for (i = ant[current_ant_idx].tour_size; i < instance.n; i++)
-		ant[current_ant_idx].tour[i] = 0;
-	ant[current_ant_idx].fitness = compute_fitness(ant[current_ant_idx].tour, ant[current_ant_idx].visited, ant[current_ant_idx].tour_size, ant[current_ant_idx].packing_plan);
-	if (acs_flag)
-		local_acs_pheromone_update(&ant[current_ant_idx], ant[current_ant_idx].tour_size - 1);
-
-	n_tours += 1;
-	fitness = ant[current_ant_idx].fitness;
-	current_ant_idx += 1;
 }

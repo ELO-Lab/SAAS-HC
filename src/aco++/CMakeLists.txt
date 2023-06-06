@@ -12,4 +12,4 @@ include_directories($ENV{CONDA_PREFIX}/include/eigen3)
 file(GLOB ACOPP_SRC "*.cpp")
 add_executable(acothop ${ACOPP_SRC})
 
-target_link_libraries(acothop cmaes)
+target_link_libraries(acothop $ENV{CONDA_PREFIX}/lib/libcmaes.so)

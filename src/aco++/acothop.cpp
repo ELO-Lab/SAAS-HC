@@ -65,9 +65,11 @@
 #include "thop.h"
 #include "timer.h"
 #include "ls.h"
+
 #include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 #include "es_ant.hpp"
+#include "acothop.hpp"
 
 long int termination_condition(void)
 /*
@@ -597,6 +599,7 @@ int main(int argc, char *argv[])
     start_timers();
 
     init_program(argc, argv);
+    es_ant_init();
 
     instance.nn_list = compute_nn_lists();
     pheromone = generate_double_matrix(instance.n, instance.n);
@@ -613,26 +616,33 @@ int main(int argc, char *argv[])
         // printf("%dth try \n", n_try + 1);
         while (!termination_condition())
         {
-            if (node_clustering_flag == TRUE)
+            if (es_ant_flag)
             {
-                // std::cout << "using node clusering" << std::endl;
-                construct_node_clustering_solution();
+                es_ant_construct_and_local_search();
             }
             else
-                construct_solutions();
-
-            if (ls_flag > 0)
             {
-                for (k = 0; k < ant.size(); k++)
+                if (node_clustering_flag == TRUE)
                 {
-                    copy_from_to(&ant[k], &prev_ls_ant[k]);
+                    // std::cout << "using node clusering" << std::endl;
+                    construct_node_clustering_solution();
                 }
-                local_search();
-                for (k = 0; k < ant.size(); k++)
+                else
+                    construct_solutions();
+
+                if (ls_flag > 0)
                 {
-                    if (ant[k].fitness > prev_ls_ant[k].fitness)
+                    for (k = 0; k < ant.size(); k++)
                     {
-                        copy_from_to(&prev_ls_ant[k], &ant[k]);
+                        copy_from_to(&ant[k], &prev_ls_ant[k]);
+                    }
+                    local_search();
+                    for (k = 0; k < ant.size(); k++)
+                    {
+                        if (ant[k].fitness > prev_ls_ant[k].fitness)
+                        {
+                            copy_from_to(&prev_ls_ant[k], &ant[k]);
+                        }
                     }
                 }
             }
@@ -645,6 +655,7 @@ int main(int argc, char *argv[])
     }
     exit_program();
 
+    free(optim_ptr);
     free(instance.distance);
     free(instance.nn_list);
     free(pheromone);
