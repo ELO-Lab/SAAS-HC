@@ -139,7 +139,6 @@ void es_ant_set_default(void)
 	par_a_stepsize_init = par_b_stepsize_init = par_c_stepsize_init = 0.15;
 	q_0 = 0.45;
 	q_0_stepsize_init = 0.25;
-	// cmaes_algo = aBIPOP_CMAES;
 #if NODE_CLUSTERING_VERSION == 1
 	n_generation_each_iteration = 1;
 	alpha = 1.550208;
@@ -221,6 +220,7 @@ void init_optimizer(void)
 	}
 	PARAMETER_CLASS cmaparams(x0, sigma, LAMBDA, lbounds, ubounds, seed);
 	cmaparams.set_algo(CMAES_ALGO);
+	cmaparams.set_mt_feval(false);
 	optim_ptr = new ESOPTIMIZER_CLASS(es_evaluate, cmaparams);
 }
 
@@ -230,20 +230,20 @@ void es_ant_init(void)
 	assert(!adaptive_evaporation_flag);
 	assert(max_packing_tries == 1);
 
+	es_ant_set_default();
 	init_optimizer();
 }
 
 void generation_run(void)
 {
 	auto candidates = optim_ptr->ask();
-	const size_t pop_size = candidates.rows();
+	const size_t pop_size = candidates.cols();
 	const size_t capacity_need = current_ant_idx + pop_size;
 	if (capacity_need > ant.size())
 	{
 		ant.resize(capacity_need);
 		prev_ls_ant.resize(capacity_need);
 	}
-
 	candidates.row(SEED_IDX) = candidates.row(SEED_IDX).array().round();
 
 	optim_ptr->eval(candidates);
