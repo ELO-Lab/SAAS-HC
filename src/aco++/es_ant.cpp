@@ -12,6 +12,7 @@
 #include "node_clustering.h"
 #include "es_ant.hpp"
 #include "acothop.hpp"
+#include "custom_strategy.hpp"
 
 #define SEED_IDX 0
 #define PAR_A_IDX 1
@@ -34,10 +35,9 @@ double
 	alpha_stepsize_init, beta_stepsize_init,
 	rho_stepsize_init, q_0_stepsize_init;
 bool es_ant_flag = true;
-long int current_ant_idx = 0;
+size_t current_ant_idx = 0;
 // long int n_generation_each_iteration;
-
-ESOPTIMIZER_CLASS *optim_ptr;
+OPTIMIZER *optim_ptr;
 
 void an_ant_run()
 {
@@ -100,8 +100,11 @@ void an_ant_local_search()
 
 libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 {
-	seed = (long int)x[SEED_IDX];
-	assert(seed == x[SEED_IDX]);
+	seed = floor(x[SEED_IDX]);
+	if (ran01(&seed) <= (x[SEED_IDX] - seed))
+	{
+		seed += 1;
+	}
 	par_a = x[PAR_A_IDX];
 	par_b = x[PAR_B_IDX];
 	par_c = x[PAR_C_IDX];
@@ -134,7 +137,7 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 
 void es_ant_set_default(void)
 {
-	seed_stepsize_init = (SEED_MAX - SEED_MIN) / 20;
+	seed_stepsize_init = (SEED_MAX - SEED_MIN) / 5;
 	par_a = par_b = par_c = 0.5;
 	par_a_stepsize_init = par_b_stepsize_init = par_c_stepsize_init = 0.15;
 	q_0 = 0.45;
@@ -163,7 +166,7 @@ void init_optimizer(void)
 
 	lbounds[SEED_IDX] = SEED_MIN;
 	ubounds[SEED_IDX] = SEED_MAX;
-	x0[SEED_IDX] = seed;
+	x0[SEED_IDX] = (SEED_MAX - SEED_MIN) / 2;
 	sigma[SEED_IDX] = seed_stepsize_init;
 
 	lbounds[PAR_A_IDX] = 0;
@@ -218,10 +221,10 @@ void init_optimizer(void)
 		assert(x0[i] >= lbounds[i]);
 		assert(x0[i] <= ubounds[i]);
 	}
-	PARAMETER_CLASS cmaparams(x0, sigma, LAMBDA, lbounds, ubounds, seed);
+	PARAMETER<GENO_PHENO> cmaparams(x0, sigma, LAMBDA, lbounds, ubounds, seed);
 	cmaparams.set_algo(CMAES_ALGO);
 	cmaparams.set_mt_feval(false);
-	optim_ptr = new ESOPTIMIZER_CLASS(es_evaluate, cmaparams);
+	optim_ptr = new OPTIMIZER(es_evaluate, cmaparams);
 }
 
 void es_ant_init(void)
@@ -234,29 +237,19 @@ void es_ant_init(void)
 	init_optimizer();
 }
 
-void generation_run(void)
-{
-	auto candidates = optim_ptr->ask();
-	const size_t pop_size = candidates.cols();
-	const size_t capacity_need = current_ant_idx + pop_size;
-	if (capacity_need > ant.size())
-	{
-		ant.resize(capacity_need);
-		prev_ls_ant.resize(capacity_need);
-	}
-	candidates.row(SEED_IDX) = candidates.row(SEED_IDX).array().round();
-
-	optim_ptr->eval(candidates);
-	optim_ptr->tell();
-	optim_ptr->inc_iter();
-}
-
 void es_ant_construct_and_local_search(void)
 {
+	size_t capacity_need;
 	current_ant_idx = 0;
 	while (current_ant_idx < n_ants)
 	{
-		generation_run();
+		capacity_need = current_ant_idx + optim_ptr->get_lambda();
+		if (capacity_need > ant.size())
+		{
+			ant.resize(capacity_need);
+			prev_ls_ant.resize(capacity_need);
+		}
+		optim_ptr->generation_run();
 		if (termination_condition())
 			return;
 	}

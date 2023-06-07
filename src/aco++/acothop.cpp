@@ -70,6 +70,7 @@
 #include "adaptive_evaporation.hpp"
 #include "es_ant.hpp"
 #include "acothop.hpp"
+#include "custom_strategy.hpp"
 
 long int termination_condition(void)
 /*

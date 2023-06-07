@@ -4,11 +4,6 @@
 #include <Eigen/Dense>
 #include <libcmaes/cmaes.h>
 
-#define GENOPHENO_CLASS libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>
-#define STRATEGY_CLASS libcmaes::BIPOPCMAStrategy<libcmaes::ACovarianceUpdate, GENOPHENO_CLASS>
-#define PARAMETER_CLASS libcmaes::CMAParameters<GENOPHENO_CLASS>
-#define ESOPTIMIZER_CLASS libcmaes::ESOptimizer<STRATEGY_CLASS, PARAMETER_CLASS>
-
 #define NODE_CLUSTERING_VERSION 0
 #if NODE_CLUSTERING_VERSION == 1
 #define ES_ANT_DIM 10
@@ -31,7 +26,6 @@ extern double
     alpha_stepsize_init, beta_stepsize_init,
     rho_stepsize_init, q_0_stepsize_init;
 extern bool es_ant_flag;
-extern ESOPTIMIZER_CLASS *optim_ptr;
 // extern long int n_generation_each_iteration;
 
 void es_ant_init(void);
