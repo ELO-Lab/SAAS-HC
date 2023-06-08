@@ -2,7 +2,7 @@
 /* libcmaes_config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* define if the Boost::Python library is available */
-#cmakedefine HAVE_BOOST_PYTHON
+#define HAVE_BOOST_PYTHON
 
 /* define if the compiler supports basic C++11 syntax */
 /* #undef HAVE_CXX11 */
@@ -11,13 +11,13 @@
 /* #undef HAVE_DEBUG */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-#cmakedefine HAVE_DLFCN_H 1
+#define HAVE_DLFCN_H 1
 
 /* google glog requested */
 /* #undef HAVE_GLOG */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-#cmakedefine HAVE_INTTYPES_H 1
+#define HAVE_INTTYPES_H 1
 
 /* define if you have google gflags library */
 /* #undef HAVE_LIB_GFLAGS */
@@ -26,31 +26,31 @@
 /* #undef HAVE_LIB_GLOG */
 
 /* Define to 1 if you have the <memory.h> header file. */
-#cmakedefine HAVE_MEMORY_H 1
+#define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#cmakedefine HAVE_STDINT_H 1
+#define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
-#cmakedefine HAVE_STDLIB_H 1
+#define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the <strings.h> header file. */
-#cmakedefine HAVE_STRINGS_H 1
+#define HAVE_STRINGS_H 1
 
 /* Define to 1 if you have the <string.h> header file. */
-#cmakedefine HAVE_STRING_H 1
+#define HAVE_STRING_H 1
 
 /* surrog */
-#cmakedefine HAVE_SURROG 1
+#define HAVE_SURROG 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
-#cmakedefine HAVE_SYS_STAT_H 1
+#define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
-#cmakedefine HAVE_SYS_TYPES_H 1
+#define HAVE_SYS_TYPES_H 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#cmakedefine HAVE_UNISTD_H 1
+#define HAVE_UNISTD_H 1
 
 /* Name of package */
 #define PACKAGE "libcmaes"
@@ -71,10 +71,10 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "@LIBCMAES_VERSION_STRING@"
+#define PACKAGE_VERSION "0.9.5"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "@LIBCMAES_VERSION_STRING@"
+#define VERSION "0.9.5"
