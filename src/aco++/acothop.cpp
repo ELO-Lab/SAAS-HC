@@ -600,13 +600,15 @@ int main(int argc, char *argv[])
     start_timers();
 
     init_program(argc, argv);
-    es_ant_init();
+    if (es_ant_flag)
+        es_ant_init();
 
     instance.nn_list = compute_nn_lists();
     pheromone = generate_double_matrix(instance.n, instance.n);
     total = generate_double_matrix(instance.n, instance.n);
 
-    create_cluster();
+    if (node_clustering_flag == TRUE)
+        create_cluster();
 
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/
