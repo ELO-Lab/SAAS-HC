@@ -35,6 +35,9 @@ namespace libcmaes
   template <class TGenoPheno = GenoPheno<NoBoundStrategy>>
   class CMAES_EXPORT CMAParameters : public Parameters<TGenoPheno>
   {
+    template <class U, class V>
+    friend class Custom_Strategy;
+
     friend class CMASolutions;
     template <class U, class V>
     friend class CMAStrategy;

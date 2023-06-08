@@ -36,6 +36,9 @@ namespace libcmaes
   template <class TCovarianceUpdate, class TGenoPheno>
   class CMAES_EXPORT BIPOPCMAStrategy : public IPOPCMAStrategy<TCovarianceUpdate, TGenoPheno>
   {
+    template <class U, class V>
+    friend class Custom_Strategy;
+
   public:
     /**
      * \brief constructor.
