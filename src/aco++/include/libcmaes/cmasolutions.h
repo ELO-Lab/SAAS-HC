@@ -33,28 +33,37 @@
 
 namespace libcmaes
 {
-  
+
   /**
    * \brief Holder of the set of evolving solutions from running an instance
    *        of CMA-ES.
    */
   class CMAES_EXPORT CMASolutions
   {
-    template <class U, class V> friend class CMAStrategy;
-    template <class U, class V, class W> friend class ESOptimizer;
-    template <class U, class V, class W> friend class ESOStrategy;
-    template <class U> friend class CMAStopCriteria;
-    template <class U, class V> friend class IPOPCMAStrategy;
-    template <class U, class V> friend class BIPOPCMAStrategy;
+    template <class U, class V>
+    friend class CMAStrategy;
+    template <class U, class V, class W>
+    friend class ESOptimizer;
+    template <class U, class V, class W>
+    friend class ESOStrategy;
+    template <class U>
+    friend class CMAStopCriteria;
+    template <class U, class V>
+    friend class IPOPCMAStrategy;
+    template <class U, class V>
+    friend class BIPOPCMAStrategy;
     friend class CovarianceUpdate;
     friend class ACovarianceUpdate;
-    template <class U> friend class errstats;
+    template <class U>
+    friend class errstats;
 #ifdef HAVE_SURROG
-    template <template <class X,class Y> class U, class V, class W> friend class SimpleSurrogateStrategy;
-    template <template <class X,class Y> class U, class V, class W> friend class ACMSurrogateStrategy;
+    template <template <class X, class Y> class U, class V, class W>
+    friend class SimpleSurrogateStrategy;
+    template <template <class X, class Y> class U, class V, class W>
+    friend class ACMSurrogateStrategy;
 #endif
     friend class VDCMAUpdate;
-    
+
   public:
     /**
      * \brief dummy constructor.
@@ -65,9 +74,9 @@ namespace libcmaes
      * \brief initializes solutions from stochastic optimization parameters.
      * @param p parameters
      */
-    template<class TGenoPheno=GenoPheno<NoBoundStrategy> >
+    template <class TGenoPheno = GenoPheno<NoBoundStrategy>>
     CMASolutions(Parameters<TGenoPheno> &p);
-    
+
     ~CMASolutions();
 
     /**
@@ -75,8 +84,9 @@ namespace libcmaes
      */
     void sort_candidates()
     {
-      std::stable_sort(_candidates.begin(),_candidates.end(),
-		[](Candidate const &c1, Candidate const &c2){return c1.get_fvalue() < c2.get_fvalue();});
+      std::stable_sort(_candidates.begin(), _candidates.end(),
+                       [](Candidate const &c1, Candidate const &c2)
+                       { return c1.get_fvalue() < c2.get_fvalue(); });
     }
 
     /**
@@ -87,12 +97,12 @@ namespace libcmaes
     void update_best_candidates();
 
     /**
-     * \brief updates reference eigenvalue and eigenvectors, for use in 
+     * \brief updates reference eigenvalue and eigenvectors, for use in
      *        termination criteria.
      * @see CMAStopCriteria
      */
     void update_eigenv(const dVec &eigenvalues,
-		       const dMat &eigenvectors);
+                       const dMat &eigenvectors);
 
     /**
      * \brief returns current best solution candidate.
@@ -103,11 +113,12 @@ namespace libcmaes
     inline Candidate best_candidate() const
     {
       if (_best_candidates_hist.empty()) // iter = 0
-	{
-	  if (_initial_candidate.get_x_size())
-	    return _initial_candidate;
-	  else return Candidate(std::numeric_limits<double>::quiet_NaN(),_xmean);
-	}
+      {
+        if (_initial_candidate.get_x_size())
+          return _initial_candidate;
+        else
+          return Candidate(std::numeric_limits<double>::quiet_NaN(), _xmean);
+      }
       return _best_candidates_hist.back();
     }
 
@@ -133,10 +144,10 @@ namespace libcmaes
      * \brief get a reference to the r-th candidate in current set
      * @param r candidate position
      */
-    inline Candidate& get_candidate(const int &r)
-      {
-	return _candidates.at(r);
-      }
+    inline Candidate &get_candidate(const int &r)
+    {
+      return _candidates.at(r);
+    }
 
     inline Candidate get_candidate(const int &r) const
     {
@@ -146,11 +157,11 @@ namespace libcmaes
     /**
      * \brief get a reference to the full candidate set
      */
-    inline std::vector<Candidate>& candidates()
+    inline std::vector<Candidate> &candidates()
     {
       return _candidates;
     }
-    
+
     /**
      * \brief number of candidate solutions.
      * @return current number of solution candidates.
@@ -166,7 +177,7 @@ namespace libcmaes
      * Note: experimental.
      */
     void reset();
-    
+
     /**
      * \brief re-arrange solution object such that parameter 'k' is fixed (i.e. removed).
      * @param k index of the parameter to remove.
@@ -178,12 +189,12 @@ namespace libcmaes
      */
     bool get_pli(const int &k, pli &p) const
     {
-      std::map<int,pli>::const_iterator mit;
-      if ((mit=_pls.find(k))!=_pls.end())
-	{
-	  p = (*mit).second;
-	  return true;
-	}
+      std::map<int, pli>::const_iterator mit;
+      if ((mit = _pls.find(k)) != _pls.end())
+      {
+        p = (*mit).second;
+        return true;
+      }
       return false;
     }
 
@@ -195,7 +206,7 @@ namespace libcmaes
     {
       return _xmean.size();
     }
-    
+
     /**
      * \brief returns expected distance to minimum.
      * @return edm
@@ -218,20 +229,20 @@ namespace libcmaes
      * \brief returns reference to error covariance matrix
      * @return error covariance matrix
      */
-    inline const dMat& cov_ref() const
+    inline const dMat &cov_ref() const
     {
       return _cov;
     }
-    
+
     /**
      * \brief returns pointer to covariance matrix array
      * @return pointer to covariance matrix array
      */
-    inline const double* cov_data() const
+    inline const double *cov_data() const
     {
       return _cov.data();
     }
-    
+
     /**
      * \brief returns full covariance matrix. Similar to cov() but in case of linear-sized
      *        algorithms like sep and vd, returns the full covariance matrix anyways.
@@ -252,16 +263,16 @@ namespace libcmaes
      * \brief returns reference to separable covariance diagonal vector, only applicable to sep-CMA-ES algorithms.
      * @return error covariance diagonal vector
      */
-    inline const dMat& sepcov_ref() const
+    inline const dMat &sepcov_ref() const
     {
       return _sepcov;
     }
-    
+
     /**
      * \brief returns pointer to covariance diagnoal vector
      * @return pointer to covariance diagonal array
      */
-    inline const double* sepcov_data() const
+    inline const double *sepcov_data() const
     {
       return _sepcov.data();
     }
@@ -291,31 +302,31 @@ namespace libcmaes
      * @param cmaparams parameter object that hold the genotype/phenotype transform
      * @return unscaled standard deviation vector
      */
-    template<class TGenoPheno=GenoPheno<NoBoundStrategy> >
-      inline dVec stds(const CMAParameters<TGenoPheno> &cmaparams) const
+    template <class TGenoPheno = GenoPheno<NoBoundStrategy>>
+    inline dVec stds(const CMAParameters<TGenoPheno> &cmaparams) const
     {
       dVec phen_xmean = cmaparams.get_gp().pheno(_xmean);
       dVec stds;
       if (!cmaparams.is_sep() && !cmaparams.is_vd())
-	stds = _cov.diagonal().cwiseSqrt();
+        stds = _cov.diagonal().cwiseSqrt();
       else if (cmaparams.is_sep())
-	stds = _sepcov.cwiseSqrt();
+        stds = _sepcov.cwiseSqrt();
       else if (cmaparams.is_vd())
-	stds = (dVec::Constant(cmaparams.dim(),1.0)+_v.cwiseProduct(_v)).cwiseSqrt().cwiseProduct(_sepcov);
+        stds = (dVec::Constant(cmaparams.dim(), 1.0) + _v.cwiseProduct(_v)).cwiseSqrt().cwiseProduct(_sepcov);
       dVec phen_xmean_std = cmaparams.get_gp().pheno(static_cast<dVec>(_xmean + stds));
       return (phen_xmean_std - phen_xmean).cwiseAbs();
     }
-    
+
     /**
      * \returns standard deviation vector
      * @param cmaparams parameter object that hold the genotype/phenotype transform
      * @return standard deviation vector
      */
-    template<class TGenoPheno=GenoPheno<NoBoundStrategy> >
-      inline dVec errors(const CMAParameters<TGenoPheno> &cmaparams) const
-      {
-	return std::sqrt(_sigma)*stds(cmaparams);
-      }
+    template <class TGenoPheno = GenoPheno<NoBoundStrategy>>
+    inline dVec errors(const CMAParameters<TGenoPheno> &cmaparams) const
+    {
+      return std::sqrt(_sigma) * stds(cmaparams);
+    }
 
     /**
      * \brief returns correlation matrix
@@ -364,7 +375,7 @@ namespace libcmaes
     {
       _xmean = xmean;
     }
-    
+
     /**
      * \brief returns current optimization status.
      * @return status
@@ -379,9 +390,9 @@ namespace libcmaes
      * @return status message
      */
     inline std::string status_msg() const
-      {
-	return CMAStopCriteria<>::_scriterias[_run_status];
-      }
+    {
+      return CMAStopCriteria<>::_scriterias[_run_status];
+    }
 
     /**
      * \brief returns currently elapsed time spent on optimization
@@ -400,7 +411,7 @@ namespace libcmaes
     {
       return _elapsed_last_iter;
     }
-    
+
     /**
      * \brief returns current number of iterations
      * @return number of iterations
@@ -418,7 +429,7 @@ namespace libcmaes
     {
       return _nevals;
     }
-    
+
     /**
      * \brief returns current minimal eigen value
      * @return minimal eigen value
@@ -463,7 +474,7 @@ namespace libcmaes
     {
       return _leigenvalues;
     }
-    
+
     /**
      * \brief returns last computed eigenvectors
      * @return last computed eigenvectors
@@ -472,48 +483,48 @@ namespace libcmaes
     {
       return _leigenvectors;
     }
-    
+
     /**
      * \brief print the solution object out.
      * @param out output stream
      * @param verb_level verbosity level: 0 for short, 1 for debug.
      */
-    template <class TGenoPheno=GenoPheno<NoBoundStrategy> >
-    std::ostream& print(std::ostream &out,
-			const int &verb_level=0,
-			const TGenoPheno &gp=TGenoPheno()) const;
+    template <class TGenoPheno = GenoPheno<NoBoundStrategy>>
+    std::ostream &print(std::ostream &out,
+                        const int &verb_level = 0,
+                        const TGenoPheno &gp = TGenoPheno()) const;
 
   private:
-    dMat _cov; /**< covariance matrix. */
+    dMat _cov;    /**< covariance matrix. */
     dMat _csqinv; /** inverse root square of covariance matrix. */
     dMat _sepcov;
     dMat _sepcsqinv;
-    dVec _xmean; /**< distribution mean. */
-    dVec _psigma; /**< cumulation for sigma. */
-    dVec _pc; /**< cumulation for covariance. */
-    short _hsig = 1; /**< 0 or 1. */
-    double _sigma; /**< step size. */
-    std::vector<Candidate> _candidates; /**< current set of candidate solutions. */
+    dVec _xmean;                                  /**< distribution mean. */
+    dVec _psigma;                                 /**< cumulation for sigma. */
+    dVec _pc;                                     /**< cumulation for covariance. */
+    short _hsig = 1;                              /**< 0 or 1. */
+    double _sigma;                                /**< step size. */
+    std::vector<Candidate> _candidates;           /**< current set of candidate solutions. */
     std::vector<Candidate> _best_candidates_hist; /**< history of best candidate solutions. */
-    int _max_hist = -1; /**< max size of the history, keeps memory requirements fixed. */
-    
+    int _max_hist = -1;                           /**< max size of the history, keeps memory requirements fixed. */
+
     double _max_eigenv = 0.0; /**< max eigenvalue, for termination criteria. */
     double _min_eigenv = 0.0; /**< min eigenvalue, for termination criteria. */
-    dVec _leigenvalues; /**< last computed eigenvalues, for termination criteria. */
-    dMat _leigenvectors; /**< last computed eigenvectors, for termination criteria. */
-    int _niter = 0; /**< number of iterations to reach this solution, for termination criteria. */
-    int _nevals = 0; /**< number of function calls to reach the current solution. */
+    dVec _leigenvalues;       /**< last computed eigenvalues, for termination criteria. */
+    dMat _leigenvectors;      /**< last computed eigenvectors, for termination criteria. */
+    int _niter = 0;           /**< number of iterations to reach this solution, for termination criteria. */
+    int _nevals = 0;          /**< number of function calls to reach the current solution. */
     int _kcand = 1;
     std::vector<Candidate> _k_best_candidates_hist; /**< k-th best candidate history, for termination criteria, k is kcand=1+floor(0.1+lambda/4). */
-    std::vector<double> _bfvalues; /**< best function values over the past 20 steps, for termination criteria. */
-    std::vector<double> _median_fvalues; /**< median function values of some steps, in the past, for termination criteria. */
-    
-    int _eigeniter = 0; /**< eigenvalues computation last step, lazy-update only. */
+    std::vector<double> _bfvalues;                  /**< best function values over the past 20 steps, for termination criteria. */
+    std::vector<double> _median_fvalues;            /**< median function values of some steps, in the past, for termination criteria. */
+
+    int _eigeniter = 0;         /**< eigenvalues computation last step, lazy-update only. */
     bool _updated_eigen = true; /**< last update is not lazy. */
 
     // status of the run.
-    int _run_status = 0; /**< current status of the stochastic optimization (e.g. running, or stopped under termination criteria). */
-    int _elapsed_time = 0; /**< final elapsed time of stochastic optimization. */
+    int _run_status = 0;        /**< current status of the stochastic optimization (e.g. running, or stopped under termination criteria). */
+    int _elapsed_time = 0;      /**< final elapsed time of stochastic optimization. */
     int _elapsed_last_iter = 0; /**< time consumed during last iteration. */
 #ifdef HAVE_DEBUG
     int _elapsed_eval = 0;
@@ -522,20 +533,20 @@ namespace libcmaes
     int _elapsed_stop = 0;
 #endif
 
-    std::map<int,pli> _pls; /**< profile likelihood for parameters it has been computed for. */
-    double _edm = 0.0; /**< expected vertical distance to the minimum. */
+    std::map<int, pli> _pls; /**< profile likelihood for parameters it has been computed for. */
+    double _edm = 0.0;       /**< expected vertical distance to the minimum. */
 
     Candidate _best_seen_candidate; /**< best seen candidate along the run. */
     int _best_seen_iter;
     Candidate _worst_seen_candidate;
     Candidate _initial_candidate;
-    
+
     dVec _v; /**< complementary vector for use in vdcma. */
 
     std::vector<RankedCandidate> _candidates_uh; /**< temporary set of candidates used by uncertainty handling scheme. */
-    int _lambda_reev; /**< number of reevaluated solutions at current step. */
-    double _suh; /**< uncertainty level computed by uncertainty handling procedure. */
-    
+    int _lambda_reev;                            /**< number of reevaluated solutions at current step. */
+    double _suh;                                 /**< uncertainty level computed by uncertainty handling procedure. */
+
     double _tpa_s = 0.0;
     int _tpa_p1 = 0;
     int _tpa_p2 = 1;
@@ -544,7 +555,7 @@ namespace libcmaes
     dVec _xmean_prev; /**< previous step's mean vector. */
   };
 
-  CMAES_EXPORT std::ostream& operator<<(std::ostream &out,const CMASolutions &cmas);
+  CMAES_EXPORT std::ostream &operator<<(std::ostream &out, const CMASolutions &cmas);
 }
 
 #endif
