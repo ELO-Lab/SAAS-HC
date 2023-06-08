@@ -1,9 +1,6 @@
 #ifndef _ES_ANT_HPP_
 #define _ES_ANT_HPP_
 
-#include <Eigen/Dense>
-#include <libcmaes/cmaes.h>
-
 #define NODE_CLUSTERING_VERSION 0
 #if NODE_CLUSTERING_VERSION == 1
 #define ES_ANT_DIM 10

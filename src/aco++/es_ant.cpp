@@ -1,6 +1,5 @@
-#include <iostream>
-#include <Eigen/Dense>
-#include <libcmaes/cmaes.h>
+// #include <iostream>
+#include <cstddef>
 
 #include "ants.h"
 #include "inout.h"
@@ -13,6 +12,7 @@
 #include "es_ant.hpp"
 #include "acothop.hpp"
 #include "custom_strategy.hpp"
+#include "custom_strategy.cpp"
 
 #define SEED_IDX 0
 #define PAR_A_IDX 1
@@ -101,10 +101,12 @@ void an_ant_local_search()
 libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 {
 	seed = floor(x[SEED_IDX]);
-	if (ran01(&seed) <= (x[SEED_IDX] - seed))
+	long int temp = seed;
+	if (ran01(&temp) <= (x[SEED_IDX] - seed))
 	{
 		seed += 1;
 	}
+
 	par_a = x[PAR_A_IDX];
 	par_b = x[PAR_B_IDX];
 	par_c = x[PAR_C_IDX];
@@ -137,10 +139,10 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 
 void es_ant_set_default(void)
 {
-	seed_stepsize_init = (SEED_MAX - SEED_MIN) / 5;
+	seed_stepsize_init = (SEED_MAX - SEED_MIN) / 10;
 	par_a = par_b = par_c = 0.5;
 	par_a_stepsize_init = par_b_stepsize_init = par_c_stepsize_init = 0.15;
-	q_0 = 0.45;
+	q_0 = 0;
 	q_0_stepsize_init = 0.25;
 #if NODE_CLUSTERING_VERSION == 1
 	n_generation_each_iteration = 1;
@@ -166,7 +168,7 @@ void init_optimizer(void)
 
 	lbounds[SEED_IDX] = SEED_MIN;
 	ubounds[SEED_IDX] = SEED_MAX;
-	x0[SEED_IDX] = (SEED_MAX - SEED_MIN) / 2;
+	x0[SEED_IDX] = SEED_MIN + (SEED_MAX - SEED_MIN) / 2;
 	sigma[SEED_IDX] = seed_stepsize_init;
 
 	lbounds[PAR_A_IDX] = 0;
