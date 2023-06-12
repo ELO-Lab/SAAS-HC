@@ -22,16 +22,16 @@
 #ifndef VDCMAUPDATE_H
 #define VDCMAUPDATE_H
 
-#include <libcmaes/cmaparameters.h>
-#include <libcmaes/cmasolutions.h>
-#include <libcmaes/eigenmvn.h>
+#include "cmaparameters.h"
+#include "cmasolutions.h"
+#include "eigenmvn.h"
 
 namespace libcmaes
 {
   /**
    * \brief VD-CMA update that is a linear time/space variant of CMA-ES
    * This is an implementation that closely follows:
-   * Y. Akimoto, A. Auger and N. Hansen: Comparison-Based Natural 
+   * Y. Akimoto, A. Auger and N. Hansen: Comparison-Based Natural
    *  Gradient Optimization in High Dimension. In Proceedings of Genetic
    *  and Evolutionary Computation Conference (2014)
    */
@@ -39,11 +39,11 @@ namespace libcmaes
   {
   public:
     template <class TGenoPheno>
-      static void update(const CMAParameters<TGenoPheno> &parameters,
-			 Eigen::EigenMultivariateNormal<double> &esolver,
-			 CMASolutions &solutions);
+    static void update(const CMAParameters<TGenoPheno> &parameters,
+                       Eigen::EigenMultivariateNormal<double> &esolver,
+                       CMASolutions &solutions);
   };
-  
+
 }
 
 #endif

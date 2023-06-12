@@ -22,9 +22,9 @@
 #ifndef COVARIANCEUPDATE_H
 #define COVARIANCEUPDATE_H
 
-#include <libcmaes/cmaparameters.h>
-#include <libcmaes/cmasolutions.h>
-#include <libcmaes/eigenmvn.h>
+#include "cmaparameters.h"
+#include "cmasolutions.h"
+#include "eigenmvn.h"
 
 namespace libcmaes
 {
@@ -45,10 +45,10 @@ namespace libcmaes
      */
     template <class TGenoPheno>
     static void update(const CMAParameters<TGenoPheno> &parameters,
-		       Eigen::EigenMultivariateNormal<double> &esolver,
-		       CMASolutions &solutions);
+                       Eigen::EigenMultivariateNormal<double> &esolver,
+                       CMASolutions &solutions);
   };
-  
+
 }
 
 #endif

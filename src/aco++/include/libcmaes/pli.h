@@ -22,7 +22,7 @@
 #ifndef PLI_H
 #define PLI_H
 
-#include <libcmaes/eo_matrix.h>
+#include "eo_matrix.h"
 #include <vector>
 
 namespace libcmaes
@@ -34,11 +34,12 @@ namespace libcmaes
   class pli
   {
     friend class CMASolutions;
-    template <class U> friend class errstats;
-    
+    template <class U>
+    friend class errstats;
+
   public:
     pli() {}
-    
+
     /**
      * \brief profile likelihood constructor
      * @param k dimension in which the profile likelihood was computed
@@ -49,17 +50,17 @@ namespace libcmaes
      * @param fup the function deviation for which the profile likelihood was computed
      * @param delta tolerance around fvalue + fup for which the profile likelihood was computed
      */
-  pli(const int &k, const int &samplesize, const int &dim,
-      const dVec &xm, const double &fvalue, const double &fup, const double &delta)
-    :_k(k),_samplesize(samplesize),_fvaluem(dVec::Zero(2*samplesize+1)),_xm(dMat::Zero(2*samplesize+1,dim)),_min(0.0),_max(0.0),_err(2*samplesize+1),_fup(fup),_delta(delta)
-      {
-	_fvaluem[samplesize] = fvalue;
-	_xm.row(samplesize) = xm.transpose();
-	_err[samplesize] = 1; // should be current sol status...
-      }
-    
-    ~pli() {};
-    
+    pli(const int &k, const int &samplesize, const int &dim,
+        const dVec &xm, const double &fvalue, const double &fup, const double &delta)
+        : _k(k), _samplesize(samplesize), _fvaluem(dVec::Zero(2 * samplesize + 1)), _xm(dMat::Zero(2 * samplesize + 1, dim)), _min(0.0), _max(0.0), _err(2 * samplesize + 1), _fup(fup), _delta(delta)
+    {
+      _fvaluem[samplesize] = fvalue;
+      _xm.row(samplesize) = xm.transpose();
+      _err[samplesize] = 1; // should be current sol status...
+    }
+
+    ~pli(){};
+
     /**
      * \brief find bounds around the objective function parameters for a given value of f,
      *        base on pre-computed profile likelihood points.
@@ -67,16 +68,16 @@ namespace libcmaes
      * @param minindex index of the profile likelihood point that is the lower bound
      * @param maxindex index of the profile likelihood point that is the upper bound
      */
-    std::pair<double,double> getMinMax(const double &fvalue,
-				       int &minindex, int &maxindex)
+    std::pair<double, double> getMinMax(const double &fvalue,
+                                        int &minindex, int &maxindex)
     {
-      (_fvaluem.head(_samplesize) - dVec::Constant(_samplesize,fvalue)).cwiseAbs().minCoeff(&minindex);
-      (_fvaluem.tail(_samplesize) - dVec::Constant(_samplesize,fvalue)).cwiseAbs().minCoeff(&maxindex);
-      double min = _xm(minindex,_k);
-      double max = _xm(_samplesize + 1 + maxindex,_k);
+      (_fvaluem.head(_samplesize) - dVec::Constant(_samplesize, fvalue)).cwiseAbs().minCoeff(&minindex);
+      (_fvaluem.tail(_samplesize) - dVec::Constant(_samplesize, fvalue)).cwiseAbs().minCoeff(&maxindex);
+      double min = _xm(minindex, _k);
+      double max = _xm(_samplesize + 1 + maxindex, _k);
       if (min > max)
-	std::swap(min,max);
-      return std::pair<double,double>(min,max);
+        std::swap(min, max);
+      return std::pair<double, double>(min, max);
     }
 
     /**
@@ -84,7 +85,7 @@ namespace libcmaes
      */
     void setMinMax()
     {
-      std::pair<double,double> mm = getMinMax(_fvaluem[_samplesize]+_fup,_minindex,_maxindex);
+      std::pair<double, double> mm = getMinMax(_fvaluem[_samplesize] + _fup, _minindex, _maxindex);
       _min = mm.first;
       _max = mm.second;
     }
@@ -95,8 +96,8 @@ namespace libcmaes
     void setErrMinMax()
     {
       setMinMax();
-      _errmin = _min - _xm(_samplesize,_k);
-      _errmax = _max - _xm(_samplesize,_k);
+      _errmin = _min - _xm(_samplesize, _k);
+      _errmax = _max - _xm(_samplesize, _k);
     }
 
     /**
@@ -116,7 +117,7 @@ namespace libcmaes
     {
       return _errmax;
     }
-    
+
     // accessors
     inline int get_k() const
     {
@@ -127,7 +128,7 @@ namespace libcmaes
     {
       return _samplesize;
     }
-    
+
     inline dVec get_fvaluem() const
     {
       return _fvaluem;
@@ -148,7 +149,7 @@ namespace libcmaes
       return _max;
     }
 
-    private:
+  private:
     int _k = -1;
     int _samplesize = 0;
     dVec _fvaluem;
@@ -160,8 +161,8 @@ namespace libcmaes
     int _minindex = -1;
     int _maxindex = -1;
     std::vector<int> _err; // errors from profile likelihood computations as run status codes.
-    double _fup; // the function deviation for which this profile likelihood was computed.
-    double _delta; // the tolerance around fvalue + fup for which this profile likelihood was computed.
+    double _fup;           // the function deviation for which this profile likelihood was computed.
+    double _delta;         // the tolerance around fvalue + fup for which this profile likelihood was computed.
   };
 
 }

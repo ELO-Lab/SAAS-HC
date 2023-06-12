@@ -22,7 +22,7 @@
 #ifndef BIPOPCMASTRATEGY_H
 #define BIPOPCMASTRATEGY_H
 
-#include <libcmaes/ipopcmastrategy.h>
+#include "ipopcmastrategy.h"
 #include <random>
 
 namespace libcmaes

@@ -29,7 +29,7 @@
 #ifndef RANKINGSVM_H
 #define RANKINGSVM_H
 
-#include <libcmaes/eo_matrix.h>
+#include "eo_matrix.h"
 #include <vector>
 #include <limits>
 #include <cstdlib>
@@ -41,12 +41,12 @@
  */
 class SVMKernel
 {
- public:
-  SVMKernel() {};
-  ~SVMKernel() {};
+public:
+  SVMKernel(){};
+  ~SVMKernel(){};
 
   double K(const dVec &x1, const dVec &x2);
-  void init(const dMat &x) {};
+  void init(const dMat &x){};
 };
 
 /**
@@ -56,28 +56,30 @@ class LinearKernel : public SVMKernel
 {
 public:
   LinearKernel()
-    :SVMKernel()
-  {}
+      : SVMKernel()
+  {
+  }
 
   ~LinearKernel() {}
 
-  double K(const dVec &x1, const dVec &x2) { return x1.transpose()*x2; }
+  double K(const dVec &x1, const dVec &x2) { return x1.transpose() * x2; }
 };
 
 /**
  * \brief Polynomial kernel
  */
-template <int d,int c=1>
+template <int d, int c = 1>
 class PolyKernel : public SVMKernel
 {
 public:
   PolyKernel()
-  :SVMKernel()
-  {}
+      : SVMKernel()
+  {
+  }
 
   ~PolyKernel() {}
 
-  double K(const dVec &x1, const dVec &x2) { return pow((x1.transpose()*x2 + c),d); }
+  double K(const dVec &x1, const dVec &x2) { return pow((x1.transpose() * x2 + c), d); }
 };
 
 /**
@@ -85,28 +87,29 @@ public:
  */
 class RBFKernel : public SVMKernel
 {
- public:
+public:
   RBFKernel()
-    :SVMKernel()
-    {}
+      : SVMKernel()
+  {
+  }
 
   ~RBFKernel() {}
 
-  double K(const dVec &x1, const dVec &x2) { return exp(-_gamma*((x1-x2).squaredNorm())); }
+  double K(const dVec &x1, const dVec &x2) { return exp(-_gamma * ((x1 - x2).squaredNorm())); }
 
   void init(const dMat &x)
   {
     double avgdist = 0.0;
-    for (int i=0;i<x.cols();i++)
-      for (int j=i+1;j<x.cols();j++)
-	avgdist += (x.col(i)-x.col(j)).norm();
-    avgdist /= 0.5*(x.cols()*(x.cols()-1.0));
-    double sigma = _sigma_a * std::pow(avgdist,_sigma_pow);
-    _gamma = 1.0/(2.0*sigma*sigma);
+    for (int i = 0; i < x.cols(); i++)
+      for (int j = i + 1; j < x.cols(); j++)
+        avgdist += (x.col(i) - x.col(j)).norm();
+    avgdist /= 0.5 * (x.cols() * (x.cols() - 1.0));
+    double sigma = _sigma_a * std::pow(avgdist, _sigma_pow);
+    _gamma = 1.0 / (2.0 * sigma * sigma);
 
-    //debug
-    //std::cout << "avgdist=" << avgdist << " / sigma=" << sigma << " / gamma=" << _gamma << std::endl;
-    //debug
+    // debug
+    // std::cout << "avgdist=" << avgdist << " / sigma=" << sigma << " / gamma=" << _gamma << std::endl;
+    // debug
   }
 
   double _gamma = 1.0;
@@ -117,13 +120,13 @@ class RBFKernel : public SVMKernel
 /**
  * \brief Ranking SVM algorithm with support for custom kernels
  */
-template<class TKernel=RBFKernel>
+template <class TKernel = RBFKernel>
 class RankingSVM
 {
- public:
+public:
   RankingSVM()
   {
-    _udist = std::uniform_real_distribution<>(0,1);
+    _udist = std::uniform_real_distribution<>(0, 1);
   }
 
   ~RankingSVM()
@@ -140,30 +143,30 @@ class RankingSVM
    * @see encode
    */
   void train(dMat &x,
-	     const int &niter,
-	     const dMat &covinv,
-	     const dVec &xmean)
+             const int &niter,
+             const dMat &covinv,
+             const dVec &xmean)
   {
-    //debug
-    //std::cout << "Learning RSVM with niter=" << niter << std::endl;
-    //debug
+    // debug
+    // std::cout << "Learning RSVM with niter=" << niter << std::endl;
+    // debug
 
     // init structures.
-    int nalphas = x.cols()-1;
-    _C = dMat::Constant(nalphas,1,_Cval);
-    for (int i=0;i<nalphas;i++)
-      _C(nalphas-1-i) = _Cval*pow(nalphas-i,2);
-    _dKij = dMat::Zero(nalphas,nalphas);
+    int nalphas = x.cols() - 1;
+    _C = dMat::Constant(nalphas, 1, _Cval);
+    for (int i = 0; i < nalphas; i++)
+      _C(nalphas - 1 - i) = _Cval * pow(nalphas - i, 2);
+    _dKij = dMat::Zero(nalphas, nalphas);
     _alpha = dVec::Zero(nalphas);
 
     if (_encode)
-      encode(x,covinv,xmean);
+      encode(x, covinv, xmean);
     compute_training_kernel(x);
-    optimize(x,niter);
+    optimize(x, niter);
 
-    //debug
-    //std::cout << "alpha=" << _alpha.transpose() << std::endl;
-    //debug
+    // debug
+    // std::cout << "alpha=" << _alpha.transpose() << std::endl;
+    // debug
   }
 
   /**
@@ -178,34 +181,34 @@ class RankingSVM
    * @see encode
    */
   void predict(dVec &fit,
-	       dMat &x_test,
-	       dMat &x_train,
-	       const dMat &covinv,
-	       const dVec &xmean)
+               dMat &x_test,
+               dMat &x_train,
+               const dMat &covinv,
+               const dVec &xmean)
   {
     if (_alpha.size() == 0)
       return; // model is not yet trained.
     fit = dVec::Zero(x_test.cols());
     if (_encode)
-      {
-	encode(x_train,covinv,xmean);
-	encode(x_test,covinv,xmean);
-      }
+    {
+      encode(x_train, covinv, xmean);
+      encode(x_test, covinv, xmean);
+    }
 #pragma omp parallel for
-    for (int i=0;i<x_test.cols();i++)
-      {
-	dVec Kvals(x_train.cols());
-	for (int j=0;j<x_train.cols();j++)
-	  Kvals(j) = _kernel.K(x_test.col(i),x_train.col(j));
-	double curfit = 0.0;
-	for (int j=0;j<x_train.cols()-1;j++)
-	  curfit += _alpha(j) * (Kvals(j)-Kvals(j+1));
-	fit(i) = curfit;
-      }
+    for (int i = 0; i < x_test.cols(); i++)
+    {
+      dVec Kvals(x_train.cols());
+      for (int j = 0; j < x_train.cols(); j++)
+        Kvals(j) = _kernel.K(x_test.col(i), x_train.col(j));
+      double curfit = 0.0;
+      for (int j = 0; j < x_train.cols() - 1; j++)
+        curfit += _alpha(j) * (Kvals(j) - Kvals(j + 1));
+      fit(i) = curfit;
+    }
 
-    //debug
-    //std::cout << "fit=" << fit.transpose() << std::endl;
-    //debug
+    // debug
+    // std::cout << "fit=" << fit.transpose() << std::endl;
+    // debug
   }
 
   /**
@@ -215,18 +218,18 @@ class RankingSVM
    * @param training set mean distribution if available along with covariance matrix
    */
   void encode(dMat &x,
-	      const dMat &covinv,
-	      const dVec &xmean)
+              const dMat &covinv,
+              const dVec &xmean)
   {
-    for (int i=0;i<x.cols();i++)
+    for (int i = 0; i < x.cols(); i++)
       x.col(i) -= xmean;
     if (covinv.cols() > 1)
       x = covinv * x;
     else
-      {
-	for (int i=0;i<x.cols();i++)
-	  x.col(i) = covinv.cwiseProduct(x.col(i));
-      }
+    {
+      for (int i = 0; i < x.cols(); i++)
+        x.col(i) = covinv.cwiseProduct(x.col(i));
+    }
   }
 
   /**
@@ -236,15 +239,15 @@ class RankingSVM
   void compute_training_kernel(dMat &x)
   {
     _kernel.init(x);
-    _K = dMat::Zero(x.cols(),x.cols());
+    _K = dMat::Zero(x.cols(), x.cols());
 #pragma omp parallel for
-      for (int i=0;i<_K.rows();i++)
-	for (int j=i;j<_K.cols();j++)
-	  _K(i,j)=_K(j,i)=_kernel.K(x.col(i),x.col(j));
+    for (int i = 0; i < _K.rows(); i++)
+      for (int j = i; j < _K.cols(); j++)
+        _K(i, j) = _K(j, i) = _kernel.K(x.col(i), x.col(j));
 
-    //debug
-    //std::cout << "K=" << _K << std::endl;
-    //debug
+    // debug
+    // std::cout << "K=" << _K << std::endl;
+    // debug
   }
 
   /**
@@ -253,55 +256,55 @@ class RankingSVM
    * @param niter the number of iterations allowed for optimization
    */
   void optimize(const dMat &x,
-		const int &niter)
+                const int &niter)
   {
     // initialization of temporary variables
     dVec sum_alphas = dVec::Zero(_dKij.cols());
-    dMat div_dKij = dMat::Zero(_dKij.rows(),_dKij.cols());
+    dMat div_dKij = dMat::Zero(_dKij.rows(), _dKij.cols());
 #pragma omp parallel
     {
 #pragma omp for
-      for (int i=0;i<_dKij.rows();i++)
-	{
-	  for (int j=0;j<_dKij.cols();j++)
-	    {
-	      _dKij(i,j) = _K(i,j) - _K(i,j+1) - _K(i+1,j) + _K(i+1,j+1);
-	    }
-	  double fact = _udist(_rng);
-	  _alpha(i) = _C(i) * (0.95 + 0.05*fact);
-	}
+      for (int i = 0; i < _dKij.rows(); i++)
+      {
+        for (int j = 0; j < _dKij.cols(); j++)
+        {
+          _dKij(i, j) = _K(i, j) - _K(i, j + 1) - _K(i + 1, j) + _K(i + 1, j + 1);
+        }
+        double fact = _udist(_rng);
+        _alpha(i) = _C(i) * (0.95 + 0.05 * fact);
+      }
 #pragma omp for
-      for (int i=0;i<_dKij.rows();i++)
-	{
-	  double sum_alpha = 0.0;
-	  for (int j=0;j<_dKij.cols();j++)
-	    {
-	      sum_alpha += _alpha(j) * _dKij(i,j);
-	      div_dKij(i,j) = _dKij(i,j) / _dKij(j,j);
-	    }
-	  sum_alphas(i) = (_epsilon - sum_alpha) / _dKij(i,i);
-	}
+      for (int i = 0; i < _dKij.rows(); i++)
+      {
+        double sum_alpha = 0.0;
+        for (int j = 0; j < _dKij.cols(); j++)
+        {
+          sum_alpha += _alpha(j) * _dKij(i, j);
+          div_dKij(i, j) = _dKij(i, j) / _dKij(j, j);
+        }
+        sum_alphas(i) = (_epsilon - sum_alpha) / _dKij(i, i);
+      }
     }
 
     // optimize for niter
-    double L=0.0;
+    double L = 0.0;
     int i1 = 0;
     double old_alpha = 0.0, new_alpha = 0.0, delta_alpha = 0.0;
-    for (int i=0;i<niter;i++)
+    for (int i = 0; i < niter; i++)
+    {
+      i1 = i % _dKij.cols();
+      old_alpha = _alpha(i1);
+      new_alpha = old_alpha + sum_alphas(i1);
+      new_alpha = std::max(std::min(new_alpha, _C(i1)), 0.0);
+      delta_alpha = new_alpha - old_alpha;
+      double dL = delta_alpha * _dKij(i1, i1) * (sum_alphas(i1) - 0.5 * delta_alpha + _epsilon);
+      if (dL > 0)
       {
-	i1 = i % _dKij.cols();
-	old_alpha = _alpha(i1);
-	new_alpha = old_alpha + sum_alphas(i1);
-	new_alpha = std::max(std::min(new_alpha,_C(i1)),0.0);
-	delta_alpha = new_alpha - old_alpha;
-	double dL = delta_alpha * _dKij(i1,i1) * (sum_alphas(i1) - 0.5*delta_alpha + _epsilon);
-	if (dL > 0)
-	  {
-	    sum_alphas -= delta_alpha * div_dKij.row(i1);
-	    _alpha(i1) = new_alpha;
-	  }
-	L += dL;
+        sum_alphas -= delta_alpha * div_dKij.row(i1);
+        _alpha(i1) = new_alpha;
       }
+      L += dL;
+    }
   }
 
   /**
@@ -316,39 +319,39 @@ class RankingSVM
    * @see encode
    */
   double error(dMat &x_test,
-	       dMat &x_train,
-	       const dVec &ref_fit,
-	       const dMat &covinv,
-	       const dVec &xmean)
+               dMat &x_train,
+               const dVec &ref_fit,
+               const dMat &covinv,
+               const dVec &xmean)
   {
     dVec fit;
-    predict(fit,x_test,x_train,covinv,xmean);
+    predict(fit, x_test, x_train, covinv, xmean);
     if (fit.size() == 0)
       return 1.0;
     double err = 0.0;
     double sum = 0.0;
-    for (int i=0;i<ref_fit.size();i++)
+    for (int i = 0; i < ref_fit.size(); i++)
+    {
+      for (int j = 0; j < ref_fit.size(); j++)
       {
-	for (int j=0;j<ref_fit.size();j++)
-	  {
-	    if (i != j)
-	      {
-		err += ((ref_fit(i) > ref_fit(j) && fit(i) < fit(j)) || (ref_fit(i) < ref_fit(j) && fit(i) > fit(j))) ? 1 : 0;
-		sum++;
-	      }
-	  }
+        if (i != j)
+        {
+          err += ((ref_fit(i) > ref_fit(j) && fit(i) < fit(j)) || (ref_fit(i) < ref_fit(j) && fit(i) > fit(j))) ? 1 : 0;
+          sum++;
+        }
       }
-    err /= static_cast<double>((ref_fit.size()*ref_fit.size())-ref_fit.size());
+    }
+    err /= static_cast<double>((ref_fit.size() * ref_fit.size()) - ref_fit.size());
     return err;
   }
 
- public:
+public:
   bool _encode = false; /**< whether to use encoding from inverse sqrt covariance matrix of points. */
 
-  dMat _K; /**< pre-computed matrix of kernel values for a given training set. */
+  dMat _K;     /**< pre-computed matrix of kernel values for a given training set. */
   dVec _alpha; /**< vector of Ranking SVM parameters over ranking constraints. */
   dMat _dKij;
-  dMat _C; /**< constraint violation weights. */
+  dMat _C;            /**< constraint violation weights. */
   double _Cval = 1e6; /**< constraing violation base weight value. */
   double _epsilon = 1.0;
 
