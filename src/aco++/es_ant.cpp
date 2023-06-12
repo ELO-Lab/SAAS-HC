@@ -25,19 +25,24 @@
 #define CLUSTER_BETA_IDX 8
 #define RHO_IDX 9
 
-double
-	seed_stepsize_init,
-	par_a, par_a_stepsize_init,
-	par_b, par_b_stepsize_init,
-	par_c, par_c_stepsize_init,
-	cluster_alpha, cluster_alpha_stepsize_init,
-	cluster_beta, cluster_beta_stepsize_init,
-	alpha_stepsize_init, beta_stepsize_init,
-	rho_stepsize_init, q_0_stepsize_init;
+double par_a, par_b, par_c, cluster_alpha, cluster_beta;
 bool es_ant_flag = true;
 size_t current_ant_idx = 0;
+std::array<double, ES_ANT_DIM> lbounds, ubounds;
 // long int n_generation_each_iteration;
 OPTIMIZER *optim_ptr;
+
+template <class TNumeric>
+TNumeric normalize(const TNumeric &value, const TNumeric &lower_bound, const TNumeric &upper_bound)
+{
+	return (value - lower_bound) / (upper_bound - lower_bound);
+}
+
+template <class TNumeric>
+TNumeric restore_scale(const TNumeric &normalized_value, const TNumeric &lower_bound, const TNumeric &upper_bound)
+{
+	return normalized_value * (upper_bound - lower_bound) + lower_bound;
+}
 
 void an_ant_run()
 {
@@ -100,9 +105,10 @@ void an_ant_local_search()
 
 libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 {
-	seed = floor(x[SEED_IDX]);
-	long int temp = seed;
-	if (ran01(&temp) <= (x[SEED_IDX] - seed))
+	long int temp2 = restore_scale(x[SEED_IDX], lbounds[SEED_IDX], ubounds[SEED_IDX]),
+			 temp1 = floor(temp2);
+	seed = temp1;
+	if (ran01(&temp1) <= (temp2 - seed))
 	{
 		seed += 1;
 	}
@@ -112,10 +118,10 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 	par_c = x[PAR_C_IDX];
 	q_0 = x[Q_0_IDX];
 #if NODE_CLUSTERING_VERSION == 1
-	alpha = x[ALPHA_IDX];
-	beta = x[BETA_IDX];
-	cluster_alpha = x[CLUSTER_ALPHA_IDX];
-	cluster_beta = x[CLUSTER_BETA_IDX];
+	alpha = restore_scale(x[ALPHA_IDX], lbounds[ALPHA_IDX], ubounds[ALPHA_IDX]);
+	beta = restore_scale(x[BETA_IDX], lbounds[BETA_IDX], ubounds[BETA_IDX]);
+	cluster_alpha = restore_scale(x[CLUSTER_ALPHA_IDX], lbounds[CLUSTER_ALPHA_IDX], ubounds[CLUSTER_ALPHA_IDX]);
+	cluster_beta = restore_scale(x[CLUSTER_BETA_IDX], lbounds[CLUSTER_BETA_IDX], ubounds[CLUSTER_BETA_IDX]);
 	rho = x[RHO_IDX];
 #endif
 
@@ -139,83 +145,65 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 
 void es_ant_set_default(void)
 {
-	seed_stepsize_init = (SEED_MAX - SEED_MIN) / 10;
 	par_a = par_b = par_c = 0.5;
-	par_a_stepsize_init = par_b_stepsize_init = par_c_stepsize_init = 0.15;
 	q_0 = 0;
-	q_0_stepsize_init = 0.25;
 #if NODE_CLUSTERING_VERSION == 1
 	n_generation_each_iteration = 1;
 	alpha = 1.550208;
-	alpha_stepsize_init = 1.523180;
 	beta = 4.893958;
-	beta_stepsize_init = 2.067786;
 	cluster_alpha = alpha;
-	cluster_alpha_stepsize_init = alpha_stepsize_init;
 	cluster_beta = beta;
-	cluster_beta_stepsize_init = beta_stepsize_init;
 	rho = 0.468542;
-	rho_stepsize_init = 0.253226;
 #endif
 }
 
 void init_optimizer(void)
 {
-	const long int LAMBDA = -1, CMAES_ALGO = aBIPOP_CMAES;
+	const long int LAMBDA = -1, ALGO_CODE = aBIPOP_CMAES;
 	size_t i;
-	std::vector<double> x0(ES_ANT_DIM), sigma(ES_ANT_DIM), lbounds(ES_ANT_DIM),
-		ubounds(ES_ANT_DIM);
+	std::vector<double> x0(ES_ANT_DIM);
+	const double sigma = 0.1;
 
 	lbounds[SEED_IDX] = SEED_MIN;
 	ubounds[SEED_IDX] = SEED_MAX;
-	x0[SEED_IDX] = SEED_MIN + (SEED_MAX - SEED_MIN) / 2;
-	sigma[SEED_IDX] = seed_stepsize_init;
+	x0[SEED_IDX] = 0.5;
 
 	lbounds[PAR_A_IDX] = 0;
 	ubounds[PAR_A_IDX] = 1;
 	x0[PAR_A_IDX] = par_a;
-	sigma[PAR_A_IDX] = par_a_stepsize_init;
 
 	lbounds[PAR_B_IDX] = 0;
 	ubounds[PAR_B_IDX] = 1;
 	x0[PAR_B_IDX] = par_b;
-	sigma[PAR_B_IDX] = par_b_stepsize_init;
 
 	lbounds[PAR_C_IDX] = 0;
 	ubounds[PAR_C_IDX] = 1;
 	x0[PAR_C_IDX] = par_c;
-	sigma[PAR_C_IDX] = par_c_stepsize_init;
 
 	lbounds[Q_0_IDX] = 0;
 	ubounds[Q_0_IDX] = 1;
 	x0[Q_0_IDX] = q_0;
-	sigma[Q_0_IDX] = q_0_stepsize_init;
 
 #if NODE_CLUSTERING_VERSION == 1
 	lbounds[ALPHA_IDX] = 0;
 	ubounds[ALPHA_IDX] = DBL_MAX;
-	x0[ALPHA_IDX] = alpha;
-	sigma[ALPHA_IDX] = alpha_stepsize_init;
+	x0[ALPHA_IDX] = normalize(alpha, lbounds[ALPHA_IDX], ubounds[ALPHA_IDX]);
 
 	lbounds[BETA_IDX] = 0;
 	ubounds[BETA_IDX] = DBL_MAX;
-	x0[BETA_IDX] = beta;
-	sigma[BETA_IDX] = beta_stepsize_init;
+	x0[BETA_IDX] = normalize(beta, lbounds[BETA_IDX], ubounds[BETA_IDX]);
 
 	lbounds[CLUSTER_ALPHA_IDX] = 0;
 	ubounds[CLUSTER_ALPHA_IDX] = DBL_MAX;
-	x0[CLUSTER_ALPHA_IDX] = cluster_alpha;
-	sigma[CLUSTER_ALPHA_IDX] = cluster_alpha_stepsize_init;
+	x0[CLUSTER_ALPHA_IDX] = normalize(cluster_alpha, lbounds[CLUSTER_ALPHA_IDX], ubounds[CLUSTER_ALPHA_IDX]);
 
 	lbounds[CLUSTER_BETA_IDX] = 0;
 	ubounds[CLUSTER_BETA_IDX] = DBL_MAX;
-	x0[CLUSTER_BETA_IDX] = cluster_beta;
-	sigma[CLUSTER_BETA_IDX] = cluster_beta_stepsize_init;
+	x0[CLUSTER_BETA_IDX] = normalize(cluster_beta, lbounds[CLUSTER_BETA_IDX], ubounds[CLUSTER_BETA_IDX]);
 
 	lbounds[RHO_IDX] = 0;
 	ubounds[RHO_IDX] = 1;
 	x0[RHO_IDX] = rho;
-	sigma[RHO_IDX] = rho_stepsize_init;
 #endif
 
 	for (i = 0; i < ES_ANT_DIM; i++)
@@ -223,8 +211,8 @@ void init_optimizer(void)
 		assert(x0[i] >= lbounds[i]);
 		assert(x0[i] <= ubounds[i]);
 	}
-	PARAMETER<GENO_PHENO> cmaparams(x0, sigma, LAMBDA, lbounds, ubounds, seed);
-	cmaparams.set_algo(CMAES_ALGO);
+	PARAMETER<GENO_PHENO> cmaparams(x0, sigma, LAMBDA, seed);
+	cmaparams.set_algo(ALGO_CODE);
 	cmaparams.set_mt_feval(false);
 	optim_ptr = new OPTIMIZER(es_evaluate, cmaparams);
 }

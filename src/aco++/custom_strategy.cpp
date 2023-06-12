@@ -1,5 +1,7 @@
-#include <libcmaes/cmaes.h>
 #include <chrono>
+#include <iostream>
+
+#include <libcmaes/cmaes.h>
 
 #include "custom_strategy.hpp"
 
@@ -23,7 +25,6 @@ template <class TCovarianceUpdate, class TGenoPheno>
 uint_fast64_t libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::get_lambda(void)
 {
     return this->STRATEGY<TCovarianceUpdate, TGenoPheno>::_parameters.lambda();
-    // return libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_parameters._lambda;
 }
 
 template <class TCovarianceUpdate, class TGenoPheno>

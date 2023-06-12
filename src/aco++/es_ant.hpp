@@ -13,15 +13,7 @@
 #define SEED_MAX 2147483647
 
 // Hyperparameters
-extern double
-    seed_stepsize_init,
-    par_a, par_a_stepsize_init,
-    par_b, par_b_stepsize_init,
-    par_c, par_c_stepsize_init,
-    cluster_alpha, cluster_alpha_stepsize_init,
-    cluster_beta, cluster_beta_stepsize_init,
-    alpha_stepsize_init, beta_stepsize_init,
-    rho_stepsize_init, q_0_stepsize_init;
+extern double par_a, par_b, par_c, cluster_alpha, cluster_beta;
 extern bool es_ant_flag;
 // extern long int n_generation_each_iteration;
 

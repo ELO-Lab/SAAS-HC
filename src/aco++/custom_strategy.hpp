@@ -7,7 +7,7 @@
 
 #define STRATEGY libcmaes::BIPOPCMAStrategy
 #define PARAMETER libcmaes::CMAParameters
-#define GENO_PHENO libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>
+#define GENO_PHENO libcmaes::GenoPheno<libcmaes::NoBoundStrategy>
 #define COVARIANCE_UPDATE libcmaes::ACovarianceUpdate
 #define OPTIMIZER libcmaes::ESOptimizer<libcmaes::Custom_Strategy<COVARIANCE_UPDATE, GENO_PHENO>, PARAMETER<GENO_PHENO>>
 
