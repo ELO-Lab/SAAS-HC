@@ -22,9 +22,9 @@
 #ifndef ACOVARIANCEUPDATE_H
 #define ACOVARIANCEUPDATE_H
 
-#include "cmaparameters.h"
-#include "cmasolutions.h"
-#include "eigenmvn.h"
+#include <libcmaes/cmaparameters.h>
+#include <libcmaes/cmasolutions.h>
+#include <libcmaes/eigenmvn.h>
 
 namespace libcmaes
 {
@@ -32,7 +32,7 @@ namespace libcmaes
   /**
    * \brief Active Covariance Matrix update.
    *        This implementation closely follows
-   *        N. Hansen, R. Ros, "Benchmarking a Weighted Negative Covariance Matrix
+   *        N. Hansen, R. Ros, "Benchmarking a Weighted Negative Covariance Matrix 
    *                            Update on the BBOB-2010 Noiseless Testbed", GECCO'10, 2010.
    */
   class CMAES_EXPORT ACovarianceUpdate
@@ -40,10 +40,10 @@ namespace libcmaes
   public:
     template <class TGenoPheno>
     static void update(const CMAParameters<TGenoPheno> &parameters,
-                       Eigen::EigenMultivariateNormal<double> &esolver,
-                       CMASolutions &solutions);
+		       Eigen::EigenMultivariateNormal<double> &esolver,
+		       CMASolutions &solutions);
   };
-
+  
 }
 
 #endif

@@ -22,8 +22,8 @@
 #ifndef SURROGATESTRATEGY_H
 #define SURROGATESTRATEGY_H
 
-#include "eo_matrix.h"
-#include "cmastrategy.h"
+#include <libcmaes/eo_matrix.h>
+#include <libcmaes/cmastrategy.h>
 #include <typeinfo>
 #include <random>
 
@@ -35,7 +35,7 @@ namespace libcmaes
    * @param cov a possibly empty covariance matrix in order to re-scale points before training
    * @return training status
    */
-  typedef std::function<int(const std::vector<Candidate> &, const dMat &)> CSurrFunc;
+  typedef std::function<int (const std::vector<Candidate>&, const dMat&)> CSurrFunc;
 
   /**
    * \brief function to predict from a surrogate model
@@ -43,28 +43,29 @@ namespace libcmaes
    * @param cov a possibly empty covariance matrix in order to re-scale points before predicting
    * @return prediction status
    */
-  typedef std::function<int(std::vector<Candidate> &, const dMat &)> SurrFunc; // TODO: a signature closer to the objective function signature ?
+  typedef std::function<int (std::vector<Candidate>&, const dMat&)> SurrFunc; //TODO: a signature closer to the objective function signature ?
+
 
   /**
    * \brief Surrogate base class, to be derived in order to create strategy
    *        to be used along with CMA-ES.
    */
-  template <template <class U, class V> class TStrategy, class TCovarianceUpdate = CovarianceUpdate, class TGenoPheno = GenoPheno<NoBoundStrategy>>
-  class SurrogateStrategy : public TStrategy<TCovarianceUpdate, TGenoPheno>
+  template<template <class U,class V> class TStrategy, class TCovarianceUpdate=CovarianceUpdate,class TGenoPheno=GenoPheno<NoBoundStrategy>>
+  class SurrogateStrategy : public TStrategy<TCovarianceUpdate,TGenoPheno>
   {
-  public:
+    public:
     /**
      * \brief constructor
      * @param func objective function to minimize
      * @param parameters optimization parameters
      */
     SurrogateStrategy(FitFunc &func,
-                      CMAParameters<TGenoPheno> &parameters);
+		      CMAParameters<TGenoPheno> &parameters);
 
-  protected:
+    protected:
     ~SurrogateStrategy();
 
-  public:
+    public:
     /**
      * \brief train a surrogate model
      * @param candidates set of points along with objective function value
@@ -72,7 +73,7 @@ namespace libcmaes
      * @return training status
      */
     int train(const std::vector<Candidate> &candidates,
-              const dMat &cov) { return _train(candidates, cov); }
+	      const dMat &cov) { return _train(candidates,cov); }
 
     /**
      * \brief predict from a surrogate model
@@ -81,7 +82,7 @@ namespace libcmaes
      * @return prediction status
      */
     int predict(std::vector<Candidate> &candidates,
-                const dMat &cov) { return _predict(candidates, cov); }
+		const dMat &cov) { return _predict(candidates,cov); }
 
     /**
      * \brief compute surrogate model error (copies and sorts the test_set)
@@ -90,8 +91,8 @@ namespace libcmaes
      * @return surrogate model error estimate
      */
     double compute_error(const std::vector<Candidate> &test_set,
-                         const dMat &cov = dMat(0, 0));
-
+			 const dMat &cov=dMat(0,0));
+    
     /**
      * \brief conditionals on training, to be specialized in inherited surrogate strategies
      * @return whether to train surrogate
@@ -157,7 +158,7 @@ namespace libcmaes
      * @param err test error
      */
     void set_test_error(const double &err);
-
+    
     /**
      * \brief adds a point to the training set (candidate = points + objective function value)
      * @param c point to add to the training set
@@ -172,7 +173,7 @@ namespace libcmaes
     {
       _nsteps = nsteps;
       if (_nsteps < 0)
-        _auto_nsteps = true;
+	_auto_nsteps = true;
     }
 
     /**
@@ -184,58 +185,58 @@ namespace libcmaes
       _train_err = _test_err = 0.0;
       _smooth_test_err = 0.5;
     }
-
+    
     /**
      * \brief returns the current surrogate lifelength
      * @return current surrogate lifelength
      */
     int get_nsteps() const { return _nsteps; }
-
+    
   protected:
-    bool _exploit = true;          /**< whether to exploit or test the surrogate. */
-    int _l = 200;                  /**< number of training samples. set to floor(30*sqrt(n)) in constructor. */
-    std::vector<Candidate> _tset;  /**< current training set. */
-    CSurrFunc _train;              /**< custom training function. */
-    SurrFunc _predict;             /**< custom prediction function. */
-    double _train_err = 0.0;       /**< current surrogate training error. */
-    double _test_err = 0.0;        /**< current surrogate model error estimate. */
+    bool _exploit = true; /**< whether to exploit or test the surrogate. */
+    int _l = 200; /**< number of training samples. set to floor(30*sqrt(n)) in constructor. */
+    std::vector<Candidate> _tset; /**< current training set. */
+    CSurrFunc _train; /**< custom training function. */
+    SurrFunc _predict; /**< custom prediction function. */
+    double _train_err = 0.0; /**< current surrogate training error. */
+    double _test_err = 0.0; /**< current surrogate model error estimate. */
     double _smooth_test_err = 0.5; /**< smoothed test error as (1-\beta_err)*_test_err + \beta_err * new_test_err */
-    double _beta_err = 0.2;        /**< smoothing constant. */
-    int _nsteps = 1;               /**< steps in between two training phases. */
-    int _auto_nsteps = false;      /**< whether to automatically set the surrogate lifelength. */
-  };
+    double _beta_err = 0.2; /**< smoothing constant. */
+    int _nsteps = 1; /**< steps in between two training phases. */
+    int _auto_nsteps = false; /**< whether to automatically set the surrogate lifelength. */
+    };
 
   /**
    * \brief Simple surrogate strategy: trains every n steps, and exploits in between,
    *        mostly as an example and for testing / debugging surrogates.
    *        This strategy overrides the ask/eval/tell functions of the base optimization strategy
    */
-  template <template <class U, class V> class TStrategy, class TCovarianceUpdate = CovarianceUpdate, class TGenoPheno = GenoPheno<NoBoundStrategy>>
-  class SimpleSurrogateStrategy : public SurrogateStrategy<TStrategy, TCovarianceUpdate, TGenoPheno>
-  {
-  public:
+  template<template <class U,class V> class TStrategy, class TCovarianceUpdate=CovarianceUpdate,class TGenoPheno=GenoPheno<NoBoundStrategy>>
+    class SimpleSurrogateStrategy : public SurrogateStrategy<TStrategy,TCovarianceUpdate,TGenoPheno>
+    {
+    public:
     /**
      * \brief constructor
      * @param func objective function to minimize
      * @param parameters optimization parameters
      */
     SimpleSurrogateStrategy(FitFunc &func,
-                            CMAParameters<TGenoPheno> &parameters);
+			    CMAParameters<TGenoPheno> &parameters);
 
     ~SimpleSurrogateStrategy();
 
     /**
-     * \brief Evaluates a set of candiates against the objective function
+     * \brief Evaluates a set of candiates against the objective function 
      *        or the surrogate model, as needed
      *
      * Note: this function overrides the default CMAStrategy::eval
      *
      * @param candidates A matrix whose rows contain the candidates.
-     * @param phenocandidates The candidates transformed into phenotype,
+     * @param phenocandidates The candidates transformed into phenotype, 
      *        leave empty if no pheno transform.
      */
     void eval(const dMat &candidates,
-              const dMat &phenocandidates = dMat(0, 0));
+	      const dMat &phenocandidates=dMat(0,0));
 
     /**
      * \brief Updates the state of the stochastic search, and prepares
@@ -247,34 +248,34 @@ namespace libcmaes
 
     /**
      * \brief Finds the minimum of the objective function. It makes
-     *        alternate calls to ask(), tell() and stop() until
+     *        alternate calls to ask(), tell() and stop() until 
      *        one of the termination criteria triggers.
      * @return success or error code, as defined in opti_err.h
      * Note: the termination criteria code is held by _solutions._run_status
      */
     int optimize();
-
+    
     /**
      * \brief estimates surrogate lifelength
      * @return estimated surrogate lifelength
      */
     int compute_lifelength();
-
+    
     /**
      * \brief whether to train the model
      * @return whether to train the model
      */
     inline bool do_train() const
     {
-      if (!SurrogateStrategy<TStrategy, TCovarianceUpdate, TGenoPheno>::_exploit && (int)this->_tset.size() >= this->_l)
-        return true;
+      if (!SurrogateStrategy<TStrategy,TCovarianceUpdate,TGenoPheno>::_exploit && (int)this->_tset.size() >= this->_l)
+	return true;
       return ((this->_niter == 0 || this->_niter % this->_nsteps == 0) && (int)this->_tset.size() >= this->_l);
     }
 
-  public:
+    public:
     double _terr = 0.45; /**< error threshold for estimating optimal nsteps */
     int _nmax = 20;
-  };
+    };
 
   /**
    * \brief ACM Surrogate strategy for CMA-ES, follows:
@@ -289,42 +290,42 @@ namespace libcmaes
    *
    *        This strategy overrides the ask/eval/tell functions of the base optimization strategy
    */
-  template <template <class U, class V> class TStrategy, class TCovarianceUpdate = CovarianceUpdate, class TGenoPheno = GenoPheno<NoBoundStrategy>>
-  class ACMSurrogateStrategy : public SurrogateStrategy<TStrategy, TCovarianceUpdate, TGenoPheno>
-  {
-  public:
+  template<template <class U,class V> class TStrategy, class TCovarianceUpdate=CovarianceUpdate,class TGenoPheno=GenoPheno<NoBoundStrategy>>
+    class ACMSurrogateStrategy : public SurrogateStrategy<TStrategy,TCovarianceUpdate,TGenoPheno>
+    {
+    public:
     /**
      * \brief constructor
      * @param func objective function to minimize
      * @param parameters optimization parameters
      */
     ACMSurrogateStrategy(FitFunc &func,
-                         CMAParameters<TGenoPheno> &parameters);
-
+			 CMAParameters<TGenoPheno> &parameters);
+    
     ~ACMSurrogateStrategy();
-
+    
     /**
      * \brief Generates a set of candidate points. Uses the pre-sampling of a larger
      *        than usual number of offprings, controled by 'lambdaprime', as needed
-     *
+     * 
      * Note: this function overrides the default ESOStrategy::ask
-     *
+     * 
      * @return A matrix whose rows contain the candidate points.
      */
     dMat ask();
 
     /**
-     * \brief Evaluates a set of candiates against the objective function
+     * \brief Evaluates a set of candiates against the objective function 
      *        or the surrogate model, as needed
      *
      * Note: this function overrides the default CMAStrategy::eval
      *
      * @param candidates A matrix whose rows contain the candidates.
-     * @param phenocandidates The candidates transformed into phenotype,
+     * @param phenocandidates The candidates transformed into phenotype, 
      *        leave empty if no pheno transform.
      */
     void eval(const dMat &candidates,
-              const dMat &phenocandidates = dMat(0, 0));
+	      const dMat &phenocandidates=dMat(0,0));
 
     /**
      * \brief Updates the state of the stochastic search, and prepares
@@ -335,36 +336,36 @@ namespace libcmaes
     void tell();
 
     int optimize();
-
-  protected:
+    
+    protected:
     /**
      * \brief pre-selection + candidate evaluation scheme.
      *        Called by eval, evaluates lambdaprime candidates with surrogate model,
      *        then subsample the population in order to evaluate them with the original
-     *        objective function, test the surrogate model and grow the training set with
+     *        objective function, test the surrogate model and grow the training set with 
      *        new points
      * @param candidates A matrix whose rows contain the candidates.
      */
     void pre_selection_eval(const dMat &candidates);
-
-  public:
+    
+    public:
     /**
      * \brief whether to train the model
      * @return whether to train the model
      */
     inline bool do_train() const
     {
-      if (!SurrogateStrategy<TStrategy, TCovarianceUpdate, TGenoPheno>::_exploit && (int)this->_tset.size() >= this->_l)
-        return true;
-      else if (SurrogateStrategy<TStrategy, TCovarianceUpdate, TGenoPheno>::_exploit && (int)this->_tset.size() >= this->_l)
-        return true;
+      if (!SurrogateStrategy<TStrategy,TCovarianceUpdate,TGenoPheno>::_exploit && (int)this->_tset.size() >= this->_l)
+	return true;
+      else if (SurrogateStrategy<TStrategy,TCovarianceUpdate,TGenoPheno>::_exploit && (int)this->_tset.size() >= this->_l)
+	return true;
       return ((this->_niter == 0 || this->_niter % this->_nsteps == 0) && (int)this->_tset.size() >= this->_l);
     }
 
-  private:
+    private:
     void init_rd(); // initialize random device.
 
-  public:
+    public:
     /**
      * \brief sets the number of true objective function calls per iteration
      * @param lp true objective function calls per iteration
@@ -388,13 +389,13 @@ namespace libcmaes
      * @return number of offsprings
      */
     int get_prelambda() const { return _prelambda; }
-
+    
     /**
      * \brief sets the standard deviation of selection sampling step 0
      * @param s standard deviation
      */
     void set_theta_sel0(const double &s) { _theta_sel0 = s; }
-
+    
     /**
      * \brief returns the standard deviation of selection sampling step 0
      * @return standard deviation
@@ -413,13 +414,13 @@ namespace libcmaes
      */
     double get_theta_sel1() const { return _theta_sel1; }
 
-  protected:
-    double _prelambda = 500;  /**< number of pre-screened offsprings. */
-    double _theta_sel0 = 0.4; /**< standard deviation of selection sampling step 0. */
-    double _theta_sel1 = 0.8; /**< standard deviation of selection sampling step 1. */
-    int _lambdaprime;         /**< true objective function calls per iteration. */
+    protected:
+    double _prelambda = 500; /**< number of pre-screened offsprings. */
+    double _theta_sel0 = 0.4;  /**< standard deviation of selection sampling step 0. */
+    double _theta_sel1 = 0.8;  /**< standard deviation of selection sampling step 1. */
+    int _lambdaprime; /**< true objective function calls per iteration. */
 
-  private:
+    private:
     // random numbers for selection sampling
     std::random_device _rd;
     std::normal_distribution<double> _norm_sel0;

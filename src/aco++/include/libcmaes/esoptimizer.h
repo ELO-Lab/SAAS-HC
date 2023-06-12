@@ -24,13 +24,12 @@
 
 #include <functional>
 #include <chrono>
-#include "parameters.h"
-#include "esostrategy.h"
-#include "cmasolutions.h"
+#include <libcmaes/parameters.h>
+#include <libcmaes/esostrategy.h>
+#include <libcmaes/cmasolutions.h>
 
 /* algorithms */
-enum
-{
+enum {
   /* vanilla version of CMA-ES. */
   CMAES_DEFAULT = 0,
   /* IPOP-CMA-ES */
@@ -66,59 +65,59 @@ enum
 namespace libcmaes
 {
   /**
-   * \brief an optimizer main class.
+   * \brief an optimizer main class. 
    */
-  template <class TESOStrategy, class TParameters, class TSolutions = CMASolutions>
-  class ESOptimizer : public TESOStrategy
-  {
-  public:
-    /**
-     * \brief dummy constructor
-     */
-    ESOptimizer()
-        : TESOStrategy()
+  template <class TESOStrategy,class TParameters,class TSolutions=CMASolutions>
+    class ESOptimizer : public TESOStrategy
     {
-    }
+    public:
+      /**
+       * \brief dummy constructor
+       */
+      ESOptimizer()
+       :TESOStrategy()
+      {
+      }
+    
+      /**
+       * \brief constructor
+       * @param func function to minimize
+       * @param parameters optimization parameters
+       */
+      ESOptimizer(FitFunc &func,
+		  TParameters &parameters)
+	:TESOStrategy(func,parameters)
+	{
+	}
+      
+      /**
+       * \brief constructor for starting from an existing solution
+       * @param func function to minimize
+       * @param parameters optimization parameters
+       * @param solution solution to start from
+       */
+      ESOptimizer(FitFunc &func,
+		  TParameters &parameters,
+		  const TSolutions &solution)
+	:TESOStrategy(func,parameters,solution)
+	{
+	}
+      
+      ~ESOptimizer() {}
 
-    /**
-     * \brief constructor
-     * @param func function to minimize
-     * @param parameters optimization parameters
-     */
-    ESOptimizer(FitFunc &func,
-                TParameters &parameters)
-        : TESOStrategy(func, parameters)
-    {
-    }
-
-    /**
-     * \brief constructor for starting from an existing solution
-     * @param func function to minimize
-     * @param parameters optimization parameters
-     * @param solution solution to start from
-     */
-    ESOptimizer(FitFunc &func,
-                TParameters &parameters,
-                const TSolutions &solution)
-        : TESOStrategy(func, parameters, solution)
-    {
-    }
-
-    ~ESOptimizer() {}
-
-    /**
-     * \brief finds the minimum of a function, by calling on the underlying
-     *        procedure of the EOSOptimizer object, like a variety of flavor of CMA-ES.
-     */
-    int optimize()
-    {
-      std::chrono::time_point<std::chrono::system_clock> tstart = std::chrono::system_clock::now();
-      int opt = TESOStrategy::optimize();
-      std::chrono::time_point<std::chrono::system_clock> tstop = std::chrono::system_clock::now();
-      TESOStrategy::_solutions._elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(tstop - tstart).count();
-      return opt;
-    }
-  };
+      /**
+       * \brief finds the minimum of a function, by calling on the underlying
+       *        procedure of the EOSOptimizer object, like a variety of flavor of CMA-ES.
+       */
+      int optimize()
+      {
+	std::chrono::time_point<std::chrono::system_clock> tstart = std::chrono::system_clock::now();
+	int opt = TESOStrategy::optimize();
+	std::chrono::time_point<std::chrono::system_clock> tstop = std::chrono::system_clock::now();
+	TESOStrategy::_solutions._elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(tstop-tstart).count();
+	return opt;
+      }
+    };
 
 }
 

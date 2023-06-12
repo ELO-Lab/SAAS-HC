@@ -22,7 +22,7 @@
 #ifndef LLOGGING_H
 #define LLOGGING_H
 
-#include "libcmaes_config.h"
+#include <libcmaes/libcmaes_config.h>
 
 #ifdef HAVE_GLOG // HAVE_LIB_GLOG
 #include <glog/logging.h>

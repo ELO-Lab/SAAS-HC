@@ -22,17 +22,17 @@
 #ifndef ERRSTATS_H
 #define ERRSTATS_H
 
-#include "pli.h"
-#include "contour.h"
-#include "cmaes.h"
+#include <libcmaes/pli.h>
+#include <libcmaes/contour.h>
+#include <libcmaes/cmaes.h>
 
 namespace libcmaes
 {
-
-  template <class TGenoPheno = GenoPheno<NoBoundStrategy>>
+  
+  template <class TGenoPheno=GenoPheno<NoBoundStrategy>>
   class CMAES_EXPORT errstats
-  {
-  public:
+    {
+    public:
     /*- profile likelihood -*/
 
     /**
@@ -50,18 +50,18 @@ namespace libcmaes
      * @see pli
      */
     static pli profile_likelihood(FitFunc &func,
-                                  const CMAParameters<TGenoPheno> &parameters,
-                                  CMASolutions &cmasol,
-                                  const int &k,
-                                  const bool &curve = false,
-                                  const int &samplesize = 10,
-                                  const double &fup = 0.1,
-                                  const double &delta = 0.1,
-                                  const int &maxiters = 1e4);
+				  const CMAParameters<TGenoPheno> &parameters,
+				  CMASolutions &cmasol,
+				  const int &k,
+				  const bool &curve=false,
+				  const int &samplesize=10,
+				  const double &fup=0.1,
+				  const double &delta=0.1,
+				  const int &maxiters=1e4);
 
-  private:
+    private:
     /**
-     * \brief computes and search the profile likelihood points in dimension k around a previously
+     * \brief computes and search the profile likelihood points in dimension k around a previously 
      *        found optima and in a given direction
      * @param func objective function
      * @param parameters stochastic search parameters
@@ -75,16 +75,16 @@ namespace libcmaes
      * @param maxiters maximum number of linesearch tentatives for computing the profile likelihood
      */
     static void profile_likelihood_search(FitFunc &func,
-                                          const CMAParameters<TGenoPheno> &parameters,
-                                          pli &le,
-                                          const CMASolutions &cmasol,
-                                          const int &k,
-                                          const bool &neg,
-                                          const int &samplesize,
-                                          const double &fup,
-                                          const double &delta,
-                                          const int &maxiters,
-                                          const bool &curve);
+					  const CMAParameters<TGenoPheno> &parameters,
+					  pli &le,
+					  const CMASolutions &cmasol,
+					  const int &k,
+					  const bool &neg,
+					  const int &samplesize,
+					  const double &fup,
+					  const double &delta,
+					  const int &maxiters,
+					  const bool &curve);
 
     /**
      * \brief take a linesearch step in a given direction
@@ -102,18 +102,18 @@ namespace libcmaes
      * @param x vector on the line
      */
     static void take_linear_step(FitFunc &func,
-                                 const CMAParameters<TGenoPheno> &parameters,
-                                 const int &k,
-                                 const double &minfvalue,
-                                 const double &fup,
-                                 const double &delta,
-                                 const int &n,
-                                 const bool &linit,
-                                 const dMat &eigenve,
-                                 double &d,
-                                 dVec &x);
+				 const CMAParameters<TGenoPheno> &parameters,
+				 const int &k,
+				 const double &minfvalue,
+				 const double &fup,
+				 const double &delta,
+				 const int &n,
+				 const bool &linit,
+				 const dMat &eigenve,
+				 double &d,
+				 dVec &x);
 
-  public:
+    public:
     /**
      * \brief optimizes an objective function while fixing the value of parameters in several dimensions
      * @param func objective function
@@ -127,14 +127,14 @@ namespace libcmaes
      * @return optimization solution partial object with a single candidate that is the best candidate in full dimension
      */
     static CMASolutions optimize_vpk(FitFunc &func,
-                                     const CMAParameters<TGenoPheno> &parameters,
-                                     const CMASolutions &cmasol,
-                                     const std::vector<int> &k,
-                                     const std::vector<double> &vk,
-                                     const dVec &x0,
-                                     const bool &pheno_x0 = true,
-                                     const bool &pheno_vk = true);
-
+				     const CMAParameters<TGenoPheno> &parameters,
+				     const CMASolutions &cmasol,
+				     const std::vector<int> &k,
+				     const std::vector<double> &vk,
+				     const dVec &x0,
+				     const bool &pheno_x0=true,
+				     const bool &pheno_vk=true);
+    
     /**
      * \brief optimizes an objective function while fixing the value of parameters in dimension k
      * @param func objective function
@@ -148,16 +148,16 @@ namespace libcmaes
      * @return optimization solution partial object with a single candidate that is the best candidate in full dimension
      */
     static CMASolutions optimize_pk(FitFunc &func,
-                                    const CMAParameters<TGenoPheno> &parameters,
-                                    const CMASolutions &cmasol,
-                                    const int &k,
-                                    const double &vk,
-                                    const dVec &x0,
-                                    const bool &pheno_x0 = true,
-                                    const bool &pheno_vk = true);
-
+				    const CMAParameters<TGenoPheno> &parameters,
+				    const CMASolutions &cmasol,
+				    const int &k,
+				    const double &vk,
+				    const dVec &x0,
+				    const bool &pheno_x0=true,
+				    const bool &pheno_vk=true);
+    
     /*- contour -*/
-  public:
+    public:
     /**
      * \brief computes a set of contour points around a function minima, for a deviation fup in objective function value
      * @param func objective function
@@ -171,13 +171,13 @@ namespace libcmaes
      * @param maxiters maximum number of linesearch tentatives for computing the profile likelihood
      * @return contour object that contains the contour points
      */
-    static contour contour_points(FitFunc &func, const int &px, const int &py, const int &npoints, const double &fup,
-                                  const CMAParameters<TGenoPheno> &parameters,
-                                  CMASolutions &cmasol,
-                                  const double &delta = 0.1,
-                                  const int &maxiters = 1e4);
+    static contour contour_points(FitFunc & func, const int &px, const int &py, const int &npoints, const double &fup,
+				  const CMAParameters<TGenoPheno> &parameters,
+				  CMASolutions &cmasol,
+				  const double &delta=0.1,
+				  const int &maxiters=1e4);
 
-  private:
+    private:
     /**
      * \brief finds crossing point
      * @param parameters stochastic search parameters
@@ -190,13 +190,13 @@ namespace libcmaes
      * @return crossing object
      */
     static fcross cross(FitFunc &func,
-                        const CMAParameters<TGenoPheno> &parameters,
-                        CMASolutions &cmasol,
-                        const double &fup,
-                        const std::vector<int> &par, const std::vector<double> &pmid,
-                        const std::vector<double> &pdir, const double &ftol);
-  };
-
+			const CMAParameters<TGenoPheno> &parameters,
+			CMASolutions &cmasol,
+			const double &fup,
+			const std::vector<int> &par, const std::vector<double> &pmid,
+			const std::vector<double> &pdir, const double &ftol);
+    };    
+  
 }
 
 #endif

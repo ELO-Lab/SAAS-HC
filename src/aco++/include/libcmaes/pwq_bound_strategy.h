@@ -22,8 +22,8 @@
 #ifndef PWQ_BOUND_STRATEGY_H
 #define PWQ_BOUND_STRATEGY_H
 
-#include "eo_matrix.h"
-#include "cmaes_export.h"
+#include <libcmaes/eo_matrix.h>
+#include <libcmaes/cmaes_export.h>
 #include <vector>
 
 namespace libcmaes
@@ -34,14 +34,14 @@ namespace libcmaes
     pwqBoundStrategy(); // dummy constructor, required for non-pointer default object in GenoPheno.
     pwqBoundStrategy(const double *lbounds, const double *ubounds, const int &dim);
     pwqBoundStrategy(const double *lbounds, const double *ubounds,
-                     const double *plbounds, const double *pubounds, const int &dim);
+		     const double *plbounds, const double *pubounds, const int &dim);
     ~pwqBoundStrategy();
 
     void to_f_representation(const dVec &x,
-                             dVec &y) const;
-
+			     dVec &y) const;
+    
     void to_internal_representation(dVec &x,
-                                    const dVec &y) const;
+				    const dVec &y) const;
 
     void shift_into_feasible(const dVec &x, dVec &x_s) const;
 
@@ -59,7 +59,7 @@ namespace libcmaes
     {
       return _id;
     }
-
+    
   private:
     dVec _lbounds;
     dVec _ubounds;
