@@ -10,7 +10,7 @@ Ant_Swarm::Ant_Swarm()
 
 Ant_Swarm::~Ant_Swarm()
 {
-    for (auto ant_i : this->ant_vec)
+    for (auto ant_i : this->_ant_vec)
     {
         free_ant(ant_i);
     }
@@ -18,7 +18,7 @@ Ant_Swarm::~Ant_Swarm()
 
 size_t Ant_Swarm::size()
 {
-    return this->ant_vec.size();
+    return this->_size;
 }
 
 void Ant_Swarm::free_ant(ant_struct &ant_i)
@@ -31,24 +31,23 @@ void Ant_Swarm::free_ant(ant_struct &ant_i)
 void Ant_Swarm::resize(const size_t &new_size)
 {
     size_t i;
-    const size_t &old_size = this->ant_vec.size();
+    const size_t &capacity = this->_ant_vec.size();
 
-    for (i = new_size; i < old_size; i++)
+    if (new_size > capacity)
     {
-        this->free_ant(ant_vec[i]);
-    }
+        this->_ant_vec.resize(new_size);
 
-    this->ant_vec.resize(new_size);
-
-    for (i = old_size; i < new_size; i++)
-    {
-        this->allocate_ant(ant_vec[i]);
+        for (i = capacity; i < new_size; i++)
+        {
+            this->allocate_ant(_ant_vec[i]);
+        }
     }
+    this->_size = new_size;
 }
 
 ant_struct &Ant_Swarm::operator[](size_t pos)
 {
-    return this->ant_vec[pos];
+    return this->_ant_vec[pos];
 }
 
 void Ant_Swarm::allocate_ant(ant_struct &ant_i)

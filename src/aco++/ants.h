@@ -85,7 +85,8 @@ public:
     ant_struct &operator[](size_t pos);
 
 private:
-    std::vector<ant_struct> ant_vec;
+    std::vector<ant_struct> _ant_vec;
+    size_t _size = 0;
 
     void allocate_ant(ant_struct &);
     void free_ant(ant_struct &);
