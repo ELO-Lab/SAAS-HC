@@ -65,8 +65,10 @@
 #include "ants.h"
 #include "ls.h"
 #include "parse.h"
+
 #include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
+#include "es_ant.hpp"
 
 long int *best_in_try;
 long int *best_found_at;
@@ -129,6 +131,8 @@ void init_program(long int argc, char *argv[])
     setbuf(stdout, NULL);
     parse_commandline(argc, argv);
 
+    rand_gen.seed(seed);
+
     assert(max_tries <= MAXIMUM_NO_TRIES);
 
     best_in_try = (long int *)calloc(max_tries, sizeof(long int));
@@ -188,6 +192,9 @@ void init_program(long int argc, char *argv[])
     write_params();
 
     allocate_ants();
+
+    if (es_ant_flag)
+        es_ant_init();
 }
 
 void exit_program(void)
@@ -559,7 +566,8 @@ void set_default_ls_parameters(void)
     }
 }
 
-void set_default_node_clustering_parameters(void){
+void set_default_node_clustering_parameters(void)
+{
     n_cluster = 4;
     cluster_size = 16;
     n_sector = 8;

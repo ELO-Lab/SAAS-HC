@@ -600,8 +600,6 @@ int main(int argc, char *argv[])
     start_timers();
 
     init_program(argc, argv);
-    if (es_ant_flag)
-        es_ant_init();
 
     instance.nn_list = compute_nn_lists();
     pheromone = generate_double_matrix(instance.n, instance.n);

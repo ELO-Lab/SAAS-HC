@@ -186,7 +186,7 @@ void create_cluster(void)
 void node_clustering_move(ant_struct *a, long int phase)
 {
 
-    if ((q_0 > 0.0) && (ran01(&seed) < q_0))
+    if ((q_0 > 0.0) && (new_rand01() < q_0))
     {
         choose_best_next(a, phase);
         return;
@@ -206,7 +206,7 @@ void node_clustering_move(ant_struct *a, long int phase)
     }
 
     int selected_cluster = 0;
-    double rnd = ran01(&seed);
+    double rnd = new_rand01();
     rnd *= lp;
     while (rnd >= pC[selected_cluster] && selected_cluster < cluster_size - 1)
         selected_cluster++;
@@ -254,7 +254,7 @@ void node_clustering_move(ant_struct *a, long int phase)
     }
 
     int selected_city = 0;
-    rnd = ran01(&seed);
+    rnd = new_rand01();
     rnd *= lp;
     while (total_candidates[selected_city] <= rnd && selected_city < candidates.size() - 1)
         selected_city++;

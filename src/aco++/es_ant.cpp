@@ -111,15 +111,15 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 
 	std::vector<double> parameters(N);
 	size_t i;
-	long int temp;
+	uint_fast32_t seed;
 
 	for (i = 0; i < N; i++)
 		parameters[i] = restore_scale(x[i], lbounds[i], ubounds[i]);
 
-	temp = floor(parameters[SEED_IDX]);
-	seed = temp;
-	if (ran01(&temp) <= (parameters[SEED_IDX] - seed))
+	seed = floor(parameters[SEED_IDX]);
+	if (new_rand01() < (parameters[SEED_IDX] - seed))
 		seed += 1;
+	rand_gen.seed(seed);
 
 	par_a = parameters[PAR_A_IDX];
 	par_b = parameters[PAR_B_IDX];
@@ -172,6 +172,7 @@ void init_optimizer(void)
 	const long int LAMBDA = -1, ALGO_CODE = aBIPOP_CMAES;
 	size_t i;
 	std::vector<double> x0(ES_ANT_DIM);
+	const uint64_t seed = rand_gen();
 	const double sigma = 0.1;
 
 	lbounds[SEED_IDX] = 1;

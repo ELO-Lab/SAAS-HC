@@ -54,12 +54,16 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <random>
 
 #include "inout.h"
 #include "utilities.h"
 #include "thop.h"
 #include "ants.h"
 #include "timer.h"
+
+std::default_random_engine rand_gen;
+std::uniform_real_distribution<double> distribution(0, 1);
 
 double mean(long int *values, long int max)
 /*
@@ -367,44 +371,6 @@ void sort2_double(double *v, double *v2, long int left, long int right)
     sort2_double(v, v2, last + 1, right);
 }
 
-double ran01(long *idum)
-/*
-      FUNCTION:       generate a random number that is uniformly distributed in [0,1]
-      INPUT:          pointer to variable with the current seed
-      OUTPUT:         random number uniformly distributed in [0,1]
-      (SIDE)EFFECTS:  random number seed is modified (important, this has to be done!)
-      ORIGIN:         numerical recipes in C
- */
-{
-    long k;
-    double ans;
-
-    k = (*idum) / IQ;
-    *idum = IA * (*idum - k * IQ) - IR * k;
-    if (*idum < 0)
-        *idum += IM;
-    ans = AM * (*idum);
-    return ans;
-}
-
-long int random_number(long *idum)
-/*
-      FUNCTION:       generate an integer random number
-      INPUT:          pointer to variable containing random number seed
-      OUTPUT:         integer random number uniformly distributed in {0,2147483647}
-      (SIDE)EFFECTS:  random number seed is modified (important, has to be done!)
-      ORIGIN:         numerical recipes in C
- */
-{
-    long k;
-
-    k = (*idum) / IQ;
-    *idum = IA * (*idum - k * IQ) - IR * k;
-    if (*idum < 0)
-        *idum += IM;
-    return *idum;
-}
-
 long int **generate_int_matrix(long int n, long int m)
 /*
       FUNCTION:       malloc a matrix and return pointer to it
@@ -451,4 +417,9 @@ double **generate_double_matrix(long int n, long int m)
         matrix[i] = (double *)(matrix + n) + i * m;
     }
     return matrix;
+}
+
+double new_rand01(void)
+{
+    return distribution(rand_gen);
 }
