@@ -213,7 +213,7 @@ long int *generate_random_permutation(long int n)
     for (i = 0; i < n; i++)
     {
         /* find (randomly) an index for a free unit */
-        rnd = ran01(&seed);
+        rnd = new_rand01();
         node = (long int)(rnd * (n - tot_assigned));
         assert(i + node < n);
         help = r[i];

@@ -50,6 +50,8 @@
 
  ***************************************************************************/
 
+#include <random>
+
 #define INFTY LONG_MAX
 #define MAXIMUM_NO_TRIES 100
 
@@ -75,6 +77,7 @@
 #define MASK 123459876
 
 extern long int seed;
+extern std::default_random_engine rand_gen;
 
 double mean(long int *values, long int max);
 
@@ -106,10 +109,8 @@ void sort2(long int *v, long int *v2, long int left, long int right);
 
 void sort2_double(double *v, double *v2, long int left, long int right);
 
-double ran01(long *idum);
-
-long int random_number(long *idum);
-
 long int **generate_int_matrix(long int n, long int m);
 
 double **generate_double_matrix(long int n, long int m);
+
+double new_rand01(void);

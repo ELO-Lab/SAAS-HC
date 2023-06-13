@@ -306,7 +306,7 @@ void place_ant(ant_struct *a, long int step)
 {
     long int rnd;
 
-    rnd = (long int)(ran01(&seed) * (double)instance.n); /* random number between 0 .. n-1 */
+    rnd = (long int)(new_rand01() * (double)instance.n); /* random number between 0 .. n-1 */
     a->tour[step] = rnd;
     a->visited[rnd] = TRUE;
 }
@@ -441,7 +441,7 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
     of the nearest neighbor cities */
     double *prob_ptr;
 
-    if ((q_0 > 0.0) && (ran01(&seed) < q_0))
+    if ((q_0 > 0.0) && (new_rand01() < q_0))
     {
         /* with a probability q_0 make the best possible choice
        according to pheromone trails and heuristic information */
@@ -477,7 +477,7 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
     {
         /* at least one neighbor is eligible, chose one according to the
        selection probabilities */
-        rnd = ran01(&seed);
+        rnd = new_rand01();
         rnd *= sum_prob;
         i = 0;
         partial_sum = prob_ptr[i];
@@ -1152,9 +1152,9 @@ void bwas_pheromone_mutation(void)
 
     for (i = 0; i < num_mutations; i++)
     {
-        j = (long int)(ran01(&seed) * (double)instance.n);
-        k = (long int)(ran01(&seed) * (double)instance.n);
-        if (ran01(&seed) < 0.5)
+        j = (long int)(new_rand01() * (double)instance.n);
+        k = (long int)(new_rand01() * (double)instance.n);
+        if (new_rand01() < 0.5)
         {
             pheromone[j][k] += mutation_strength;
             pheromone[k][j] = pheromone[j][k];
