@@ -563,7 +563,7 @@ void pheromone_trail_update(void)
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if (not acs_flag)
+    if (!acs_flag || !es_ant_flag)
     {
         if (node_clustering_flag == TRUE)
         {

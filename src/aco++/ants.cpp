@@ -71,6 +71,8 @@
 #include "utilities.h"
 #include "timer.h"
 
+#include "es_ant.hpp"
+
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
 ant_struct *global_best_ant;
@@ -343,7 +345,7 @@ void choose_best_next(ant_struct *a, long int phase)
             if (total[current_city][city] > value_best)
             {
                 next_city = city;
-                value_best = total[current_city][city];
+                value_best = make_ant_weight(current_city, city);
             }
         }
     }
@@ -470,7 +472,7 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
         else
         {
             DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
-            prob_ptr[i] = total[current_city][instance.nn_list[current_city][i]];
+            prob_ptr[i] = make_ant_weight(current_city, instance.nn_list[current_city][i]);
             sum_prob += prob_ptr[i];
         }
     }

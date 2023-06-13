@@ -1,5 +1,6 @@
 // #include <iostream>
 #include <cstddef>
+#include <assert.h>
 
 #include "ants.h"
 #include "inout.h"
@@ -21,6 +22,7 @@
 #define Q_0_IDX 4
 #define ALPHA_IDX 5
 #define BETA_IDX 6
+#define ES_ANT_DIM 7
 #define CLUSTER_ALPHA_IDX 7
 #define CLUSTER_BETA_IDX 8
 #define RHO_IDX 9
@@ -105,25 +107,29 @@ void an_ant_local_search()
 
 libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 {
-	long int temp2 = restore_scale(x[SEED_IDX], lbounds[SEED_IDX], ubounds[SEED_IDX]),
-			 temp1 = floor(temp2);
-	seed = temp1;
-	if (ran01(&temp1) <= (temp2 - seed))
-	{
-		seed += 1;
-	}
+	assert(ES_ANT_DIM == N);
 
-	par_a = x[PAR_A_IDX];
-	par_b = x[PAR_B_IDX];
-	par_c = x[PAR_C_IDX];
-	q_0 = x[Q_0_IDX];
-#if NODE_CLUSTERING_VERSION == 1
-	alpha = restore_scale(x[ALPHA_IDX], lbounds[ALPHA_IDX], ubounds[ALPHA_IDX]);
-	beta = restore_scale(x[BETA_IDX], lbounds[BETA_IDX], ubounds[BETA_IDX]);
-	cluster_alpha = restore_scale(x[CLUSTER_ALPHA_IDX], lbounds[CLUSTER_ALPHA_IDX], ubounds[CLUSTER_ALPHA_IDX]);
-	cluster_beta = restore_scale(x[CLUSTER_BETA_IDX], lbounds[CLUSTER_BETA_IDX], ubounds[CLUSTER_BETA_IDX]);
-	rho = x[RHO_IDX];
-#endif
+	std::vector<double> parameters(N);
+	size_t i;
+	long int temp;
+
+	for (i = 0; i < N; i++)
+		parameters[i] = restore_scale(x[i], lbounds[i], ubounds[i]);
+
+	temp = floor(parameters[SEED_IDX]);
+	seed = temp;
+	if (ran01(&temp) <= (parameters[SEED_IDX] - seed))
+		seed += 1;
+
+	par_a = parameters[PAR_A_IDX];
+	par_b = parameters[PAR_B_IDX];
+	par_c = parameters[PAR_C_IDX];
+	q_0 = parameters[Q_0_IDX];
+	alpha = parameters[ALPHA_IDX];
+	beta = parameters[BETA_IDX];
+	// cluster_alpha = parameters[CLUSTER_ALPHA_IDX];
+	// cluster_beta = parameters[CLUSTER_BETA_IDX];
+	// rho = parameters[RHO_IDX];
 
 	an_ant_run();
 
@@ -147,14 +153,18 @@ void es_ant_set_default(void)
 {
 	par_a = par_b = par_c = 0.5;
 	q_0 = 0;
-#if NODE_CLUSTERING_VERSION == 1
-	n_generation_each_iteration = 1;
 	alpha = 1.550208;
 	beta = 4.893958;
-	cluster_alpha = alpha;
-	cluster_beta = beta;
-	rho = 0.468542;
-#endif
+
+	max_packing_tries = 1;
+	node_clustering_flag = FALSE;
+	acs_flag = FALSE;
+	adaptive_evaporation_flag = false;
+
+	// n_generation_each_iteration = 1;
+	// cluster_alpha = alpha;
+	// cluster_beta = beta;
+	// rho = 0.468542;
 }
 
 void init_optimizer(void)
@@ -164,9 +174,9 @@ void init_optimizer(void)
 	std::vector<double> x0(ES_ANT_DIM);
 	const double sigma = 0.1;
 
-	lbounds[SEED_IDX] = SEED_MIN;
-	ubounds[SEED_IDX] = SEED_MAX;
-	x0[SEED_IDX] = 0.5;
+	lbounds[SEED_IDX] = 1;
+	ubounds[SEED_IDX] = 2147483647;
+	x0[SEED_IDX] = (ubounds[SEED_IDX] - lbounds[SEED_IDX]) / 2.0;
 
 	lbounds[PAR_A_IDX] = 0;
 	ubounds[PAR_A_IDX] = 1;
@@ -184,32 +194,31 @@ void init_optimizer(void)
 	ubounds[Q_0_IDX] = 1;
 	x0[Q_0_IDX] = q_0;
 
-#if NODE_CLUSTERING_VERSION == 1
 	lbounds[ALPHA_IDX] = 0;
-	ubounds[ALPHA_IDX] = DBL_MAX;
-	x0[ALPHA_IDX] = normalize(alpha, lbounds[ALPHA_IDX], ubounds[ALPHA_IDX]);
+	ubounds[ALPHA_IDX] = 17;
+	x0[ALPHA_IDX] = alpha;
 
 	lbounds[BETA_IDX] = 0;
-	ubounds[BETA_IDX] = DBL_MAX;
-	x0[BETA_IDX] = normalize(beta, lbounds[BETA_IDX], ubounds[BETA_IDX]);
+	ubounds[BETA_IDX] = 17;
+	x0[BETA_IDX] = beta;
 
-	lbounds[CLUSTER_ALPHA_IDX] = 0;
-	ubounds[CLUSTER_ALPHA_IDX] = DBL_MAX;
-	x0[CLUSTER_ALPHA_IDX] = normalize(cluster_alpha, lbounds[CLUSTER_ALPHA_IDX], ubounds[CLUSTER_ALPHA_IDX]);
+	// lbounds[CLUSTER_ALPHA_IDX] = 0;
+	// ubounds[CLUSTER_ALPHA_IDX] = 17;
+	// x0[CLUSTER_ALPHA_IDX] = cluster_alpha;
 
-	lbounds[CLUSTER_BETA_IDX] = 0;
-	ubounds[CLUSTER_BETA_IDX] = DBL_MAX;
-	x0[CLUSTER_BETA_IDX] = normalize(cluster_beta, lbounds[CLUSTER_BETA_IDX], ubounds[CLUSTER_BETA_IDX]);
+	// lbounds[CLUSTER_BETA_IDX] = 0;
+	// ubounds[CLUSTER_BETA_IDX] = 17;
+	// x0[CLUSTER_BETA_IDX] = cluster_beta;
 
-	lbounds[RHO_IDX] = 0;
-	ubounds[RHO_IDX] = 1;
-	x0[RHO_IDX] = rho;
-#endif
+	// lbounds[RHO_IDX] = 0;
+	// ubounds[RHO_IDX] = 1;
+	// x0[RHO_IDX] = rho;
 
 	for (i = 0; i < ES_ANT_DIM; i++)
 	{
 		assert(x0[i] >= lbounds[i]);
 		assert(x0[i] <= ubounds[i]);
+		x0[i] = normalize(x0[i], lbounds[i], ubounds[i]);
 	}
 	PARAMETER<GENO_PHENO> cmaparams(x0, sigma, LAMBDA, seed);
 	cmaparams.set_algo(ALGO_CODE);
@@ -219,10 +228,6 @@ void init_optimizer(void)
 
 void es_ant_init(void)
 {
-	assert(node_clustering_flag == NODE_CLUSTERING_VERSION);
-	assert(!adaptive_evaporation_flag);
-	assert(max_packing_tries == 1);
-
 	es_ant_set_default();
 	init_optimizer();
 }
@@ -243,4 +248,12 @@ void es_ant_construct_and_local_search(void)
 		if (termination_condition())
 			return;
 	}
+}
+
+double make_ant_weight(size_t i, size_t j)
+{
+	if (!es_ant_flag)
+		return total[i][j];
+
+	return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
 }

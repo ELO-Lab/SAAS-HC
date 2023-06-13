@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <cstddef>
+#include <assert.h>
 
 #include "ants.h"
 #include "thop.h"
