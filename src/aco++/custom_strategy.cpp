@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <assert.h>
 
 #include <libcmaes/cmaes.h>
 
@@ -10,6 +11,22 @@
 
 template <class TGenoPheno>
 using eostrat = libcmaes::ESOStrategy<libcmaes::CMAParameters<TGenoPheno>, libcmaes::CMASolutions, libcmaes::CMAStopCriteria<TGenoPheno>>;
+
+template <class TCovarianceUpdate, class TGenoPheno>
+void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::clip_candidates(dMat &candidates)
+{
+    size_t i;
+
+    for (i = 0; i < candidates.cols(); i++)
+    {
+        for (auto &value : candidates.col(i))
+        {
+
+            value = std::max(value, 0.0);
+            value = std::min(value, 1.0);
+        }
+    }
+}
 
 template <class TCovarianceUpdate, class TGenoPheno>
 libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::Custom_Strategy(libcmaes::FitFunc &func,
@@ -124,7 +141,8 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::generation_run(vo
 {
     const std::chrono::time_point<std::chrono::system_clock> tstart = std::chrono::system_clock::now();
 
-    const auto candidates = this->ask();
+    auto candidates = this->ask();
+    this->clip_candidates(candidates);
     const auto phenocandidates = this->eostrat<TGenoPheno>::_parameters.get_gp().pheno(candidates);
     this->eval(candidates, phenocandidates);
     this->tell();
