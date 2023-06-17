@@ -371,7 +371,7 @@ void neighbour_choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            help = make_ant_weight(current_city, help_city);
+            help = total[current_city][help_city];
             if (help > value_best)
             {
                 value_best = help;

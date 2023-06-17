@@ -325,9 +325,9 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
             profit_accumulated[i] = weight_accumulated[i] = 0;
         }
 
-        par_a = ran01(&seed); /* uniform random number between [0.0, 1.0] */
-        par_b = ran01(&seed); /* uniform random number between [0.0, 1.0] */
-        par_c = ran01(&seed); /* uniform random number between [0.0, 1.0] */
+        par_a = new_rand01(); /* uniform random number between [0.0, 1.0] */
+        par_b = new_rand01(); /* uniform random number between [0.0, 1.0] */
+        par_c = new_rand01(); /* uniform random number between [0.0, 1.0] */
 
         par_sum = (par_a + par_b + par_c);
         par_a /= par_sum;
