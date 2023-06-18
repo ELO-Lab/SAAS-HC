@@ -4,7 +4,6 @@ import subprocess
 import multiprocessing
 from tqdm import tqdm
 import argparse
-import parser
 from datetime import datetime
 import yaml
 
@@ -171,7 +170,7 @@ def build():
 def imap_unordered_bar(func, args, total, n_processes=2):
     p = multiprocessing.Pool(n_processes)
 
-    with tqdm(total=total, desc="outer") as pbar:
+    with tqdm(total=total) as pbar:
         for i, result in tqdm(
             enumerate(p.imap_unordered(func, args)), desc="iner", disable=True
         ):

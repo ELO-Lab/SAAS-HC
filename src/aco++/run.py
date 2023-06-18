@@ -1,4 +1,5 @@
 import os
+import shutil
 import argparse
 import math
 from pathlib import Path
@@ -622,7 +623,7 @@ def build():
     if silent <= 0:
         print(f"$ {' '.join(command)}\n{result.stdout.decode()}\n")
 
-    os.rename(f"{acopp_dir}/build/acothop", executable_path)
+    shutil.copy(f"{acopp_dir}/build/acothop", executable_path)
 
 
 def format_aco_command():
