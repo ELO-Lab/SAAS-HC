@@ -5,28 +5,14 @@
 #include <libcmaes/cmaes.h>
 
 #include "custom_strategy.hpp"
+#include "es_ant.hpp"
 
 #define BIPOP_FIRST_OPTIMIZE 1
 #define BIPOP_SECOND_OPTIMIZE 2
+#define BIPOP_STOPPED 3
 
 template <class TGenoPheno>
 using eostrat = libcmaes::ESOStrategy<libcmaes::CMAParameters<TGenoPheno>, libcmaes::CMASolutions, libcmaes::CMAStopCriteria<TGenoPheno>>;
-
-template <class TCovarianceUpdate, class TGenoPheno>
-void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::clip_candidates(dMat &candidates)
-{
-    size_t i;
-
-    for (i = 0; i < candidates.cols(); i++)
-    {
-        for (auto &value : candidates.col(i))
-        {
-
-            value = std::max(value, 0.0);
-            value = std::min(value, 1.0);
-        }
-    }
-}
 
 template <class TCovarianceUpdate, class TGenoPheno>
 libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::Custom_Strategy(libcmaes::FitFunc &func,
@@ -66,7 +52,8 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::bipop_for_loop(vo
         this->bipop_case = BIPOP_SECOND_OPTIMIZE;
         return;
     }
-    assert(false);
+    this->bipop_case = BIPOP_STOPPED;
+    return;
 }
 
 template <class TCovarianceUpdate, class TGenoPheno>
@@ -103,36 +90,33 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::cma_out(void)
             this->cma_in();
         }
     }
-
-    assert(this->eostrat<TGenoPheno>::_solutions._run_status >= 0);
 }
 
 template <class TCovarianceUpdate, class TGenoPheno>
 void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::prepare(void)
 {
-    if (!this->stop())
+    while (this->stop())
     {
-        return;
-    }
-    switch (bipop_case)
-    {
-    case BIPOP_FIRST_OPTIMIZE:
-        this->cma_out();
-        this->bipop_budgets[1] += libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_solutions._niter * libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_parameters._lambda;
-        this->libcmaes::IPOPCMAStrategy<TCovarianceUpdate, TGenoPheno>::capture_best_solution(this->bipop_best_run);
-        this->bipop_for_loop();
-        this->cma_in();
-        break;
-    case BIPOP_SECOND_OPTIMIZE:
-        this->cma_out();
-        this->bipop_budgets[0] += libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_solutions._niter * libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_parameters._lambda;
-        this->libcmaes::IPOPCMAStrategy<TCovarianceUpdate, TGenoPheno>::capture_best_solution(this->bipop_best_run);
-        this->bipop_r++;
-        this->bipop_for_loop();
-        this->cma_in();
-        break;
-    default:
-        assert(false);
+        switch (bipop_case)
+        {
+        case BIPOP_FIRST_OPTIMIZE:
+            this->cma_out();
+            this->bipop_budgets[1] += libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_solutions._niter * libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_parameters._lambda;
+            this->libcmaes::IPOPCMAStrategy<TCovarianceUpdate, TGenoPheno>::capture_best_solution(this->bipop_best_run);
+            this->bipop_for_loop();
+            this->cma_in();
+            break;
+        case BIPOP_SECOND_OPTIMIZE:
+            this->cma_out();
+            this->bipop_budgets[0] += libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_solutions._niter * libcmaes::CMAStrategy<TCovarianceUpdate, TGenoPheno>::_parameters._lambda;
+            this->libcmaes::IPOPCMAStrategy<TCovarianceUpdate, TGenoPheno>::capture_best_solution(this->bipop_best_run);
+            this->bipop_r++;
+            this->bipop_for_loop();
+            this->cma_in();
+            break;
+        default:
+            assert(false);
+        }
     }
 }
 
@@ -142,7 +126,8 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::generation_run(vo
     const std::chrono::time_point<std::chrono::system_clock> tstart = std::chrono::system_clock::now();
 
     auto candidates = this->ask();
-    this->clip_candidates(candidates);
+    clip_candidates(candidates);
+    round_seed_candidates(candidates);
     const auto phenocandidates = this->eostrat<TGenoPheno>::_parameters.get_gp().pheno(candidates);
     this->eval(candidates, phenocandidates);
     this->tell();
@@ -152,5 +137,3 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::generation_run(vo
     this->eostrat<TGenoPheno>::_solutions._elapsed_last_iter = std::chrono::duration_cast<std::chrono::milliseconds>(tstop - tstart).count();
     this->prepare();
 }
-
-// OPTIMIZER *optim_ptr;

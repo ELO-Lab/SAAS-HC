@@ -342,7 +342,7 @@ void choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            if (total[current_city][city] > value_best)
+            if (make_ant_weight(current_city, city) > value_best)
             {
                 next_city = city;
                 value_best = make_ant_weight(current_city, city);

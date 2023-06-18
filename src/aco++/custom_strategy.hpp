@@ -28,7 +28,6 @@ namespace libcmaes
         void bipop_for_loop(void);
         void cma_in(void);
         void cma_out(void);
-        void clip_candidates(dMat &);
 
         // bipop local variables
         std::array<int, 2> bipop_budgets = {{0, 0}}; // 0: r1, 1: r2

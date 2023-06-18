@@ -17,6 +17,8 @@
 #include "utilities.h"
 #include "timer.h"
 
+#include "es_ant.hpp"
+
 std::vector<std::vector<std::vector<int>>> cluster_chunk;
 std::vector<std::vector<int>> clusters;
 std::vector<int> cluster;
@@ -29,7 +31,8 @@ int n_cluster;
 int cluster_size;
 int n_sector;
 
-void evaporation_nc_list(void){
+void evaporation_nc_list(void)
+{
 
     TRACE(printf("pheromone evaporation nn_list\n"););
 
@@ -37,7 +40,8 @@ void evaporation_nc_list(void){
     {
         for (int cur_cluster = 0; cur_cluster < cluster_chunk[i].size(); cur_cluster++)
         {
-            for (int j = 0; j < cluster_chunk[i][cur_cluster].size(); j++){
+            for (int j = 0; j < cluster_chunk[i][cur_cluster].size(); j++)
+            {
                 int help_city = cluster_chunk[i][cur_cluster][j];
                 pheromone[i][help_city] = (1 - rho) * pheromone[i][help_city];
             }
@@ -144,8 +148,9 @@ void create_cluster(void)
             int node = find_closest_node_in_sector(i, n_sector, j);
             if (node != -1)
             {
-                if (cluster_chunk[i][cluster_index].size() >= cluster_size) {
-                    cluster_index++;   
+                if (cluster_chunk[i][cluster_index].size() >= cluster_size)
+                {
+                    cluster_index++;
                     cluster_chunk[i].push_back(cluster);
                 }
                 cluster_chunk[i][cluster_index].push_back(node);
@@ -236,10 +241,13 @@ void node_clustering_move(ant_struct *a, long int phase)
             selected_cluster = 0;
             first = 0;
         }
-        else if (selected_cluster == cluster_chunk[current_city].size() - 1){
+        else if (selected_cluster == cluster_chunk[current_city].size() - 1)
+        {
             choose_best_next(a, phase);
             return;
-        }else{
+        }
+        else
+        {
             selected_cluster++;
         }
     }
@@ -249,7 +257,7 @@ void node_clustering_move(ant_struct *a, long int phase)
     lp = 0;
     for (int i = 0; i < candidates.size(); i++)
     {
-        lp = lp + total[current_city][candidates[i]];
+        lp = lp + make_ant_weight(current_city, candidates[i]);
         total_candidates.push_back(lp);
     }
 

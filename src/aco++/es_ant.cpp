@@ -1,6 +1,7 @@
 // #include <iostream>
 #include <cstddef>
 #include <assert.h>
+#include <limits.h>
 
 #include "ants.h"
 #include "inout.h"
@@ -22,10 +23,10 @@
 #define Q_0_IDX 4
 #define ALPHA_IDX 5
 #define BETA_IDX 6
-#define ES_ANT_DIM 7
-#define CLUSTER_ALPHA_IDX 7
-#define CLUSTER_BETA_IDX 8
-#define RHO_IDX 9
+#define RHO_IDX 7
+#define ES_ANT_DIM 8
+#define CLUSTER_ALPHA_IDX 8
+#define CLUSTER_BETA_IDX 9
 
 double par_a, par_b, par_c, cluster_alpha, cluster_beta;
 bool es_ant_flag = true;
@@ -35,15 +36,43 @@ std::array<double, ES_ANT_DIM> lbounds, ubounds;
 OPTIMIZER *optim_ptr;
 
 template <class TNumeric>
-TNumeric normalize(const TNumeric &value, const TNumeric &lower_bound, const TNumeric &upper_bound)
+double normalize(const TNumeric &value, const TNumeric &lower_bound, const TNumeric &upper_bound)
 {
-	return (value - lower_bound) / (upper_bound - lower_bound);
+	return (value - lower_bound) * 1.0 / (upper_bound - lower_bound);
 }
 
 template <class TNumeric>
 TNumeric restore_scale(const TNumeric &normalized_value, const TNumeric &lower_bound, const TNumeric &upper_bound)
 {
 	return normalized_value * (upper_bound - lower_bound) + lower_bound;
+}
+
+void round_seed_candidates(dMat &candidates)
+{
+	size_t i;
+
+	for (i = 0; i < candidates.cols(); i++)
+	{
+		auto &seed = candidates.col(i)[SEED_IDX];
+		seed = restore_scale(seed, lbounds[SEED_IDX], ubounds[SEED_IDX]);
+		seed = round(seed);
+		seed = normalize(seed, lbounds[SEED_IDX], ubounds[SEED_IDX]);
+	}
+}
+
+void clip_candidates(dMat &candidates)
+{
+	size_t i;
+
+	for (i = 0; i < candidates.cols(); i++)
+	{
+		for (auto &value : candidates.col(i))
+		{
+
+			value = std::max(value, 0.0);
+			value = std::min(value, 1.0);
+		}
+	}
 }
 
 void an_ant_run()
@@ -111,25 +140,20 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 
 	std::vector<double> parameters(N);
 	size_t i;
-	uint_fast32_t seed;
 
 	for (i = 0; i < N; i++)
 		parameters[i] = restore_scale(x[i], lbounds[i], ubounds[i]);
 
-	seed = floor(parameters[SEED_IDX]);
-	if (new_rand01() < (parameters[SEED_IDX] - seed))
-		seed += 1;
-	rand_gen.seed(seed);
-
+	rand_gen.seed(round(parameters[SEED_IDX]));
 	par_a = parameters[PAR_A_IDX];
 	par_b = parameters[PAR_B_IDX];
 	par_c = parameters[PAR_C_IDX];
 	q_0 = parameters[Q_0_IDX];
 	alpha = parameters[ALPHA_IDX];
 	beta = parameters[BETA_IDX];
+	rho = parameters[RHO_IDX];
 	// cluster_alpha = parameters[CLUSTER_ALPHA_IDX];
 	// cluster_beta = parameters[CLUSTER_BETA_IDX];
-	// rho = parameters[RHO_IDX];
 
 	an_ant_run();
 
@@ -155,28 +179,29 @@ void es_ant_set_default(void)
 	q_0 = 0;
 	alpha = 1.550208;
 	beta = 4.893958;
+	rho = 0.468542;
 
 	max_packing_tries = 1;
 	node_clustering_flag = FALSE;
 	acs_flag = FALSE;
+	ls_flag = 1;
 	adaptive_evaporation_flag = false;
 
 	// n_generation_each_iteration = 1;
 	// cluster_alpha = alpha;
 	// cluster_beta = beta;
-	// rho = 0.468542;
 }
 
 void init_optimizer(void)
 {
-	const long int LAMBDA = -1, ALGO_CODE = aBIPOP_CMAES;
+	const long int LAMBDA = -1, ALGO_CODE = aBIPOP_CMAES, NRESTARTS = INT_MAX;
 	size_t i;
 	std::vector<double> x0(ES_ANT_DIM);
 	const uint64_t seed = rand_gen();
 	const double sigma = 0.1;
 
-	lbounds[SEED_IDX] = 1;
-	ubounds[SEED_IDX] = 2147483647;
+	lbounds[SEED_IDX] = rand_gen.min();
+	ubounds[SEED_IDX] = rand_gen.max();
 	x0[SEED_IDX] = (ubounds[SEED_IDX] - lbounds[SEED_IDX]) / 2.0;
 
 	lbounds[PAR_A_IDX] = 0;
@@ -196,24 +221,24 @@ void init_optimizer(void)
 	x0[Q_0_IDX] = q_0;
 
 	lbounds[ALPHA_IDX] = 0;
-	ubounds[ALPHA_IDX] = 17;
+	ubounds[ALPHA_IDX] = 10;
 	x0[ALPHA_IDX] = alpha;
 
 	lbounds[BETA_IDX] = 0;
-	ubounds[BETA_IDX] = 17;
+	ubounds[BETA_IDX] = 10;
 	x0[BETA_IDX] = beta;
 
+	lbounds[RHO_IDX] = 0;
+	ubounds[RHO_IDX] = 0.99;
+	x0[RHO_IDX] = rho;
+
 	// lbounds[CLUSTER_ALPHA_IDX] = 0;
-	// ubounds[CLUSTER_ALPHA_IDX] = 17;
+	// ubounds[CLUSTER_ALPHA_IDX] = 10;
 	// x0[CLUSTER_ALPHA_IDX] = cluster_alpha;
 
 	// lbounds[CLUSTER_BETA_IDX] = 0;
-	// ubounds[CLUSTER_BETA_IDX] = 17;
+	// ubounds[CLUSTER_BETA_IDX] = 10;
 	// x0[CLUSTER_BETA_IDX] = cluster_beta;
-
-	// lbounds[RHO_IDX] = 0;
-	// ubounds[RHO_IDX] = 1;
-	// x0[RHO_IDX] = rho;
 
 	for (i = 0; i < ES_ANT_DIM; i++)
 	{
@@ -224,6 +249,7 @@ void init_optimizer(void)
 	PARAMETER<GENO_PHENO> cmaparams(x0, sigma, LAMBDA, seed);
 	cmaparams.set_algo(ALGO_CODE);
 	cmaparams.set_mt_feval(false);
+	cmaparams.set_restarts(NRESTARTS);
 	optim_ptr = new OPTIMIZER(es_evaluate, cmaparams);
 }
 
@@ -256,5 +282,5 @@ double make_ant_weight(size_t i, size_t j)
 	if (!es_ant_flag)
 		return total[i][j];
 
-	return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+	return pow((1 - rho) * pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
 }
