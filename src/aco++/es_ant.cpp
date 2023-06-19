@@ -204,51 +204,59 @@ void es_ant_set_default(void)
 
 void init_optimizer(void)
 {
-	const long int LAMBDA = -1, ALGO_CODE = aBIPOP_CMAES, NRESTARTS = INT_MAX;
+	const long int ALGO_CODE = aBIPOP_CMAES, NRESTARTS = INT_MAX;
 	size_t i;
-	std::vector<double> x0(ES_ANT_DIM);
-	const uint64_t seed = rand_gen();
-	const double sigma = 0.05;
+	std::vector<double> x0(ES_ANT_DIM), sigma(ES_ANT_DIM);
 
 	lbounds[SEED_IDX] = rand_gen.min();
 	ubounds[SEED_IDX] = rand_gen.max();
 	x0[SEED_IDX] = (ubounds[SEED_IDX] - lbounds[SEED_IDX]) / 2.0;
+	sigma[SEED_IDX] = 0.05;
 
 	lbounds[PAR_A_IDX] = 0.01;
 	ubounds[PAR_A_IDX] = 1;
 	x0[PAR_A_IDX] = par_a;
+	sigma[PAR_A_IDX] = 0.05;
 
 	lbounds[PAR_B_IDX] = 0.01;
 	ubounds[PAR_B_IDX] = 1;
 	x0[PAR_B_IDX] = par_b;
+	sigma[PAR_B_IDX] = 0.05;
 
 	lbounds[PAR_C_IDX] = 0.01;
 	ubounds[PAR_C_IDX] = 1;
 	x0[PAR_C_IDX] = par_c;
+	sigma[PAR_C_IDX] = 0.05;
 
 	lbounds[Q_0_IDX] = 0;
 	ubounds[Q_0_IDX] = 0.99;
 	x0[Q_0_IDX] = q_0;
+	sigma[Q_0_IDX] = 0.05;
 
 	lbounds[ALPHA_IDX] = 0.01;
 	ubounds[ALPHA_IDX] = 10;
 	x0[ALPHA_IDX] = alpha;
+	sigma[ALPHA_IDX] = 1.523180 / (ubounds[ALPHA_IDX] - lbounds[ALPHA_IDX]);
 
 	lbounds[BETA_IDX] = 0.01;
 	ubounds[BETA_IDX] = 10;
 	x0[BETA_IDX] = beta;
+	sigma[BETA_IDX] = 2.067786 / (ubounds[BETA_IDX] - lbounds[BETA_IDX]);
 
 	lbounds[RHO_IDX] = 0.01;
 	ubounds[RHO_IDX] = 0.99;
 	x0[RHO_IDX] = rho;
+	sigma[RHO_IDX] = 0.253226 / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
 
 	// lbounds[CLUSTER_ALPHA_IDX] = 0;
 	// ubounds[CLUSTER_ALPHA_IDX] = 10;
 	// x0[CLUSTER_ALPHA_IDX] = cluster_alpha;
+	// sigma[CLUSTER_ALPHA_IDX] = 0.05;
 
 	// lbounds[CLUSTER_BETA_IDX] = 0;
 	// ubounds[CLUSTER_BETA_IDX] = 10;
 	// x0[CLUSTER_BETA_IDX] = cluster_beta;
+	// sigma[CLUSTER_BETA_IDX] = 0.05;
 
 	for (i = 0; i < ES_ANT_DIM; i++)
 	{
@@ -256,7 +264,7 @@ void init_optimizer(void)
 		assert(x0[i] <= ubounds[i]);
 		x0[i] = normalize(x0[i], lbounds[i], ubounds[i]);
 	}
-	PARAMETER<GENO_PHENO> cmaparams(x0, sigma, LAMBDA, seed);
+	PARAMETER<GENO_PHENO> cmaparams(x0, sigma, -1, std::vector<double>(), std::vector<double>(), rand_gen());
 	cmaparams.set_algo(ALGO_CODE);
 	cmaparams.set_mt_feval(false);
 	cmaparams.set_restarts(NRESTARTS);
