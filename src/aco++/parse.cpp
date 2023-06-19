@@ -11,6 +11,7 @@
 #include "ls.h"
 #include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
+#include "es_ant.hpp"
 
 #ifndef STR_ERR_UNKNOWN_LONG_OPT
 #define STR_ERR_UNKNOWN_LONG_OPT "%s: unrecognized option `--%s'\n"
@@ -1485,12 +1486,11 @@ int parse_commandline(int argc, char *argv[])
     }
     */
 
-    if (ls_flag)
+    if (ls_flag or es_ant_flag)
     {
         set_default_ls_parameters();
     }
 
-    
     if (options.opt_nodeclustering)
     {
         node_clustering_flag = TRUE;

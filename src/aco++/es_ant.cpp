@@ -34,6 +34,8 @@ size_t current_ant_idx = 0;
 std::array<double, ES_ANT_DIM> lbounds, ubounds;
 // long int n_generation_each_iteration;
 OPTIMIZER *optim_ptr;
+double best_iteration_alpha, best_iteration_beta, best_iteration_rho;
+long int best_iteration_fitness;
 
 template <class TNumeric>
 double normalize(const TNumeric &value, const TNumeric &lower_bound, const TNumeric &upper_bound)
@@ -169,6 +171,14 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 		}
 	}
 
+	if (ant[current_ant_idx].fitness < best_iteration_fitness)
+	{
+		best_iteration_fitness = ant[current_ant_idx].fitness;
+		best_iteration_alpha = alpha;
+		best_iteration_beta = beta;
+		best_iteration_rho = rho;
+	}
+
 	current_ant_idx += 1;
 	return ant[current_ant_idx - 1].fitness;
 };
@@ -198,37 +208,37 @@ void init_optimizer(void)
 	size_t i;
 	std::vector<double> x0(ES_ANT_DIM);
 	const uint64_t seed = rand_gen();
-	const double sigma = 0.1;
+	const double sigma = 0.05;
 
 	lbounds[SEED_IDX] = rand_gen.min();
 	ubounds[SEED_IDX] = rand_gen.max();
 	x0[SEED_IDX] = (ubounds[SEED_IDX] - lbounds[SEED_IDX]) / 2.0;
 
-	lbounds[PAR_A_IDX] = 0;
+	lbounds[PAR_A_IDX] = 0.01;
 	ubounds[PAR_A_IDX] = 1;
 	x0[PAR_A_IDX] = par_a;
 
-	lbounds[PAR_B_IDX] = 0;
+	lbounds[PAR_B_IDX] = 0.01;
 	ubounds[PAR_B_IDX] = 1;
 	x0[PAR_B_IDX] = par_b;
 
-	lbounds[PAR_C_IDX] = 0;
+	lbounds[PAR_C_IDX] = 0.01;
 	ubounds[PAR_C_IDX] = 1;
 	x0[PAR_C_IDX] = par_c;
 
 	lbounds[Q_0_IDX] = 0;
-	ubounds[Q_0_IDX] = 1;
+	ubounds[Q_0_IDX] = 0.99;
 	x0[Q_0_IDX] = q_0;
 
-	lbounds[ALPHA_IDX] = 0;
+	lbounds[ALPHA_IDX] = 0.01;
 	ubounds[ALPHA_IDX] = 10;
 	x0[ALPHA_IDX] = alpha;
 
-	lbounds[BETA_IDX] = 0;
+	lbounds[BETA_IDX] = 0.01;
 	ubounds[BETA_IDX] = 10;
 	x0[BETA_IDX] = beta;
 
-	lbounds[RHO_IDX] = 0;
+	lbounds[RHO_IDX] = 0.01;
 	ubounds[RHO_IDX] = 0.99;
 	x0[RHO_IDX] = rho;
 
@@ -263,6 +273,7 @@ void es_ant_construct_and_local_search(void)
 {
 	size_t capacity_need;
 	current_ant_idx = 0;
+	best_iteration_fitness = instance.UB + 1;
 	while (current_ant_idx < n_ants)
 	{
 		capacity_need = current_ant_idx + optim_ptr->get_lambda();
@@ -275,6 +286,10 @@ void es_ant_construct_and_local_search(void)
 		if (termination_condition())
 			return;
 	}
+
+	alpha = best_iteration_alpha;
+	beta = best_iteration_beta;
+	rho = best_iteration_rho;
 }
 
 double make_ant_weight(size_t i, size_t j)
