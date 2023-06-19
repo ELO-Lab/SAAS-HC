@@ -111,6 +111,22 @@ random_seeds = [
 ]
 
 
+def run_command(command):
+    result = subprocess.run(command, capture_output=True)
+    assert (
+        result.returncode == 0
+    ), f"""
+command:
+{"$ "+' '.join(command)}
+returncode: {result.returncode}
+stderr:
+{result.stderr.decode()}
+stdout:
+{result.stdout.decode()}
+"""
+    return result
+
+
 def launcher(arg):
     global aaco_nc_flag, number_of_runs, sol_dir, debug_log, postfix
     instance_name, repetition = arg
@@ -139,32 +155,20 @@ def launcher(arg):
     if repetition != number_of_runs - 1:
         command += ["--silent", "2" if not debug_log else "-1"]
         if debug_log:
-            print(f"$ {' '.join(command)}")
-        subprocess.run(command, check=True)
+            print("$ " + " ".join(command))
+        run_command(command)
     else:
-        result = subprocess.run(command, capture_output=True, check=True)
+        result = run_command(command)
         stdout_log = result.stdout.decode()
 
     return (instance_name, repetition, stdout_log)
 
 
 def build():
-    # print("=========   CLEAN AND BUILD   =========")
-
-    # command = ["python3", "../../utils/cmake_clean.py", "."]
-    # print(f"$ {' '.join(command)}")
-    # result = subprocess.run(command, capture_output=True, check=True)
-    # print(result.stdout.decode())
-
     command = ["python3", "run.py", "--build_only", "--experiment"]
-    print(f"$ {' '.join(command)}")
-    result = subprocess.run(command, capture_output=True, check=True)
+    print("$ " + " ".join(command))
+    result = run_command(command)
     print(result.stdout.decode())
-
-    # command = ["rm", "-rf", sol_dir]
-    # print(f"$ {' '.join(command)}")
-    # result = subprocess.run(command, check=True)
-    # print("======================================")
 
 
 def imap_unordered_bar(func, args, total, n_processes=2):
