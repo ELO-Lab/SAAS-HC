@@ -611,17 +611,18 @@ def build():
         f"-B{acopp_dir}/build",
         f"-DCMAKE_BUILD_TYPE:STRING={'Release' if not debug else 'Debug'}",
     ]
-    result = run_command(command)
-
     if silent <= 0:
-        print(f"$ {' '.join(command)}\n{result.stdout.decode()}\n")
-        print()
+        print("$ " + " ".join(command))
+    result = run_command(command)
+    if silent <= 0:
+        print(result.stdout.decode())
 
     command = ["make", "-C", f"{acopp_dir}/build"]
-    result = run_command(command)
-
     if silent <= 0:
-        print(f"$ {' '.join(command)}\n{result.stdout.decode()}\n")
+        print("$ " + " ".join(command))
+    result = run_command(command)
+    if silent <= 0:
+        print(result.stdout.decode())
 
     shutil.copy(f"{acopp_dir}/build/acothop", executable_path)
 
@@ -693,7 +694,7 @@ def run_command(command):
         result.returncode == 0
     ), f"""
 command:
-{' '.join(command)}
+{"$ " + ' '.join(command)}
 returncode: {result.returncode}
 stderr:
 {result.stderr.decode()}
@@ -726,7 +727,7 @@ if __name__ == "__main__":
 
     command = format_aco_command()
     if silent <= 0:
-        print(f"$ {' '.join(command)}")
+        print("$ " + " ".join(command))
 
     os.makedirs(output_path.parent, exist_ok=True)
     start = datetime.now()
