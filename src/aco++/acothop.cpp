@@ -660,7 +660,8 @@ int main(int argc, char *argv[])
     }
     exit_program();
 
-    free(optim_ptr);
+    delete (optim_ptr);
+
     free(instance.distance);
     free(instance.nn_list);
     free(pheromone);
