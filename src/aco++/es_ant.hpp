@@ -4,15 +4,15 @@
 #include <libcmaes/eo_matrix.h>
 
 // Hyperparameters
-extern double par_a, par_b, par_c, cluster_alpha, cluster_beta;
 extern bool es_ant_flag;
-// extern long int n_generation_each_iteration;
+extern double par_a, par_b, par_c;
+extern size_t min_num_ants;
 
+void es_ant_set_default(void);
 void es_ant_init(void);
 void es_ant_construct_and_local_search(void);
 double make_ant_weight(size_t, size_t);
 
-void round_seed_candidates(dMat &);
-void clip_candidates(dMat &);
+void repair_candidates(dMat &);
 
 #endif

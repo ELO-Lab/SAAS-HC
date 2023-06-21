@@ -23,18 +23,16 @@
 #define Q_0_IDX 4
 #define ALPHA_IDX 5
 #define BETA_IDX 6
-#define RHO_IDX 7
-#define ES_ANT_DIM 8
-#define CLUSTER_ALPHA_IDX 8
-#define CLUSTER_BETA_IDX 9
+#define ES_ANT_DIM 7
 
-double par_a, par_b, par_c, cluster_alpha, cluster_beta;
 bool es_ant_flag = true;
+double par_a, par_b, par_c;
+size_t min_num_ants;
+
 size_t current_ant_idx = 0;
 std::array<double, ES_ANT_DIM> lbounds, ubounds;
-// long int n_generation_each_iteration;
 OPTIMIZER *optim_ptr;
-double best_iteration_alpha, best_iteration_beta, best_iteration_rho;
+double best_iteration_alpha, best_iteration_beta;
 long int best_iteration_fitness;
 
 template <class TNumeric>
@@ -75,6 +73,12 @@ void clip_candidates(dMat &candidates)
 			value = std::min(value, 1.0);
 		}
 	}
+}
+
+void repair_candidates(dMat &candidates)
+{
+	clip_candidates(candidates);
+	round_seed_candidates(candidates);
 }
 
 void an_ant_run()
@@ -138,7 +142,8 @@ void an_ant_local_search()
 
 libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 {
-	assert(ES_ANT_DIM == N);
+	if (termination_condition())
+		return -1;
 
 	std::vector<double> parameters(N);
 	size_t i;
@@ -153,9 +158,6 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 	q_0 = parameters[Q_0_IDX];
 	alpha = parameters[ALPHA_IDX];
 	beta = parameters[BETA_IDX];
-	rho = parameters[RHO_IDX];
-	// cluster_alpha = parameters[CLUSTER_ALPHA_IDX];
-	// cluster_beta = parameters[CLUSTER_BETA_IDX];
 
 	an_ant_run();
 
@@ -176,7 +178,6 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 		best_iteration_fitness = ant[current_ant_idx].fitness;
 		best_iteration_alpha = alpha;
 		best_iteration_beta = beta;
-		best_iteration_rho = rho;
 	}
 
 	current_ant_idx += 1;
@@ -185,21 +186,20 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 
 void es_ant_set_default(void)
 {
-	par_a = par_b = par_c = 0.5;
-	q_0 = 0;
-	alpha = 1.550208;
-	beta = 4.893958;
-	rho = 0.468542;
-
 	max_packing_tries = 1;
-	node_clustering_flag = FALSE;
 	acs_flag = FALSE;
 	ls_flag = 1;
-	adaptive_evaporation_flag = false;
+	par_a = par_b = par_c = 0.5;
+	q_0 = 0;
 
-	// n_generation_each_iteration = 1;
-	// cluster_alpha = alpha;
-	// cluster_beta = beta;
+	// temp
+	alpha = 1.550208;
+	beta = 4.893958;
+	min_num_ants = n_ants * 8 / 10;
+	adaptive_evaporation_flag = false;
+	rho = 0.468542;
+	node_clustering_flag = FALSE;
+	////
 }
 
 void init_optimizer(void)
@@ -243,21 +243,6 @@ void init_optimizer(void)
 	x0[BETA_IDX] = beta;
 	sigma[BETA_IDX] = 2.067786 / (ubounds[BETA_IDX] - lbounds[BETA_IDX]);
 
-	lbounds[RHO_IDX] = 0.01;
-	ubounds[RHO_IDX] = 0.99;
-	x0[RHO_IDX] = rho;
-	sigma[RHO_IDX] = 0.253226 / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
-
-	// lbounds[CLUSTER_ALPHA_IDX] = 0;
-	// ubounds[CLUSTER_ALPHA_IDX] = 10;
-	// x0[CLUSTER_ALPHA_IDX] = cluster_alpha;
-	// sigma[CLUSTER_ALPHA_IDX] = 0.05;
-
-	// lbounds[CLUSTER_BETA_IDX] = 0;
-	// ubounds[CLUSTER_BETA_IDX] = 10;
-	// x0[CLUSTER_BETA_IDX] = cluster_beta;
-	// sigma[CLUSTER_BETA_IDX] = 0.05;
-
 	for (i = 0; i < ES_ANT_DIM; i++)
 	{
 		assert(x0[i] >= lbounds[i]);
@@ -282,14 +267,13 @@ void es_ant_construct_and_local_search(void)
 	size_t capacity_need;
 	current_ant_idx = 0;
 	best_iteration_fitness = instance.UB + 1;
-	while (current_ant_idx < n_ants)
+
+	while (current_ant_idx < min_num_ants or current_ant_idx == 0)
 	{
 		capacity_need = current_ant_idx + optim_ptr->get_lambda();
-		if (capacity_need > ant.size())
-		{
-			ant.resize(capacity_need);
-			prev_ls_ant.resize(capacity_need);
-		}
+		ant.resize(capacity_need);
+		prev_ls_ant.resize(capacity_need);
+
 		optim_ptr->generation_run();
 		if (termination_condition())
 			return;
@@ -297,7 +281,7 @@ void es_ant_construct_and_local_search(void)
 
 	alpha = best_iteration_alpha;
 	beta = best_iteration_beta;
-	rho = best_iteration_rho;
+	n_ants = capacity_need;
 }
 
 double make_ant_weight(size_t i, size_t j)
@@ -305,5 +289,5 @@ double make_ant_weight(size_t i, size_t j)
 	if (!es_ant_flag)
 		return total[i][j];
 
-	return pow((1 - rho) * pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+	return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
 }

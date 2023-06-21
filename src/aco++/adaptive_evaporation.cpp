@@ -6,12 +6,9 @@
 #include "ants.h"
 
 // Hyperparameters
-float min_rho = 0.01;
-float max_rho = 0.99;
 bool adaptive_evaporation_flag;
-// float min_q_0 = 0.52;
-// float max_q_0 = 1;
-// float q_0_diff = max_q_0 - min_q_0;
+float min_rho = 0.01;
+float max_rho = 0.5;
 
 const float rho_diff = max_rho - min_rho;
 
@@ -22,7 +19,7 @@ void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurenc
     std::pair<long int, long int> edge;
     long int i, j;
 
-    for (i = 0; i < ant.size(); i++)
+    for (i = 0; i < n_ants; i++)
     {
         for (j = 0; j <= ant[i].tour_size - 3; j++)
         {
@@ -62,10 +59,9 @@ void update_rho(void)
     count_ant_edges(occurence, total_edge_count);
     calculate_entropy(entropy, occurence, total_edge_count);
 
-    min_entropy = -log2(ant.size() * 1.0 / total_edge_count);
+    min_entropy = -log2(n_ants * 1.0 / total_edge_count);
     max_entropy = -log2(1.0 / total_edge_count);
 
     // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
     rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-    // q_0 = min_q_0 + q_0_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
 }

@@ -99,13 +99,13 @@ void construct_solutions(void)
     TRACE(printf("construct solutions for all ants\n"););
 
     /* Mark all cities as unvisited */
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
     {
         ant_empty_memory(&ant[k]);
     }
 
     /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
     {
         ant[k].tour_size = 1;
         ant[k].tour[0] = 0;
@@ -117,7 +117,7 @@ void construct_solutions(void)
     while (step < instance.n - 2)
     {
         step++;
-        for (k = 0; k < ant.size(); k++)
+        for (k = 0; k < n_ants; k++)
         {
             if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
             { /* previous city is the last one */
@@ -130,7 +130,7 @@ void construct_solutions(void)
         }
     }
 
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
     {
         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
@@ -140,7 +140,7 @@ void construct_solutions(void)
         if (acs_flag)
             local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
     }
-    n_tours += ant.size();
+    n_tours += n_ants;
 }
 
 void construct_node_clustering_solution(void)
@@ -151,13 +151,13 @@ void construct_node_clustering_solution(void)
     TRACE(printf("construct solutions for all ants\n"););
 
     /* Mark all cities as unvisited */
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
     {
         ant_empty_memory(&ant[k]);
     }
 
     /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
     {
         ant[k].tour_size = 1;
         ant[k].tour[0] = 0;
@@ -172,7 +172,7 @@ void construct_node_clustering_solution(void)
     while (step < instance.n - 2)
     {
         step++;
-        for (k = 0; k < ant.size(); k++)
+        for (k = 0; k < n_ants; k++)
         {
             if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
             { /* previous city is the last one */
@@ -185,7 +185,7 @@ void construct_node_clustering_solution(void)
         }
     }
 
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
     {
         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
@@ -195,7 +195,7 @@ void construct_node_clustering_solution(void)
         if (acs_flag)
             local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
     }
-    n_tours += ant.size();
+    n_tours += n_ants;
 }
 
 void local_search(void)
@@ -217,7 +217,7 @@ void local_search(void)
 
     TRACE(printf("apply local search to all ants\n"););
 
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
     {
         switch (ls_flag)
         {
@@ -341,7 +341,7 @@ void as_update(void)
 
     TRACE(printf("Ant System pheromone deposit\n"););
 
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
         global_update_pheromone(&ant[k]);
 }
 
@@ -357,7 +357,7 @@ void eas_update(void)
 
     TRACE(printf("Elitist Ant System pheromone deposit\n"););
 
-    for (k = 0; k < ant.size(); k++)
+    for (k = 0; k < n_ants; k++)
         global_update_pheromone(&ant[k]);
     global_update_pheromone_weighted(best_so_far_ant, elitist_ants);
 }
@@ -379,15 +379,15 @@ void ras_update(void)
 
     TRACE(printf("Rank-based Ant System pheromone deposit\n"););
 
-    help_b = (long int *)malloc(ant.size() * sizeof(long int));
-    for (k = 0; k < ant.size(); k++)
+    help_b = (long int *)malloc(n_ants * sizeof(long int));
+    for (k = 0; k < n_ants; k++)
         help_b[k] = ant[k].fitness;
 
     for (i = 0; i < ras_ranks - 1; i++)
     {
         b = help_b[0];
         target = 0;
-        for (k = 0; k < ant.size(); k++)
+        for (k = 0; k < n_ants; k++)
         {
             if (help_b[k] < b)
             {
@@ -507,6 +507,10 @@ void pheromone_trail_update(void)
                       according to the rules defined by the various ACO algorithms.
  */
 {
+    // debug
+    // printf("n_ants: %d\t\tq_0: %.4f\t\talpha: %.4f\t\tbeta: %.4f\t\trho: %.4f\trand_num: %.4f\n",
+    //        n_ants, q_0, alpha, beta, rho, new_rand01());
+    /////
     /* Simulate the pheromone evaporation of all pheromones; this is not necessary
        for ACS (see also ACO Book) */
     if (adaptive_evaporation_flag)
@@ -563,7 +567,7 @@ void pheromone_trail_update(void)
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if (!acs_flag || !es_ant_flag)
+    if (!acs_flag && !es_ant_flag)
     {
         if (node_clustering_flag == TRUE)
         {
@@ -633,12 +637,12 @@ int main(int argc, char *argv[])
 
                 if (ls_flag > 0)
                 {
-                    for (k = 0; k < ant.size(); k++)
+                    for (k = 0; k < n_ants; k++)
                     {
                         copy_from_to(&ant[k], &prev_ls_ant[k]);
                     }
                     local_search();
-                    for (k = 0; k < ant.size(); k++)
+                    for (k = 0; k < n_ants; k++)
                     {
                         if (ant[k].fitness > prev_ls_ant[k].fitness)
                         {

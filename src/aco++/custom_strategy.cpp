@@ -126,10 +126,13 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::generation_run(vo
     const std::chrono::time_point<std::chrono::system_clock> tstart = std::chrono::system_clock::now();
 
     auto candidates = this->ask();
-    clip_candidates(candidates);
-    round_seed_candidates(candidates);
+    repair_candidates(candidates);
     const auto phenocandidates = this->eostrat<TGenoPheno>::_parameters.get_gp().pheno(candidates);
+
     this->eval(candidates, phenocandidates);
+    if (termination_condition())
+        return;
+
     this->tell();
     this->eostrat<TGenoPheno>::inc_iter();
 

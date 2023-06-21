@@ -1485,8 +1485,11 @@ int parse_commandline(int argc, char *argv[])
         }
     }
     */
-
-    if (ls_flag or es_ant_flag)
+    // temp
+    if (es_ant_flag)
+        es_ant_set_default();
+    ////
+    if (ls_flag)
     {
         set_default_ls_parameters();
     }

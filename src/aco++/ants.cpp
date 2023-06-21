@@ -532,7 +532,7 @@ long int find_best(void)
 
     min = ant[0].fitness;
     k_min = 0;
-    for (k = 1; k < ant.size(); k++)
+    for (k = 1; k < n_ants; k++)
     {
         if (ant[k].fitness < min)
         {
@@ -556,7 +556,7 @@ long int find_worst(void)
 
     max = ant[0].fitness;
     k_max = 0;
-    for (k = 1; k < ant.size(); k++)
+    for (k = 1; k < n_ants; k++)
     {
         if (ant[k].fitness > max)
         {
@@ -826,22 +826,22 @@ void population_statistics(void)
     long int *l;
     double pop_mean, pop_stddev, avg_distance = 0.0;
 
-    l = (long int *)malloc(ant.size() * sizeof(long int));
-    for (k = 0; k < ant.size(); k++)
+    l = (long int *)malloc(n_ants * sizeof(long int));
+    for (k = 0; k < n_ants; k++)
     {
         l[k] = ant[k].fitness;
     }
 
-    pop_mean = mean(l, ant.size());
-    pop_stddev = std_deviation(l, ant.size(), pop_mean);
+    pop_mean = mean(l, n_ants);
+    pop_stddev = std_deviation(l, n_ants, pop_mean);
     branching_factor = node_branching(lambda);
 
-    for (k = 0; k < ant.size() - 1; k++)
-        for (j = k + 1; j < ant.size(); j++)
+    for (k = 0; k < n_ants - 1; k++)
+        for (j = k + 1; j < n_ants; j++)
         {
             avg_distance += (double)distance_between_ants(&ant[k], &ant[j]);
         }
-    avg_distance /= ((double)ant.size() * (double)(ant.size() - 1) / 2.);
+    avg_distance /= ((double)n_ants * (double)(n_ants - 1) / 2.);
 
     free(l);
 }
