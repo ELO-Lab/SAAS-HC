@@ -62,7 +62,7 @@
 #include "ls.h"
 #include "utilities.h"
 
-#include "es_ant.hpp"
+#include "es_ant.h"
 
 struct problem instance;
 

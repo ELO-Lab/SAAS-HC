@@ -71,8 +71,8 @@
 #include "utilities.h"
 #include "timer.h"
 
-#include "es_ant.hpp"
-#include "tree_map.hpp"
+#include "es_ant.h"
+#include "tree_map.h"
 
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
@@ -157,7 +157,7 @@ void evaporation(void)
 {
     if (tree_map_flag)
     {
-        tree_map->evaporate(trail_min, trail_max);
+        tree_map->evaporate(trail_min);
         return;
     }
 
@@ -188,7 +188,7 @@ void evaporation_nn_list(void)
 {
     if (tree_map_flag)
     {
-        tree_map->evaporate(trail_min, trail_max);
+        tree_map->evaporate(trail_min);
         return;
     }
 
@@ -216,7 +216,7 @@ void global_update_pheromone(ant_struct *a)
 {
     if (tree_map_flag)
     {
-        tree_map->reinforce(*a, rho);
+        tree_map->reinforce(*a, rho, trail_max);
         return;
     }
 
@@ -376,10 +376,10 @@ void choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            if (make_ant_weight(current_city, city) > value_best)
+            if (edge_weight(current_city, city) > value_best)
             {
                 next_city = city;
-                value_best = make_ant_weight(current_city, city);
+                value_best = edge_weight(current_city, city);
             }
         }
     }
@@ -414,7 +414,7 @@ void neighbour_choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            help = make_ant_weight(current_city, help_city);
+            help = edge_weight(current_city, help_city);
             if (help > value_best)
             {
                 value_best = help;
@@ -506,7 +506,7 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
         else
         {
             DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
-            prob_ptr[i] = make_ant_weight(current_city, instance.nn_list[current_city][i]);
+            prob_ptr[i] = edge_weight(current_city, instance.nn_list[current_city][i]);
             sum_prob += prob_ptr[i];
         }
     }
@@ -943,11 +943,13 @@ void mmas_evaporation_nn_list(void)
                      only considers links between a city and those cities of its candidate list
  */
 {
+    // temp
     if (tree_map_flag)
     {
-        tree_map->evaporate(trail_min, trail_max);
+        tree_map->evaporate(trail_min);
         return;
     }
+    ////
 
     long int i, j, help_city;
 

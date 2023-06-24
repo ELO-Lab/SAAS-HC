@@ -1,5 +1,5 @@
-#ifndef _CUSTOM_STRATEGY_HPP_
-#define _CUSTOM_STRATEGY_HPP_
+#ifndef _CUSTOM_STRATEGY_H_
+#define _CUSTOM_STRATEGY_H_
 
 #include <libcmaes/bipopcmastrategy.h>
 #include <libcmaes/cmaes.h>
@@ -37,7 +37,5 @@ namespace libcmaes
 }
 
 extern OPTIMIZER *optim_ptr;
-
-#include "custom_strategy.cpp"
 
 #endif

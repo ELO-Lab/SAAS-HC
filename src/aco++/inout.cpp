@@ -66,9 +66,9 @@
 #include "ls.h"
 #include "parse.h"
 #include "node_clustering.h"
-#include "adaptive_evaporation.hpp"
-#include "es_ant.hpp"
-#include "tree_map.hpp"
+#include "adaptive_evaporation.h"
+#include "es_ant.h"
+#include "tree_map.h"
 
 long int *best_in_try;
 long int *best_found_at;
@@ -130,8 +130,6 @@ void init_program(long int argc, char *argv[])
     set_default_parameters();
     setbuf(stdout, NULL);
     parse_commandline(argc, argv);
-
-    rand_gen.seed(seed);
 
     assert(max_tries <= MAXIMUM_NO_TRIES);
 
@@ -196,7 +194,7 @@ void init_program(long int argc, char *argv[])
     if (es_ant_flag)
         es_ant_init();
     if (tree_map_flag)
-        tree_map_init(tree_map, instance.n - 1, instance.distance);
+        tree_map_init();
 }
 
 void exit_program(void)

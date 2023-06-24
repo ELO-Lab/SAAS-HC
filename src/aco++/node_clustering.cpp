@@ -17,7 +17,7 @@
 #include "utilities.h"
 #include "timer.h"
 
-#include "es_ant.hpp"
+#include "es_ant.h"
 
 std::vector<std::vector<std::vector<int>>> cluster_chunk;
 std::vector<std::vector<int>> clusters;
@@ -257,7 +257,7 @@ void node_clustering_move(ant_struct *a, long int phase)
     lp = 0;
     for (int i = 0; i < candidates.size(); i++)
     {
-        lp = lp + make_ant_weight(current_city, candidates[i]);
+        lp = lp + edge_weight(current_city, candidates[i]);
         total_candidates.push_back(lp);
     }
 
@@ -274,4 +274,59 @@ void node_clustering_move(ant_struct *a, long int phase)
 
     a->tour[phase] = candidates[selected_city];
     a->visited[candidates[selected_city]] = TRUE;
+}
+
+void construct_node_clustering_solution(void)
+{
+    long int i, k; /* counter variable */
+    long int step; /* counter of the number of construction steps */
+
+    TRACE(printf("construct solutions for all ants\n"););
+
+    /* Mark all cities as unvisited */
+    for (k = 0; k < n_ants; k++)
+    {
+        ant_empty_memory(&ant[k]);
+    }
+
+    /* Place the ants at initial city 0 and set the final city as n-1 */
+    for (k = 0; k < n_ants; k++)
+    {
+        ant[k].tour_size = 1;
+        ant[k].tour[0] = 0;
+        ant[k].visited[0] = TRUE;
+        ant[k].visited[instance.n - 1] = TRUE;
+    }
+
+    update_cluter_total();
+
+    step = 0;
+
+    while (step < instance.n - 2)
+    {
+        step++;
+        for (k = 0; k < n_ants; k++)
+        {
+            if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
+            { /* previous city is the last one */
+                continue;
+            }
+            node_clustering_move(&ant[k], step);
+            if (acs_flag)
+                local_acs_pheromone_update(&ant[k], step);
+            ant[k].tour_size++;
+        }
+    }
+
+    for (k = 0; k < n_ants; k++)
+    {
+        ant[k].tour[ant[k].tour_size++] = instance.n - 1;
+        ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
+        for (i = ant[k].tour_size; i < instance.n; i++)
+            ant[k].tour[i] = 0;
+        ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
+        if (acs_flag)
+            local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
+    }
+    n_tours += n_ants;
 }

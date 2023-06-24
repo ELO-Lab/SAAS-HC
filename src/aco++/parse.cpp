@@ -10,9 +10,9 @@
 #include "ants.h"
 #include "ls.h"
 #include "node_clustering.h"
-#include "adaptive_evaporation.hpp"
-#include "es_ant.hpp"
-#include "tree_map.hpp"
+#include "adaptive_evaporation.h"
+#include "es_ant.h"
+#include "tree_map.h"
 
 #ifndef STR_ERR_UNKNOWN_LONG_OPT
 #define STR_ERR_UNKNOWN_LONG_OPT "%s: unrecognized option `--%s'\n"
@@ -1486,12 +1486,7 @@ int parse_commandline(int argc, char *argv[])
         }
     }
     */
-    // temp
-    if (es_ant_flag)
-        es_ant_set_default();
-    if (tree_map_flag)
-        tree_map_fixed_parameters(mmas_flag);
-    ////
+
     if (ls_flag)
     {
         set_default_ls_parameters();
@@ -1723,6 +1718,12 @@ int parse_commandline(int argc, char *argv[])
         */
         exit(1);
     }
+
+    if (es_ant_flag)
+        es_ant_force_set_parameters();
+    if (tree_map_flag)
+        tree_map_force_set_parameters();
+    rand_gen.seed(seed);
 
     return 0;
 }

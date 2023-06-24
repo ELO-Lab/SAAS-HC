@@ -67,11 +67,11 @@
 #include "ls.h"
 
 #include "node_clustering.h"
-#include "adaptive_evaporation.hpp"
-#include "es_ant.hpp"
-#include "acothop.hpp"
-#include "custom_strategy.hpp"
-#include "tree_map.hpp"
+#include "adaptive_evaporation.h"
+#include "es_ant.h"
+#include "acothop.h"
+#include "custom_strategy.h"
+#include "tree_map.h"
 
 long int termination_condition(void)
 /*
@@ -125,61 +125,6 @@ void construct_solutions(void)
                 continue;
             }
             neighbour_choose_and_move_to_next(&ant[k], step);
-            if (acs_flag)
-                local_acs_pheromone_update(&ant[k], step);
-            ant[k].tour_size++;
-        }
-    }
-
-    for (k = 0; k < n_ants; k++)
-    {
-        ant[k].tour[ant[k].tour_size++] = instance.n - 1;
-        ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
-        for (i = ant[k].tour_size; i < instance.n; i++)
-            ant[k].tour[i] = 0;
-        ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
-        if (acs_flag)
-            local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
-    }
-    n_tours += n_ants;
-}
-
-void construct_node_clustering_solution(void)
-{
-    long int i, k; /* counter variable */
-    long int step; /* counter of the number of construction steps */
-
-    TRACE(printf("construct solutions for all ants\n"););
-
-    /* Mark all cities as unvisited */
-    for (k = 0; k < n_ants; k++)
-    {
-        ant_empty_memory(&ant[k]);
-    }
-
-    /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (k = 0; k < n_ants; k++)
-    {
-        ant[k].tour_size = 1;
-        ant[k].tour[0] = 0;
-        ant[k].visited[0] = TRUE;
-        ant[k].visited[instance.n - 1] = TRUE;
-    }
-
-    update_cluter_total();
-
-    step = 0;
-
-    while (step < instance.n - 2)
-    {
-        step++;
-        for (k = 0; k < n_ants; k++)
-        {
-            if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
-            { /* previous city is the last one */
-                continue;
-            }
-            node_clustering_move(&ant[k], step);
             if (acs_flag)
                 local_acs_pheromone_update(&ant[k], step);
             ant[k].tour_size++;
@@ -508,22 +453,17 @@ void pheromone_trail_update(void)
                       according to the rules defined by the various ACO algorithms.
  */
 {
-    // debug
-    // printf("n_ants: %d\t\tq_0: %.4f\t\talpha: %.4f\t\tbeta: %.4f\t\trho: %.4f\trand_num: %.4f\n",
-    //        n_ants, q_0, alpha, beta, rho, new_rand01());
-    /////
+    if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag))
+        update_rho();
+
     /* Simulate the pheromone evaporation of all pheromones; this is not necessary
        for ACS (see also ACO Book) */
-    if (adaptive_evaporation_flag)
+    if (tree_map_flag)
+        tree_map->evaporate(trail_min);
+    else if (!acs_flag)
     {
-        update_rho();
-    }
-    if (not acs_flag)
-    {
-        if (node_clustering_flag == TRUE)
-        {
+        if (node_clustering_flag)
             evaporation_nc_list();
-        }
         else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
         {
             if (ls_flag)
@@ -546,7 +486,9 @@ void pheromone_trail_update(void)
     }
 
     /* Next, apply the pheromone deposit for the various ACO algorithms */
-    if (as_flag)
+    if (tree_map_flag)
+        mmas_update();
+    else if (as_flag)
         as_update();
     else if (eas_flag)
         eas_update();
@@ -562,18 +504,16 @@ void pheromone_trail_update(void)
     /* check pheromone trail limits for MMAS; not necessary if local
      search is used, because in the local search case lower pheromone trail
      limits are checked in procedure mmas_evaporation_nn_list */
-    if (mmas_flag && !ls_flag && !adaptive_evaporation_flag)
+    if (mmas_flag && !ls_flag && !adaptive_evaporation_flag && !tree_map_flag)
         check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if (!acs_flag && !es_ant_flag)
+    if (!acs_flag && !es_ant_flag && !tree_map_flag)
     {
-        if (node_clustering_flag == TRUE)
-        {
+        if (node_clustering_flag)
             compute_total_information();
-        }
         else if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
         {
             if (ls_flag)
@@ -630,16 +570,11 @@ int main(int argc, char *argv[])
         while (!termination_condition())
         {
             if (es_ant_flag)
-            {
                 es_ant_construct_and_local_search();
-            }
             else
             {
                 if (node_clustering_flag == TRUE)
-                {
-                    // std::cout << "using node clusering" << std::endl;
                     construct_node_clustering_solution();
-                }
                 else
                     construct_solutions();
 
@@ -668,8 +603,10 @@ int main(int argc, char *argv[])
     }
     exit_program();
 
-    delete optim_ptr;
-    delete tree_map;
+    if (es_ant_flag)
+        es_ant_deallocate();
+    if (tree_map_flag)
+        tree_map_deallocate();
 
     free(instance.distance);
     free(instance.nn_list);

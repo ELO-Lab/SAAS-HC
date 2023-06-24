@@ -1,9 +1,10 @@
 #include <functional>
 
 #include "utilities.h"
-#include "tree_map.hpp"
+#include "thop.h"
+#include "tree_map.h"
 
-Tree_Map::Tree_Map(const std::size_t &num_city, long int **distance_matrix)
+Tree_Map::Tree_Map(const std::size_t &num_city, long int **&distance_matrix)
 {
     size_t i;
 
@@ -33,7 +34,8 @@ void Tree_Map::_set_wont_visit(const std::size_t &city_index)
 
 void Tree_Map::reinforce(
     ant_struct &an_ant,
-    const double &rho)
+    const double &rho,
+    const double &trail_max)
 {
     std::size_t i;
     const double invert_fitness = 1.0 / an_ant.fitness;
@@ -45,9 +47,9 @@ void Tree_Map::reinforce(
             an_ant.tour[i + 1],
             invert_fitness,
             one_minus_rho,
-            _trail_restart,
-            _trail_min,
-            _trail_max,
+            _past_trail_restart,
+            _past_trail_min,
+            trail_max,
             _global_restart_times,
             _global_evap_times);
     }
@@ -58,83 +60,72 @@ void Tree_Map::_reset_wont_visit()
     _global_wont_visit_restart_times += 1;
 }
 
-void Tree_Map::evaporate(const double &trail_min, const double &trail_max)
+void Tree_Map::evaporate(const double &past_trail_min)
 {
     _global_evap_times += 1;
-    _trail_min = trail_min;
-    _trail_max = trail_max;
+    _past_trail_min = trail_min;
 }
 
-void Tree_Map::restart_pheromone(const double &trail_restart)
+void Tree_Map::restart_pheromone(const double &past_trail_restart)
 {
     _global_restart_times += 1;
-    _trail_restart = trail_restart;
+    _past_trail_restart = past_trail_restart;
 }
 
-void Tree_Map::find_route(
+void Tree_Map::choose_route(
     ant_struct &an_ant,
     const size_t &num_city,
-    std::function<double()> rand01,
+    const std::function<double()> &rand01,
     const double &q_0,
     const double &alpha,
     const double &beta,
     const double &rho,
-    std::function<void(ant_struct *a)> ant_empty_memory,
-    std::function<long int(long int *t, char *visited, long int t_size, char *p)> compute_fitness,
+    const std::function<void(ant_struct *a)> &ant_empty_memory,
+    const std::function<long int(long int *t, char *visited, long int t_size, char *p)> &compute_fitness,
     long int &n_tours)
 {
-    size_t i;      /* counter variable */
-    long int step; /* counter of the number of construction steps */
     const double &one_minus_q_0 = 1 - q_0;
     const double &one_minus_rho = 1 - rho;
-    size_t current_city, next_city;
+    size_t current_city, i;
 
     _reset_wont_visit();
     ant_empty_memory(&an_ant);
 
-    /* Place the ants at initial city 0 and set the final city as n-1 */
     an_ant.tour_size = 1;
     an_ant.tour[0] = 0;
     an_ant.visited[0] = TRUE;
-    an_ant.visited[num_city + 1 - 1] = TRUE;
+    an_ant.visited[num_city] = TRUE; // virtual city
 
-    step = 0;
-    while (step < num_city + 1 - 2)
+    while (true)
     {
-        step++;
         current_city = an_ant.tour[an_ant.tour_size - 1];
         if (current_city == num_city + 1 - 2)
-        { /* previous city is the last one */
-            continue;
-        }
+            break;
 
-        // neighbour_choose_and_move_to_next(&an_ant, step);
-        // if (acs_flag)
-        //     local_acs_pheromone_update(&an_ant, step);
-        next_city = _tree_edge_ptrs[current_city]->find_next_city(
+        current_city = _tree_edge_ptrs[current_city]->choose_next_city(
             _wont_visit_tree_ptr->get_root_ptr(),
             rand01,
             one_minus_q_0,
             alpha,
             beta,
             one_minus_rho,
-            _trail_restart,
-            _trail_min,
+            _past_trail_restart,
+            _past_trail_min,
             _global_restart_times,
             _global_evap_times);
-        an_ant.tour[an_ant.tour_size] = next_city;
-        an_ant.visited[next_city] = TRUE;
-
+        an_ant.tour[an_ant.tour_size] = current_city;
+        an_ant.visited[current_city] = TRUE;
         an_ant.tour_size++;
+
+        _set_wont_visit(current_city);
     }
 
-    an_ant.tour[an_ant.tour_size++] = num_city + 1 - 1;
-    an_ant.tour[an_ant.tour_size++] = an_ant.tour[0];
+    an_ant.tour[an_ant.tour_size++] = num_city;       // virtual city
+    an_ant.tour[an_ant.tour_size++] = an_ant.tour[0]; // to form a tour
+
     for (i = an_ant.tour_size; i < num_city + 1; i++)
         an_ant.tour[i] = 0;
     an_ant.fitness = compute_fitness(an_ant.tour, an_ant.visited, an_ant.tour_size, an_ant.packing_plan);
-    // if (acs_flag)
-    //     local_acs_pheromone_update(&an_ant, an_ant.tour_size - 1);
 
     n_tours += 1;
 }
@@ -143,13 +134,16 @@ void Tree_Map::find_route(
 bool tree_map_flag = true;
 
 Tree_Map *tree_map;
-double trail_restart;
 
-void tree_map_init(Tree_Map *&tree_map, const std::size_t &num_city, long int **distance_matrix)
+void tree_map_init()
 {
-    tree_map = new Tree_Map(num_city, distance_matrix);
+    tree_map = new Tree_Map(instance.n - 1, instance.distance);
 }
-void tree_map_fixed_parameters(long int &mmas_flag)
+void tree_map_force_set_parameters()
 {
     mmas_flag = true;
+}
+void tree_map_deallocate()
+{
+    delete tree_map;
 }
