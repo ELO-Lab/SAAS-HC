@@ -3,22 +3,6 @@
 
 #include "nodes.h"
 
-template <class NodeT>
-Node_Base<NodeT>::Node_Base(NodeT *&left_ptr, NodeT *&right_ptr)
-{
-    left_ptr->parent_ptr = (NodeT *)(this);
-    right_ptr->parent_ptr = (NodeT *)(this);
-    child_ptrs[0] = left_ptr;
-    child_ptrs[1] = right_ptr;
-}
-
-template <class NodeT>
-Node_Base<NodeT>::~Node_Base()
-{
-    for (auto &_ptr : child_ptrs)
-        delete _ptr;
-}
-
 Node::Node(Node *&left_ptr, Node *&right_ptr)
     : Node_Base<Node>(left_ptr, right_ptr)
 {

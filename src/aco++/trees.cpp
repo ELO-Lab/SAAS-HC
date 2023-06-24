@@ -2,12 +2,6 @@
 
 #include "trees.h"
 
-// template <class RootT, class LeafT>
-// Tree_Base<RootT, LeafT>::~Tree_Base()
-// {
-//     delete _root_ptr;
-// }
-
 Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, long int **&distance_matrix)
 {
     std::size_t i;

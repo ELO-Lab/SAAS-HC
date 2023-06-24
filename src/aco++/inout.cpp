@@ -604,10 +604,10 @@ void save_best_thop_solution(void)
             if (first_print == TRUE)
             {
                 first_print = FALSE;
-                fprintf(sol_file, "%d", global_best_ant->tour[i] + 1);
+                fprintf(sol_file, "%ld", global_best_ant->tour[i] + 1);
             }
             else
-                fprintf(sol_file, ",%d", global_best_ant->tour[i] + 1);
+                fprintf(sol_file, ",%ld", global_best_ant->tour[i] + 1);
         }
     }
     fprintf(sol_file, "]\n[");
@@ -668,7 +668,7 @@ void write_iterations_report(long int iteration_best_ant)
             }
         }
 
-        fprintf(log_tries_file, "%ld,%ld,%.2f\n", iteration, profit, iteration, elapsed_time(VIRTUAL));
+        fprintf(log_tries_file, "%ld,%ld,%ld,%.2f\n", iteration, profit, iteration, elapsed_time(VIRTUAL));
 
         first_print = TRUE;
         fprintf(log_tries_file, "[");
@@ -679,10 +679,10 @@ void write_iterations_report(long int iteration_best_ant)
                 if (first_print == TRUE)
                 {
                     first_print = FALSE;
-                    fprintf(log_tries_file, "%d", ant[iteration_best_ant].tour[i] + 1);
+                    fprintf(log_tries_file, "%ld", ant[iteration_best_ant].tour[i] + 1);
                 }
                 else
-                    fprintf(log_tries_file, ",%d", ant[iteration_best_ant].tour[i] + 1);
+                    fprintf(log_tries_file, ",%ld", ant[iteration_best_ant].tour[i] + 1);
             }
         }
         fprintf(log_tries_file, "]\n[");

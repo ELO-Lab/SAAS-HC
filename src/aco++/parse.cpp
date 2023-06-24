@@ -1211,9 +1211,12 @@ parse_options(struct options *const options, const char *const program_name,
     return i;
 }
 
-static void
-check_out_of_range(double value, double minval, double maxval,
-                   const char *optionName)
+// static void
+// check_out_of_range(double value, double minval, double maxval,
+//                    const char *optionName)
+template <class numericAT, class numericBT, class numericCT>
+void check_out_of_range(numericAT value, numericBT minval, numericCT maxval,
+                        const char *optionName)
 /*
       FUNCTION: check whether parameter values are within allowed range
       INPUT:    none
@@ -1224,7 +1227,7 @@ check_out_of_range(double value, double minval, double maxval,
     if (value < minval || value > maxval)
     {
         fprintf(stderr, "Error: Option `%s' out of range [%g, %g]\n",
-                optionName, minval, maxval);
+                optionName, double(minval), double(maxval));
         exit(1);
     }
 }

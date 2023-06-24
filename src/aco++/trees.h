@@ -11,7 +11,7 @@ class Tree_Base
 {
 public:
     Tree_Base() {}
-    ~Tree_Base();
+    ~Tree_Base() { delete _root_ptr; };
 
 protected:
     RootT *_root_ptr;
