@@ -72,6 +72,7 @@
 #include "timer.h"
 
 #include "es_ant.hpp"
+#include "tree_map.hpp"
 
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
@@ -123,6 +124,12 @@ void init_pheromone_trails(double initial_trail)
       (SIDE)EFFECTS: pheromone matrix is reinitialized
  */
 {
+    if (tree_map_flag)
+    {
+        tree_map->restart_pheromone(initial_trail);
+        return;
+    }
+
     long int i, j;
 
     TRACE(printf(" init trails with %.15f\n", initial_trail););
@@ -148,6 +155,12 @@ void evaporation(void)
       (SIDE)EFFECTS: pheromones are reduced by factor rho
  */
 {
+    if (tree_map_flag)
+    {
+        tree_map->evaporate(trail_min, trail_max);
+        return;
+    }
+
     long int i, j;
 
     TRACE(printf("pheromone evaporation\n"););
@@ -173,6 +186,12 @@ void evaporation_nn_list(void)
              of its candidate list
  */
 {
+    if (tree_map_flag)
+    {
+        tree_map->evaporate(trail_min, trail_max);
+        return;
+    }
+
     long int i, j, help_city;
 
     TRACE(printf("pheromone evaporation nn_list\n"););
@@ -195,12 +214,19 @@ void global_update_pheromone(ant_struct *a)
       (SIDE)EFFECTS: pheromones of arcs in ant k's tour are increased
  */
 {
+    if (tree_map_flag)
+    {
+        tree_map->reinforce(*a, rho);
+        return;
+    }
+
     long int i, j, h;
     double d_tau;
 
     TRACE(printf("global pheromone update\n"););
 
     d_tau = 1.0 / (double)a->fitness;
+
     for (i = 0; i < instance.n; i++)
     {
         j = a->tour[i];
@@ -218,6 +244,8 @@ void global_update_pheromone_weighted(ant_struct *a, long int weight)
       (SIDE)EFFECTS: pheromones of arcs in the ant's tour are increased
  */
 {
+    assert(!tree_map_flag);
+
     long int i, j, h;
     double d_tau;
 
@@ -240,6 +268,9 @@ void compute_total_information(void)
       OUTPUT:   none
  */
 {
+    if (es_ant_flag or tree_map_flag)
+        return;
+
     long int i, j;
 
     TRACE(printf("compute total information\n"););
@@ -261,6 +292,9 @@ void compute_nn_list_total_information(void)
       OUTPUT:   none
  */
 {
+    if (es_ant_flag or tree_map_flag)
+        return;
+
     long int i, j, h;
 
     TRACE(printf("compute total information nn_list\n"););
@@ -909,6 +943,12 @@ void mmas_evaporation_nn_list(void)
                      only considers links between a city and those cities of its candidate list
  */
 {
+    if (tree_map_flag)
+    {
+        tree_map->evaporate(trail_min, trail_max);
+        return;
+    }
+
     long int i, j, help_city;
 
     TRACE(printf("mmas specific evaporation on nn_lists\n"););
@@ -937,6 +977,11 @@ void check_nn_list_pheromone_trail_limits(void)
              is not done (see FGCS paper or ACO book for explanation
  */
 {
+    if (tree_map_flag)
+    {
+        return;
+    }
+
     long int i, j, help_city;
 
     TRACE(printf("mmas specific: check pheromone trail limits nn_list\n"););
@@ -963,6 +1008,11 @@ void check_pheromone_trail_limits(void)
       (SIDE)EFFECTS: pheromones are forced to interval [trail_min,trail_max]
  */
 {
+    if (tree_map_flag)
+    {
+        return;
+    }
+
     long int i, j;
 
     TRACE(printf("mmas specific: check pheromone trail limits\n"););
@@ -999,6 +1049,8 @@ void global_acs_pheromone_update(ant_struct *a)
       (SIDE)EFFECTS: pheromones of arcs in ant k's tour are increased
  */
 {
+    assert(!tree_map_flag);
+
     long int i, j, h;
     double d_tau;
 
@@ -1032,6 +1084,8 @@ void local_acs_pheromone_update(ant_struct *a, long int phase)
              commandline parameter
  */
 {
+    assert(!tree_map_flag);
+
     long int h, j;
 
     DEBUG(assert(phase > 0 && phase <= instance.n);)
@@ -1062,6 +1116,8 @@ void bwas_worst_ant_update(ant_struct *a1, ant_struct *a2)
       (SIDE)EFFECTS: pheromones on some arcs undergo additional evaporation
  */
 {
+    assert(!tree_map_flag);
+
     long int i, j, h, pos, pred;
     long int distance;
     long int *pos2; /* positions of cities in tour of ant a2 */
@@ -1104,6 +1160,8 @@ void bwas_pheromone_mutation(void)
       OUTPUT:   none
  */
 {
+    assert(!tree_map_flag);
+
     long int i, j, k;
     long int num_mutations;
     double avg_trail = 0.0, mutation_strength = 0.0, mutation_rate = 0.3;

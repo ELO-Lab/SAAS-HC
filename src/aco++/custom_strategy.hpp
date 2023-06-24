@@ -18,7 +18,7 @@ namespace libcmaes
     {
     public:
         Custom_Strategy(libcmaes::FitFunc &func, PARAMETER<TGenoPheno> &parameters);
-        ~Custom_Strategy();
+        ~Custom_Strategy(){};
         uint_fast64_t get_lambda(void);
         void generation_run(void);
 
@@ -37,4 +37,7 @@ namespace libcmaes
 }
 
 extern OPTIMIZER *optim_ptr;
+
+#include "custom_strategy.cpp"
+
 #endif

@@ -12,6 +12,7 @@
 #include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 #include "es_ant.hpp"
+#include "tree_map.hpp"
 
 #ifndef STR_ERR_UNKNOWN_LONG_OPT
 #define STR_ERR_UNKNOWN_LONG_OPT "%s: unrecognized option `--%s'\n"
@@ -1488,6 +1489,8 @@ int parse_commandline(int argc, char *argv[])
     // temp
     if (es_ant_flag)
         es_ant_set_default();
+    if (tree_map_flag)
+        tree_map_fixed_parameters(mmas_flag);
     ////
     if (ls_flag)
     {

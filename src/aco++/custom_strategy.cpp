@@ -1,3 +1,7 @@
+#ifdef _CUSTOM_STRATEGY_HPP_
+#ifndef _CUSTOM_STRATEGY_CPP_
+#define _CUSTOM_STRATEGY_CPP_
+
 #include <chrono>
 #include <iostream>
 #include <assert.h>
@@ -6,6 +10,7 @@
 
 #include "custom_strategy.hpp"
 #include "es_ant.hpp"
+#include "acothop.hpp"
 
 #define BIPOP_FIRST_OPTIMIZE 1
 #define BIPOP_SECOND_OPTIMIZE 2
@@ -21,8 +26,6 @@ libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::Custom_Strategy(libcma
     this->bipop_for_loop();
     this->cma_in();
 };
-template <class TCovarianceUpdate, class TGenoPheno>
-libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::~Custom_Strategy(){};
 
 template <class TCovarianceUpdate, class TGenoPheno>
 uint_fast64_t libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::get_lambda(void)
@@ -140,3 +143,6 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::generation_run(vo
     this->eostrat<TGenoPheno>::_solutions._elapsed_last_iter = std::chrono::duration_cast<std::chrono::milliseconds>(tstop - tstart).count();
     this->prepare();
 }
+
+#endif
+#endif

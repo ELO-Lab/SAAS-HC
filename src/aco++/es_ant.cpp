@@ -14,7 +14,10 @@
 #include "es_ant.hpp"
 #include "acothop.hpp"
 #include "custom_strategy.hpp"
-#include "custom_strategy.cpp"
+// temp
+// #include "custom_strategy.cpp"
+////
+#include "tree_map.hpp"
 
 #define SEED_IDX 0
 #define PAR_A_IDX 1
@@ -23,7 +26,8 @@
 #define Q_0_IDX 4
 #define ALPHA_IDX 5
 #define BETA_IDX 6
-#define ES_ANT_DIM 7
+#define RHO_IDX 7
+#define ES_ANT_DIM 8
 
 bool es_ant_flag = true;
 double par_a, par_b, par_c;
@@ -32,7 +36,7 @@ size_t min_num_ants;
 size_t current_ant_idx = 0;
 std::array<double, ES_ANT_DIM> lbounds, ubounds;
 OPTIMIZER *optim_ptr;
-double best_iteration_alpha, best_iteration_beta;
+double best_iteration_alpha, best_iteration_beta, best_iteration_rho;
 long int best_iteration_fitness;
 
 template <class TNumeric>
@@ -140,10 +144,10 @@ void an_ant_local_search()
 	ant[current_ant_idx].fitness = compute_fitness(ant[current_ant_idx].tour, ant[current_ant_idx].visited, ant[current_ant_idx].tour_size, ant[current_ant_idx].packing_plan);
 }
 
-libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
+libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 {
 	if (termination_condition())
-		return -1;
+		return long(-1);
 
 	std::vector<double> parameters(N);
 	size_t i;
@@ -158,8 +162,22 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 	q_0 = parameters[Q_0_IDX];
 	alpha = parameters[ALPHA_IDX];
 	beta = parameters[BETA_IDX];
+	rho = parameters[RHO_IDX];
 
-	an_ant_run();
+	if (tree_map_flag)
+		tree_map->find_route(
+			ant[current_ant_idx],
+			instance.n - 1,
+			new_rand01,
+			q_0,
+			alpha,
+			beta,
+			rho,
+			ant_empty_memory,
+			compute_fitness,
+			n_tours);
+	else
+		an_ant_run();
 
 	if (ls_flag > 0)
 	{
@@ -178,6 +196,7 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int N)
 		best_iteration_fitness = ant[current_ant_idx].fitness;
 		best_iteration_alpha = alpha;
 		best_iteration_beta = beta;
+		best_iteration_rho = rho;
 	}
 
 	current_ant_idx += 1;
@@ -195,7 +214,8 @@ void es_ant_set_default(void)
 	// temp
 	alpha = 1.550208;
 	beta = 4.893958;
-	min_num_ants = n_ants * 8 / 10;
+	// min_num_ants = n_ants * 8 / 10;
+	min_num_ants = n_ants;
 	adaptive_evaporation_flag = false;
 	rho = 0.468542;
 	node_clustering_flag = FALSE;
@@ -233,15 +253,22 @@ void init_optimizer(void)
 	x0[Q_0_IDX] = q_0;
 	sigma[Q_0_IDX] = 0.05;
 
-	lbounds[ALPHA_IDX] = 0.01;
-	ubounds[ALPHA_IDX] = 10;
+	// temp
+	lbounds[ALPHA_IDX] = 0.66;
+	ubounds[ALPHA_IDX] = 8.33;
 	x0[ALPHA_IDX] = alpha;
 	sigma[ALPHA_IDX] = 1.523180 / (ubounds[ALPHA_IDX] - lbounds[ALPHA_IDX]);
 
-	lbounds[BETA_IDX] = 0.01;
-	ubounds[BETA_IDX] = 10;
+	lbounds[BETA_IDX] = 1.38;
+	ubounds[BETA_IDX] = 9.18;
 	x0[BETA_IDX] = beta;
 	sigma[BETA_IDX] = 2.067786 / (ubounds[BETA_IDX] - lbounds[BETA_IDX]);
+
+	lbounds[RHO_IDX] = 0.10;
+	ubounds[RHO_IDX] = 0.94;
+	x0[RHO_IDX] = rho;
+	sigma[RHO_IDX] = 0.253226 / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
+	////
 
 	for (i = 0; i < ES_ANT_DIM; i++)
 	{
@@ -281,6 +308,7 @@ void es_ant_construct_and_local_search(void)
 
 	alpha = best_iteration_alpha;
 	beta = best_iteration_beta;
+	rho = best_iteration_rho;
 	n_ants = capacity_need;
 }
 

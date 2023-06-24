@@ -71,6 +71,7 @@
 #include "es_ant.hpp"
 #include "acothop.hpp"
 #include "custom_strategy.hpp"
+#include "tree_map.hpp"
 
 long int termination_condition(void)
 /*
@@ -605,9 +606,16 @@ int main(int argc, char *argv[])
 
     init_program(argc, argv);
 
-    instance.nn_list = compute_nn_lists();
-    pheromone = generate_double_matrix(instance.n, instance.n);
-    total = generate_double_matrix(instance.n, instance.n);
+    if (!tree_map_flag)
+    {
+        instance.nn_list = compute_nn_lists();
+        pheromone = generate_double_matrix(instance.n, instance.n);
+    }
+
+    if (!es_ant_flag and !tree_map_flag)
+    {
+        total = generate_double_matrix(instance.n, instance.n);
+    }
 
     if (node_clustering_flag == TRUE)
         create_cluster();
@@ -660,7 +668,8 @@ int main(int argc, char *argv[])
     }
     exit_program();
 
-    delete (optim_ptr);
+    delete optim_ptr;
+    delete tree_map;
 
     free(instance.distance);
     free(instance.nn_list);

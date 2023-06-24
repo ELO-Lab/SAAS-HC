@@ -50,6 +50,9 @@
 
  ***************************************************************************/
 
+#ifndef _ANTS_H_
+#define _ANTS_H_
+
 #include <vector>
 #include <cstddef>
 
@@ -203,3 +206,5 @@ void local_acs_pheromone_update(ant_struct *a, long int phase);
 void bwas_worst_ant_update(ant_struct *a1, ant_struct *a2);
 
 void bwas_pheromone_mutation(void);
+
+#endif

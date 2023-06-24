@@ -65,10 +65,10 @@
 #include "ants.h"
 #include "ls.h"
 #include "parse.h"
-
 #include "node_clustering.h"
 #include "adaptive_evaporation.hpp"
 #include "es_ant.hpp"
+#include "tree_map.hpp"
 
 long int *best_in_try;
 long int *best_found_at;
@@ -195,6 +195,8 @@ void init_program(long int argc, char *argv[])
 
     if (es_ant_flag)
         es_ant_init();
+    if (tree_map_flag)
+        tree_map_init(tree_map, instance.n - 1, instance.distance);
 }
 
 void exit_program(void)
