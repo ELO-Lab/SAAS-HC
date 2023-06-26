@@ -605,8 +605,7 @@ def build():
     command = [
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
-        "-G",
-        "Unix Makefiles",
+        "-GNinja",
         f"-S{acopp_dir}",
         f"-B{acopp_dir}/build",
         f"-DCMAKE_BUILD_TYPE:STRING={'Release' if not debug else 'Debug'}",
@@ -617,7 +616,7 @@ def build():
     if silent <= 0:
         print(result.stdout.decode())
 
-    command = ["make", "-C", f"{acopp_dir}/build"]
+    command = ["cmake", "--build", f"{acopp_dir}/build"]
     if silent <= 0:
         print("$ " + " ".join(command))
     result = run_command(command)
