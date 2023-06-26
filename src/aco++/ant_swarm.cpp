@@ -29,10 +29,10 @@ void Ant_Swarm::free_ant(ant_struct &ant_i)
     free(ant_i.packing_plan);
 }
 
-void Ant_Swarm::resize(const size_t &new_size)
+void Ant_Swarm::resize(const std::size_t &new_size)
 {
     size_t i;
-    const size_t &capacity = this->_ant_vec.size();
+    const std::size_t &capacity = this->_ant_vec.size();
 
     if (new_size > capacity)
     {

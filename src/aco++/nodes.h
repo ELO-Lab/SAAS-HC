@@ -58,6 +58,12 @@ public:
         const double &past_trail_min,
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times);
+    double get_pheromone(
+        const double &one_minus_rho,
+        const double &past_trail_restart,
+        const double &past_trail_min,
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times);
 
 protected:
     double _past_pheromone; // pheromone of the edge from the parent node to itself at the time of last local evaporation
@@ -82,12 +88,6 @@ protected:
     void _restart_if_needed(
         const std::size_t &global_restart_times,
         const double &past_trail_restart);
-    double _pheromone(
-        const double &one_minus_rho,
-        const double &past_trail_restart,
-        const double &past_trail_min,
-        const std::size_t &global_restart_times,
-        const std::size_t &global_evap_times);
 };
 
 class Leaf : public Node
@@ -113,7 +113,7 @@ public:
     ~Wont_Visit_Node(){};
 
     void set_wont_visit(const std::size_t &global_wont_visit_restart_times);
-    bool get_wont_visit(const uint_fast64_t &global_wont_visit_restart_times);
+    bool get_wont_visit(const std::size_t &global_wont_visit_restart_times);
 
 protected:
     bool _wont_visit;

@@ -868,7 +868,7 @@ void population_statistics(void)
 
     pop_mean = mean(l, n_ants);
     pop_stddev = std_deviation(l, n_ants, pop_mean);
-    branching_factor = node_branching(lambda);
+    // branching_factor = node_branching(lambda);
 
     for (k = 0; k < n_ants - 1; k++)
         for (j = k + 1; j < n_ants; j++)
@@ -890,41 +890,35 @@ double node_branching(double l)
                       lambda-branching factor
  */
 {
-    long int i, m;
-    double min, max, cutoff;
-    double avg;
-    double *num_branches;
+    size_t i, j, sum_num_branches = 0;
+    double min_pheromone, max_pheromone, cutoff, pheromone;
+    const size_t num_city = instance.n - 1;
 
-    num_branches = (double *)calloc(instance.n, sizeof(double));
-
-    for (m = 0; m < instance.n; m++)
+    for (i = 0; i < num_city - 1; i++)
     {
-        /* determine max, min to calculate the cutoff value */
-        min = pheromone[m][instance.nn_list[m][1]];
-        max = pheromone[m][instance.nn_list[m][1]];
-        for (i = 1; i < nn_ants; i++)
+        min_pheromone = 2;
+        max_pheromone = -1;
+        for (j = 1; j < num_city; j++)
         {
-            if (pheromone[m][instance.nn_list[m][i]] > max)
-                max = pheromone[m][instance.nn_list[m][i]];
-            if (pheromone[m][instance.nn_list[m][i]] < min)
-                min = pheromone[m][instance.nn_list[m][i]];
+            if (i == j)
+                continue;
+            pheromone = tree_map->leaf_pheromone(i, j, rho);
+            if (pheromone > max_pheromone)
+                max_pheromone = pheromone;
+            if (pheromone < min_pheromone)
+                min_pheromone = pheromone;
         }
-        cutoff = min + l * (max - min);
 
-        for (i = 0; i < nn_ants; i++)
+        cutoff = min_pheromone + l * (max_pheromone - min_pheromone);
+        for (j = 1; j < num_city; j++)
         {
-            if (pheromone[m][instance.nn_list[m][i]] > cutoff)
-                num_branches[m] += 1.;
+            if (tree_map->leaf_pheromone(i, j, rho) > cutoff)
+                sum_num_branches += 1;
         }
     }
-    avg = 0.;
-    for (m = 0; m < instance.n; m++)
-    {
-        avg += num_branches[m];
-    }
-    free(num_branches);
+
     /* Norm branching factor to minimal value 1 */
-    return (avg / (double)(instance.n * 2));
+    return (sum_num_branches / (double)(num_city * 2));
 }
 
 /****************************************************************

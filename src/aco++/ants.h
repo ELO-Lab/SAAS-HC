@@ -84,7 +84,7 @@ public:
     Ant_Swarm();
     ~Ant_Swarm();
     size_t size();
-    void resize(const size_t &);
+    void resize(const std::size_t &);
     ant_struct &operator[](size_t pos);
 
 private:

@@ -47,9 +47,9 @@ std::size_t Tree_Edge::choose_next_city(
     const double &one_minus_rho,
     const double &past_trail_restart,
     const double &past_trail_min,
-    const uint_fast64_t &global_restart_times,
-    const uint_fast64_t &global_evap_times,
-    const uint_fast64_t &global_wont_visit_restart_times)
+    const std::size_t &global_restart_times,
+    const std::size_t &global_evap_times,
+    const std::size_t &global_wont_visit_restart_times)
 {
     Node *current_ptr = _root_ptr;
     Wont_Visit_Node *current_wont_visit_ptr = wont_visit_root_ptr;
@@ -87,8 +87,8 @@ void Tree_Edge::reinforce(
     const double &past_trail_restart,
     const double &past_trail_min,
     const double &trail_max,
-    const uint_fast64_t &global_restart_times,
-    const uint_fast64_t &global_evap_times)
+    const std::size_t &global_restart_times,
+    const std::size_t &global_evap_times)
 {
     Node *node_ptr = _leaf_ptrs[city_index];
     while (node_ptr->parent_ptr != nullptr)
@@ -103,6 +103,22 @@ void Tree_Edge::reinforce(
             global_evap_times);
         node_ptr = node_ptr->parent_ptr;
     }
+}
+
+double Tree_Edge::leaf_pheromone(
+    const std::size_t &city_index,
+    const double &one_minus_rho,
+    const double &past_trail_restart,
+    const double &past_trail_min,
+    const std::size_t &global_restart_times,
+    const std::size_t &global_evap_times)
+{
+    return _leaf_ptrs[city_index]->get_pheromone(
+        one_minus_rho,
+        past_trail_restart,
+        past_trail_min,
+        global_restart_times,
+        global_evap_times);
 }
 
 Wont_Visit_Tree::Wont_Visit_Tree(const std::size_t &num_city)

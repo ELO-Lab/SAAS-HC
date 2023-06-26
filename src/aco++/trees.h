@@ -33,9 +33,9 @@ public:
         const double &one_minus_rho,
         const double &past_trail_restart,
         const double &past_trail_min,
-        const uint_fast64_t &global_restart_times,
-        const uint_fast64_t &global_evap_times,
-        const uint_fast64_t &global_wont_visit_restart_times);
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times,
+        const std::size_t &global_wont_visit_restart_times);
     void reinforce(
         const std::size_t &city_index,
         const double &invert_fitness,
@@ -43,8 +43,15 @@ public:
         const double &past_trail_restart,
         const double &past_trail_min,
         const double &trail_max,
-        const uint_fast64_t &global_restart_times,
-        const uint_fast64_t &global_evap_times);
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times);
+    double leaf_pheromone(
+        const std::size_t &city_index,
+        const double &one_minus_rho,
+        const double &past_trail_restart,
+        const double &past_trail_min,
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times);
 
 protected:
     void _build_tree(std::vector<Node *> &node_ptrs);

@@ -33,7 +33,7 @@ void Tree_Map::_set_wont_visit(const std::size_t &city_index)
 }
 
 void Tree_Map::reinforce(
-    ant_struct &an_ant,
+    const ant_struct &an_ant,
     const double &rho,
     const double &trail_max)
 {
@@ -74,7 +74,7 @@ void Tree_Map::restart_pheromone(const double &past_trail_restart)
 
 void Tree_Map::choose_route(
     ant_struct &an_ant,
-    const size_t &num_city,
+    const std::size_t &num_city,
     const std::function<double()> &rand01,
     const double &q_0,
     const double &alpha,
@@ -129,6 +129,21 @@ void Tree_Map::choose_route(
     an_ant.fitness = compute_fitness(an_ant.tour, an_ant.visited, an_ant.tour_size, an_ant.packing_plan);
 
     n_tours += 1;
+}
+
+double Tree_Map::leaf_pheromone(
+    const std::size_t &i,
+    const std::size_t &j,
+    const double &rho)
+{
+    const double one_minus_rho = 1 - rho;
+    return _tree_edge_ptrs[i]->leaf_pheromone(
+        j,
+        one_minus_rho,
+        _past_trail_restart,
+        _past_trail_min,
+        _global_restart_times,
+        _global_evap_times);
 }
 
 // hyperparameters

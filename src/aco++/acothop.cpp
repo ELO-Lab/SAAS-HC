@@ -212,8 +212,8 @@ void update_statistics(void)
 
         found_best = iteration;
         restart_found_best = iteration;
-        found_branching = node_branching(lambda);
-        branching_factor = found_branching;
+        // found_branching = node_branching(lambda);
+        // branching_factor = found_branching;
         if (mmas_flag)
         {
             if (!ls_flag)
@@ -257,19 +257,22 @@ void search_control_and_statistics(void)
     if (!(iteration % 100))
     {
         population_statistics();
-        branching_factor = node_branching(lambda);
         /*printf("\nbest so far %ld, iteration: %ld, time %.2f, b_fac %.5f\n",best_so_far_ant->fitness,iteration,elapsed_time( VIRTUAL),branching_factor);*/
-        if (mmas_flag && (branching_factor < branch_fac) && (iteration - restart_found_best > 250))
+        if (mmas_flag && (iteration - restart_found_best > 250))
         {
-            /* MAX-MIN Ant System was the first ACO algorithm to use
-               pheromone trail re-initialisation as implemented
-               here. Other ACO algorithms may also profit from this mechanism.
-             */
-            /*printf("INIT TRAILS!!!\n"); restart_best_ant->fitness = INFTY;*/
-            init_pheromone_trails(trail_max);
-            compute_total_information();
-            restart_iteration = iteration;
-            restart_time = elapsed_time(VIRTUAL);
+            branching_factor = node_branching(lambda);
+            if (branching_factor < branch_fac)
+            {
+                /* MAX-MIN Ant System was the first ACO algorithm to use
+                   pheromone trail re-initialisation as implemented
+                   here. Other ACO algorithms may also profit from this mechanism.
+                 */
+                /*printf("INIT TRAILS!!!\n"); restart_best_ant->fitness = INFTY;*/
+                init_pheromone_trails(trail_max);
+                compute_total_information();
+                restart_iteration = iteration;
+                restart_time = elapsed_time(VIRTUAL);
+            }
         }
         /*printf("try %li, iteration %li, b-fac %f \n\n", n_try,iteration,branching_factor);*/
     }
