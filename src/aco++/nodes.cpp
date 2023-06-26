@@ -3,30 +3,24 @@
 
 #include "nodes.h"
 
-Node::Node(Node *&left_ptr, Node *&right_ptr)
-    : Node_Base<Node>(left_ptr, right_ptr)
+Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
+    : Node_Base<Node>(left_ptr, right_ptr, is_root)
 {
+    const bool is_leaf = (left_ptr == nullptr) and (right_ptr == nullptr);
+
     _local_evap_times = 0;
     _local_restart_times = 0;
-    _heuristic = (left_ptr->_heuristic + right_ptr->_heuristic) / 2.0;
+    if (!is_leaf)
+        _heuristic = (left_ptr->_heuristic + right_ptr->_heuristic) / 2.0;
 }
-
-Root::Root(Node *&left_ptr, Node *&right_ptr)
-    : Node(left_ptr, right_ptr)
-{
-    parent_ptr = nullptr;
-};
 
 Leaf::Leaf(
     const std::size_t &city_index,
     const std::size_t &current_city,
     long int **&distance_matrix)
+    : Node()
 {
-    _local_evap_times = 0;
-    _local_restart_times = 0;
     _heuristic = 1.0 / ((double)distance_matrix[current_city][city_index] + 0.1);
-    child_ptrs[0] = nullptr;
-    child_ptrs[1] = nullptr;
     this->_city_index = city_index;
 }
 
@@ -90,7 +84,8 @@ std::size_t Node::choose_child_with_prob(const double &one_minus_q_0, const doub
                                          const double &alpha, const double &beta, const double &one_minus_rho,
                                          const double &past_trail_restart,
                                          const double &past_trail_min,
-                                         const uint_fast64_t &global_restart_times, const uint_fast64_t &global_evap_times)
+                                         const uint_fast64_t &global_restart_times,
+                                         const uint_fast64_t &global_evap_times)
 {
     // IMPORTANCE NOTE: Remember to check won't visit before go to this function
 
@@ -124,18 +119,20 @@ void Wont_Visit_Node::_restart_if_needed(const uint_fast64_t &global_wont_visit_
 
 void Wont_Visit_Node::set_wont_visit(const uint_fast64_t &global_wont_visit_restart_times)
 {
-    _local_wont_visit_restart_times = global_wont_visit_restart_times;
     _wont_visit = true;
+    _local_wont_visit_restart_times = global_wont_visit_restart_times;
     if (parent_ptr != nullptr)
         parent_ptr->_check_wont_visit(global_wont_visit_restart_times);
 }
 
 void Wont_Visit_Node::_check_wont_visit(const uint_fast64_t &global_wont_visit_restart_times)
 {
-    child_ptrs[0]->_restart_if_needed(global_wont_visit_restart_times);
-    child_ptrs[1]->_restart_if_needed(global_wont_visit_restart_times);
-    if (child_ptrs[0]->_wont_visit and child_ptrs[1]->_wont_visit)
+    if (child_ptrs[0]->get_wont_visit(global_wont_visit_restart_times) and child_ptrs[1]->get_wont_visit(global_wont_visit_restart_times))
         set_wont_visit(global_wont_visit_restart_times);
 }
 
-bool Wont_Visit_Node::get_wont_visit() { return _wont_visit; }
+bool Wont_Visit_Node::get_wont_visit(const uint_fast64_t &global_wont_visit_restart_times)
+{
+    _restart_if_needed(global_wont_visit_restart_times);
+    return _wont_visit;
+}

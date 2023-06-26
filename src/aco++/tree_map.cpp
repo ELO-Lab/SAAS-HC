@@ -8,6 +8,7 @@ Tree_Map::Tree_Map(const std::size_t &num_city, long int **&distance_matrix)
 {
     size_t i;
 
+    this->_num_city = num_city;
     _tree_edge_ptrs.resize(num_city - 1);
     for (i = 0; i < num_city - 1; i++) // Do not go from the end city
         _tree_edge_ptrs[i] = new Tree_Edge(num_city, i, distance_matrix);
@@ -28,8 +29,7 @@ Tree_Map::~Tree_Map()
 
 void Tree_Map::_set_wont_visit(const std::size_t &city_index)
 {
-    if (city_index != 0)
-        _wont_visit_tree_ptr->set_wont_visit(city_index, _global_wont_visit_restart_times);
+    _wont_visit_tree_ptr->set_wont_visit(city_index, _num_city, _global_wont_visit_restart_times);
 }
 
 void Tree_Map::reinforce(
@@ -112,7 +112,8 @@ void Tree_Map::choose_route(
             _past_trail_restart,
             _past_trail_min,
             _global_restart_times,
-            _global_evap_times);
+            _global_evap_times,
+            _global_wont_visit_restart_times);
         an_ant.tour[an_ant.tour_size] = current_city;
         an_ant.visited[current_city] = TRUE;
         an_ant.tour_size++;

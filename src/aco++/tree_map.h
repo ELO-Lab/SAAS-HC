@@ -34,7 +34,8 @@ protected:
     std::size_t
         _global_wont_visit_restart_times,
         _global_evap_times,
-        _global_restart_times;
+        _global_restart_times,
+        _num_city;
     double _past_trail_restart, _past_trail_min;
 
     void _set_wont_visit(const std::size_t &city_index);

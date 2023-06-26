@@ -34,7 +34,8 @@ public:
         const double &past_trail_restart,
         const double &past_trail_min,
         const uint_fast64_t &global_restart_times,
-        const uint_fast64_t &global_evap_times);
+        const uint_fast64_t &global_evap_times,
+        const uint_fast64_t &global_wont_visit_restart_times);
     void reinforce(
         const std::size_t &city_index,
         const double &invert_fitness,
@@ -55,7 +56,7 @@ public:
     Wont_Visit_Tree(const std::size_t &num_city);
     ~Wont_Visit_Tree(){};
 
-    void set_wont_visit(const std::size_t &city_index, const std::size_t &global_wont_visit_restart_times);
+    void set_wont_visit(const std::size_t &city_index, const std::size_t &num_city, const std::size_t &global_wont_visit_restart_times);
     Wont_Visit_Node *get_root_ptr();
 
 protected:

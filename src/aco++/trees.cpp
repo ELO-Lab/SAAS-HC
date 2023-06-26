@@ -21,7 +21,7 @@ void Tree_Edge::_build_tree(std::vector<Node *> &node_ptrs)
 {
     if (node_ptrs.size() == 2)
     {
-        _root_ptr = new Node(node_ptrs[0], node_ptrs[1]);
+        _root_ptr = new Node(node_ptrs[0], node_ptrs[1], true);
         return;
     }
 
@@ -48,21 +48,24 @@ std::size_t Tree_Edge::choose_next_city(
     const double &past_trail_restart,
     const double &past_trail_min,
     const uint_fast64_t &global_restart_times,
-    const uint_fast64_t &global_evap_times)
+    const uint_fast64_t &global_evap_times,
+    const uint_fast64_t &global_wont_visit_restart_times)
 {
     Node *current_ptr = _root_ptr;
     Wont_Visit_Node *current_wont_visit_ptr = wont_visit_root_ptr;
     std::size_t next_child_index;
+    bool left_wont_visit, right_wont_visit;
 
     while (current_ptr->child_ptrs[0] != nullptr)
     {
-        auto &wont_visit_child_ptrs = current_wont_visit_ptr->child_ptrs;
+        left_wont_visit = current_wont_visit_ptr->child_ptrs[0]->get_wont_visit(global_wont_visit_restart_times);
+        right_wont_visit = current_wont_visit_ptr->child_ptrs[1]->get_wont_visit(global_wont_visit_restart_times);
 
-        if (wont_visit_child_ptrs[0]->get_wont_visit() && !wont_visit_child_ptrs[1]->get_wont_visit())
+        if (left_wont_visit && !right_wont_visit)
             next_child_index = 1;
-        else if (!wont_visit_child_ptrs[0]->get_wont_visit() && wont_visit_child_ptrs[1]->get_wont_visit())
+        else if (!left_wont_visit && right_wont_visit)
             next_child_index = 0;
-        else if (!wont_visit_child_ptrs[0]->get_wont_visit() && !wont_visit_child_ptrs[1]->get_wont_visit())
+        else if (!left_wont_visit && !right_wont_visit)
             next_child_index = current_ptr->choose_child_with_prob(
                 one_minus_q_0, rand01(),
                 alpha, beta, one_minus_rho, past_trail_restart, past_trail_min,
@@ -121,7 +124,7 @@ void Wont_Visit_Tree::_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs)
 {
     if (node_ptrs.size() == 2)
     {
-        _root_ptr = new Wont_Visit_Node(node_ptrs[0], node_ptrs[1]);
+        _root_ptr = new Wont_Visit_Node(node_ptrs[0], node_ptrs[1], true);
         return;
     }
 
@@ -138,10 +141,11 @@ void Wont_Visit_Tree::_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs)
     _build_tree(parent_ptrs);
 }
 
-void Wont_Visit_Tree::set_wont_visit(const std::size_t &city_index, const std::size_t &global_wont_visit_restart_times)
+void Wont_Visit_Tree::set_wont_visit(const std::size_t &city_index, const std::size_t &num_city, const std::size_t &global_wont_visit_restart_times)
 {
-    if (city_index != 0)
+    if (city_index != 0 and city_index != num_city - 1)
         _leaf_ptrs[city_index]->set_wont_visit(global_wont_visit_restart_times);
+    assert(_root_ptr->get_wont_visit(global_wont_visit_restart_times) == false);
 }
 
 Wont_Visit_Node *Wont_Visit_Tree::get_root_ptr() { return _root_ptr; }

@@ -2,6 +2,7 @@
 #define _NODES_H_
 
 #include <stdint.h>
+#include <assert.h>
 #include <array>
 
 template <class NodeT>
@@ -11,32 +12,32 @@ public:
     NodeT *parent_ptr;
     std::array<NodeT *, 2> child_ptrs;
 
-    Node_Base(){};
-    Node_Base(NodeT *&left_ptr, NodeT *&right_ptr);
-    ~Node_Base();
+    Node_Base(NodeT *left_ptr = nullptr, NodeT *right_ptr = nullptr, const bool &is_root = false)
+    {
+        const bool is_leaf = (left_ptr == nullptr) && (right_ptr == nullptr);
+        assert((left_ptr != nullptr && right_ptr != nullptr) || is_leaf);
+
+        child_ptrs[0] = left_ptr;
+        child_ptrs[1] = right_ptr;
+        if (!is_leaf)
+        {
+            left_ptr->parent_ptr = (NodeT *)(this);
+            right_ptr->parent_ptr = (NodeT *)(this);
+        }
+        if (is_root)
+            parent_ptr = nullptr;
+    };
+    ~Node_Base()
+    {
+        for (auto &_ptr : child_ptrs)
+            delete _ptr;
+    };
 };
-
-template <class NodeT>
-Node_Base<NodeT>::Node_Base(NodeT *&left_ptr, NodeT *&right_ptr)
-{
-    left_ptr->parent_ptr = (NodeT *)(this);
-    right_ptr->parent_ptr = (NodeT *)(this);
-    child_ptrs[0] = left_ptr;
-    child_ptrs[1] = right_ptr;
-}
-
-template <class NodeT>
-Node_Base<NodeT>::~Node_Base()
-{
-    for (auto &_ptr : child_ptrs)
-        delete _ptr;
-}
 
 class Node : public Node_Base<Node>
 {
 public:
-    Node(){};
-    Node(Node *&left_ptr, Node *&right_ptr);
+    Node(Node *left_ptr = nullptr, Node *right_ptr = nullptr, const bool &is_root = false);
     ~Node(){};
 
     void reinforce(
@@ -89,13 +90,6 @@ protected:
         const std::size_t &global_evap_times);
 };
 
-class Root : public Node
-{
-public:
-    Root(Node *&left_ptr, Node *&right_ptr);
-    ~Root(){};
-};
-
 class Leaf : public Node
 {
 public:
@@ -113,15 +107,13 @@ protected:
 class Wont_Visit_Node : public Node_Base<Wont_Visit_Node>
 {
 public:
-    Wont_Visit_Node()
-        : _wont_visit(false), _local_wont_visit_restart_times(0){};
-    Wont_Visit_Node(Wont_Visit_Node *&left_ptr, Wont_Visit_Node *&right_ptr)
-        : Node_Base<Wont_Visit_Node>(left_ptr, right_ptr),
+    Wont_Visit_Node(Wont_Visit_Node *left_ptr = nullptr, Wont_Visit_Node *right_ptr = nullptr, const bool &is_root = false)
+        : Node_Base<Wont_Visit_Node>(left_ptr, right_ptr, is_root),
           _wont_visit(false), _local_wont_visit_restart_times(0){};
     ~Wont_Visit_Node(){};
 
     void set_wont_visit(const std::size_t &global_wont_visit_restart_times);
-    bool get_wont_visit();
+    bool get_wont_visit(const uint_fast64_t &global_wont_visit_restart_times);
 
 protected:
     bool _wont_visit;
