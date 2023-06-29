@@ -1,7 +1,6 @@
 #ifndef _TREES_H_
 #define _TREES_H_
 
-#include <functional>
 #include <vector>
 
 #include "nodes.h"
@@ -26,7 +25,6 @@ public:
 
     std::size_t choose_next_city(
         Wont_Visit_Node *wont_visit_root_ptr,
-        const std::function<double()> &rand01,
         const double &one_minus_q_0,
         const double &alpha,
         const double &beta,

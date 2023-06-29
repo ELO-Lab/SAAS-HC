@@ -1,5 +1,7 @@
 #include <assert.h>
 
+#include "ants.h"
+#include "thop.h"
 #include "trees.h"
 
 Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, long int **&distance_matrix)
@@ -40,7 +42,6 @@ void Tree_Edge::_build_tree(std::vector<Node *> &node_ptrs)
 
 std::size_t Tree_Edge::choose_next_city(
     Wont_Visit_Node *wont_visit_root_ptr,
-    const std::function<double()> &rand01,
     const double &one_minus_q_0,
     const double &alpha,
     const double &beta,
@@ -67,7 +68,7 @@ std::size_t Tree_Edge::choose_next_city(
             next_child_index = 0;
         else if (!left_wont_visit && !right_wont_visit)
             next_child_index = current_ptr->choose_child_with_prob(
-                one_minus_q_0, rand01(),
+                one_minus_q_0,
                 alpha, beta, one_minus_rho, past_trail_restart, past_trail_min,
                 global_restart_times, global_evap_times);
         else

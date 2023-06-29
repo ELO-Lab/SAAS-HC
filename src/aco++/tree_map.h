@@ -18,19 +18,16 @@ public:
         const double &trail_max);
     void choose_route(
         ant_struct &an_ant,
-        const std::size_t &num_city,
-        const std::function<double()> &rand01,
         const double &q_0,
         const double &alpha,
         const double &beta,
         const double &rho,
-        const std::function<void(ant_struct *a)> &ant_empty_memory,
-        const std::function<long int(long int *t, char *visited, long int t_size, char *p)> &compute_fitness,
         long int &n_tours);
     double leaf_pheromone(
         const std::size_t &i,
         const std::size_t &j,
         const double &rho);
+    double node_branching(const double &lambda);
 
 protected:
     std::vector<Tree_Edge *> _tree_edge_ptrs;
@@ -54,5 +51,6 @@ extern Tree_Map *tree_map;
 void tree_map_init();
 void tree_map_force_set_parameters();
 void tree_map_deallocate();
+void tree_map_construct_solutions();
 
 #endif

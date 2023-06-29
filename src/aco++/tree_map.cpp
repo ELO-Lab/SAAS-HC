@@ -1,7 +1,6 @@
-#include <functional>
-
 #include "utilities.h"
 #include "thop.h"
+#include "inout.h"
 #include "tree_map.h"
 
 Tree_Map::Tree_Map(const std::size_t &num_city, long int **&distance_matrix)
@@ -74,14 +73,10 @@ void Tree_Map::restart_pheromone(const double &past_trail_restart)
 
 void Tree_Map::choose_route(
     ant_struct &an_ant,
-    const std::size_t &num_city,
-    const std::function<double()> &rand01,
     const double &q_0,
     const double &alpha,
     const double &beta,
     const double &rho,
-    const std::function<void(ant_struct *a)> &ant_empty_memory,
-    const std::function<long int(long int *t, char *visited, long int t_size, char *p)> &compute_fitness,
     long int &n_tours)
 {
     const double &one_minus_q_0 = 1 - q_0;
@@ -94,17 +89,16 @@ void Tree_Map::choose_route(
     an_ant.tour_size = 1;
     an_ant.tour[0] = 0;
     an_ant.visited[0] = TRUE;
-    an_ant.visited[num_city] = TRUE; // virtual city
+    an_ant.visited[_num_city] = TRUE; // virtual city
 
     while (true)
     {
         current_city = an_ant.tour[an_ant.tour_size - 1];
-        if (current_city == num_city + 1 - 2)
+        if (current_city == _num_city + 1 - 2)
             break;
 
         current_city = _tree_edge_ptrs[current_city]->choose_next_city(
             _wont_visit_tree_ptr->get_root_ptr(),
-            rand01,
             one_minus_q_0,
             alpha,
             beta,
@@ -121,10 +115,10 @@ void Tree_Map::choose_route(
         _set_wont_visit(current_city);
     }
 
-    an_ant.tour[an_ant.tour_size++] = num_city;       // virtual city
+    an_ant.tour[an_ant.tour_size++] = _num_city;      // virtual city
     an_ant.tour[an_ant.tour_size++] = an_ant.tour[0]; // to form a tour
 
-    for (i = an_ant.tour_size; i < num_city + 1; i++)
+    for (i = an_ant.tour_size; i < _num_city + 1; i++)
         an_ant.tour[i] = 0;
     an_ant.fitness = compute_fitness(an_ant.tour, an_ant.visited, an_ant.tour_size, an_ant.packing_plan);
 
@@ -146,6 +140,38 @@ double Tree_Map::leaf_pheromone(
         _global_evap_times);
 }
 
+double Tree_Map::node_branching(const double &lambda)
+{
+    size_t i, j, sum_num_branches = 0;
+    double min_pheromone, max_pheromone, cutoff, pheromone;
+    const size_t num_city = instance.n - 1;
+
+    for (i = 0; i < num_city - 1; i++)
+    {
+        min_pheromone = 2;
+        max_pheromone = -1;
+        for (j = 1; j < num_city; j++)
+        {
+            if (i == j)
+                continue;
+            pheromone = tree_map->leaf_pheromone(i, j, rho);
+            if (pheromone > max_pheromone)
+                max_pheromone = pheromone;
+            if (pheromone < min_pheromone)
+                min_pheromone = pheromone;
+        }
+
+        cutoff = min_pheromone + lambda * (max_pheromone - min_pheromone);
+        for (j = 1; j < num_city; j++)
+        {
+            if (tree_map->leaf_pheromone(i, j, rho) > cutoff)
+                sum_num_branches += 1;
+        }
+    }
+
+    return (sum_num_branches / (double)(num_city * 2));
+}
+
 // hyperparameters
 bool tree_map_flag = true;
 
@@ -162,4 +188,11 @@ void tree_map_force_set_parameters()
 void tree_map_deallocate()
 {
     delete tree_map;
+}
+
+void tree_map_construct_solutions()
+{
+    std::size_t i;
+    for (i = 0; i < n_ants; i++)
+        tree_map->choose_route(ant[i], instance.n - 1, alpha, beta, rho, n_tours);
 }

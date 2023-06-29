@@ -1,6 +1,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include "utilities.h"
 #include "nodes.h"
 
 Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
@@ -16,11 +17,10 @@ Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
 
 Leaf::Leaf(
     const std::size_t &city_index,
-    const std::size_t &current_city,
-    long int **&distance_matrix)
+    const double &heuristic)
     : Node()
 {
-    _heuristic = 1.0 / ((double)distance_matrix[current_city][city_index] + 0.1);
+    _heuristic = heuristic;
     this->_city_index = city_index;
 }
 
@@ -80,7 +80,7 @@ double Node::_prob_weight(const double &alpha, const double &beta, const double 
     return pow(pheromone, alpha) * pow(_heuristic, beta);
 }
 
-std::size_t Node::choose_child_with_prob(const double &one_minus_q_0, const double &rand_num_01,
+std::size_t Node::choose_child_with_prob(const double &one_minus_q_0,
                                          const double &alpha, const double &beta, const double &one_minus_rho,
                                          const double &past_trail_restart,
                                          const double &past_trail_min,
@@ -102,7 +102,7 @@ std::size_t Node::choose_child_with_prob(const double &one_minus_q_0, const doub
 
     prob_of_min = weights[index_of_min] / (weights[0] + weights[1]);
     prob_of_min *= one_minus_q_0;
-    if (rand_num_01 < prob_of_min)
+    if (new_rand01() < prob_of_min)
         return index_of_min;
     else
         return 1 - index_of_min;

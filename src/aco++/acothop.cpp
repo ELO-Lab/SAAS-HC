@@ -576,7 +576,9 @@ int main(int argc, char *argv[])
                 es_ant_construct_and_local_search();
             else
             {
-                if (node_clustering_flag == TRUE)
+                if (tree_map_flag)
+                    tree_map_construct_solutions();
+                else if (node_clustering_flag)
                     construct_node_clustering_solution();
                 else
                     construct_solutions();

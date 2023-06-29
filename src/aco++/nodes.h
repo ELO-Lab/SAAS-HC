@@ -50,7 +50,6 @@ public:
         const std::size_t &global_evap_times);
     std::size_t choose_child_with_prob(
         const double &one_minus_q_0,
-        const double &rand_num_01,
         const double &alpha,
         const double &beta,
         const double &one_minus_rho,
@@ -95,8 +94,7 @@ class Leaf : public Node
 public:
     Leaf(
         const std::size_t &city_index,
-        const std::size_t &current_city,
-        long int **&distance_matrix);
+        const double &heuristic);
     std::size_t city_index();
     ~Leaf(){};
 

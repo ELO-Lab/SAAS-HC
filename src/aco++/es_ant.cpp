@@ -1,6 +1,9 @@
 #include <cstddef>
 #include <assert.h>
 #include <limits.h>
+// temp
+#include <iostream>
+////
 
 #include "ants.h"
 #include "inout.h"
@@ -171,13 +174,10 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 		tree_map->choose_route(
 			ant[current_ant_idx],
 			instance.n - 1,
-			new_rand01,
 			q_0,
 			alpha,
 			beta,
 			rho,
-			ant_empty_memory,
-			compute_fitness,
 			n_tours);
 	else
 		an_ant_run();
@@ -286,6 +286,9 @@ void es_ant_construct_and_local_search(void)
 	beta = best_iteration_beta;
 	rho = best_iteration_rho;
 	n_ants = capacity_need;
+	// temp
+	std::cout << n_ants << std::endl;
+	////
 }
 
 double edge_weight(size_t i, size_t j)
@@ -307,8 +310,8 @@ void es_ant_force_set_parameters(void)
 
 	// temp
 	adaptive_evaporation_flag = false;
-	min_n_ants = n_ants;
-	// min_n_ants = 0;
+	// min_n_ants = n_ants;
+	min_n_ants = 0;
 	rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
 
 	alpha_max = 8.33;

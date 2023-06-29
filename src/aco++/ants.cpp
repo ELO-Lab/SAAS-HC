@@ -890,35 +890,44 @@ double node_branching(double l)
                       lambda-branching factor
  */
 {
-    size_t i, j, sum_num_branches = 0;
-    double min_pheromone, max_pheromone, cutoff, pheromone;
-    const size_t num_city = instance.n - 1;
+    if (tree_map_flag)
+        return tree_map->node_branching(l);
 
-    for (i = 0; i < num_city - 1; i++)
+    long int i, m;
+    double min, max, cutoff;
+    double avg;
+    double *num_branches;
+
+    num_branches = (double *)calloc(instance.n, sizeof(double));
+
+    for (m = 0; m < instance.n; m++)
     {
-        min_pheromone = 2;
-        max_pheromone = -1;
-        for (j = 1; j < num_city; j++)
+        /* determine max, min to calculate the cutoff value */
+        min = pheromone[m][instance.nn_list[m][1]];
+        max = pheromone[m][instance.nn_list[m][1]];
+        for (i = 1; i < nn_ants; i++)
         {
-            if (i == j)
-                continue;
-            pheromone = tree_map->leaf_pheromone(i, j, rho);
-            if (pheromone > max_pheromone)
-                max_pheromone = pheromone;
-            if (pheromone < min_pheromone)
-                min_pheromone = pheromone;
+            if (pheromone[m][instance.nn_list[m][i]] > max)
+                max = pheromone[m][instance.nn_list[m][i]];
+            if (pheromone[m][instance.nn_list[m][i]] < min)
+                min = pheromone[m][instance.nn_list[m][i]];
         }
+        cutoff = min + l * (max - min);
 
-        cutoff = min_pheromone + l * (max_pheromone - min_pheromone);
-        for (j = 1; j < num_city; j++)
+        for (i = 0; i < nn_ants; i++)
         {
-            if (tree_map->leaf_pheromone(i, j, rho) > cutoff)
-                sum_num_branches += 1;
+            if (pheromone[m][instance.nn_list[m][i]] > cutoff)
+                num_branches[m] += 1.;
         }
     }
-
+    avg = 0.;
+    for (m = 0; m < instance.n; m++)
+    {
+        avg += num_branches[m];
+    }
+    free(num_branches);
     /* Norm branching factor to minimal value 1 */
-    return (sum_num_branches / (double)(num_city * 2));
+    return (avg / (double)(instance.n * 2));
 }
 
 /****************************************************************
