@@ -3,6 +3,16 @@
 
 #include "utilities.h"
 #include "nodes.h"
+#include "thop.h"
+#include "ants.h"
+
+Node::Node(Node *parent_ptr, const double &heuristic, const bool &is_leaf)
+    : Node_Base<Node>(parent_ptr, is_leaf)
+{
+    _local_evap_times = 0;
+    _local_restart_times = 0;
+    _heuristic = heuristic;
+}
 
 Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
     : Node_Base<Node>(left_ptr, right_ptr, is_root)
@@ -15,16 +25,40 @@ Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
         _heuristic = (left_ptr->_heuristic + right_ptr->_heuristic) / 2.0;
 }
 
+Leaf::Leaf(Node *parent_ptr, const double &heuristic, const std::size_t &city_index)
+    : Node(parent_ptr, heuristic, true), Leaf_Base(city_index) {}
+
 Leaf::Leaf(
     const std::size_t &city_index,
     const double &heuristic)
-    : Node()
+    : Node(nullptr, nullptr, false), Leaf_Base(city_index)
 {
     _heuristic = heuristic;
-    this->_city_index = city_index;
 }
 
-std::size_t Leaf::city_index() { return _city_index; };
+Wont_Visit_Node::Wont_Visit_Node(Wont_Visit_Node *parent_ptr, const bool &is_leaf)
+    : Node_Base<Wont_Visit_Node>(parent_ptr, is_leaf)
+{
+    _wont_visit = false;
+    _local_wont_visit_restart_times = 0;
+}
+
+Wont_Visit_Node::Wont_Visit_Node(Wont_Visit_Node *left_ptr, Wont_Visit_Node *right_ptr, const bool &is_root)
+    : Node_Base<Wont_Visit_Node>(left_ptr, right_ptr, is_root)
+{
+    _wont_visit = false;
+    _local_wont_visit_restart_times = 0;
+}
+
+Building_Node::Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const bool &is_leaf)
+    : Node_Base<Building_Node>(parent_ptr, is_leaf)
+{
+    this->_centroid_x = centroid_x;
+    this->_centroid_y = centroid_y;
+}
+
+Building_Leaf::Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index, const bool &is_leaf)
+    : Building_Node(parent_ptr, centroid_x, centroid_y, true), Leaf_Base(city_index) {}
 
 void Node::_restart_if_needed(const std::size_t &global_restart_times, const double &past_trail_restart)
 {
@@ -135,4 +169,9 @@ bool Wont_Visit_Node::get_wont_visit(const std::size_t &global_wont_visit_restar
 {
     _restart_if_needed(global_wont_visit_restart_times);
     return _wont_visit;
+}
+
+double Building_Node::make_heuristic(const std::size_t &city_index)
+{
+    return compute_heuristic(distance_with_coordinate(city_index, _centroid_x, _centroid_y));
 }

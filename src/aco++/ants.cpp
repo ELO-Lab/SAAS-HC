@@ -1219,3 +1219,8 @@ void bwas_pheromone_mutation(void)
         }
     }
 }
+
+double compute_heuristic(const double &distance)
+{
+    return 1.0 / (distance + 0.1);
+}

@@ -12,8 +12,19 @@ public:
     NodeT *parent_ptr;
     std::array<NodeT *, 2> child_ptrs;
 
-    Node_Base(NodeT *left_ptr = nullptr, NodeT *right_ptr = nullptr, const bool &is_root = false)
+    Node_Base(NodeT *parent_ptr, const bool &is_leaf = false)
     {
+        // Top-down building
+        this->parent_ptr = parent_ptr;
+        if (is_leaf)
+        {
+            for (auto &_ptr : child_ptrs)
+                _ptr = nullptr;
+        }
+    };
+    Node_Base(NodeT *left_ptr, NodeT *right_ptr, const bool &is_root = false)
+    {
+        // Bottom-up building
         const bool is_leaf = (left_ptr == nullptr) && (right_ptr == nullptr);
         assert((left_ptr != nullptr && right_ptr != nullptr) || is_leaf);
 
@@ -34,10 +45,22 @@ public:
     };
 };
 
+class Leaf_Base
+{
+public:
+    Leaf_Base(const std::size_t &city_index) { _city_index = city_index; };
+    std::size_t get_city_index() { return _city_index; };
+    ~Leaf_Base(){};
+
+protected:
+    std::size_t _city_index;
+};
+
 class Node : public Node_Base<Node>
 {
 public:
-    Node(Node *left_ptr = nullptr, Node *right_ptr = nullptr, const bool &is_root = false);
+    Node(Node *parent_ptr, const double &heuristic, const bool &is_leaf = false); // Top-down
+    Node(Node *left_ptr, Node *right_ptr, const bool &is_root = false);           // Bottom-up
     ~Node(){};
 
     void reinforce(
@@ -89,25 +112,24 @@ protected:
         const double &past_trail_restart);
 };
 
-class Leaf : public Node
+class Leaf : public Node, public Leaf_Base
 {
 public:
     Leaf(
+        Node *parent_ptr,
+        const double &heuristic,
+        const std::size_t &city_index); // Top-down
+    Leaf(
         const std::size_t &city_index,
-        const double &heuristic);
-    std::size_t city_index();
+        const double &heuristic); // Bottom-up
     ~Leaf(){};
-
-protected:
-    std::size_t _city_index;
 };
 
 class Wont_Visit_Node : public Node_Base<Wont_Visit_Node>
 {
 public:
-    Wont_Visit_Node(Wont_Visit_Node *left_ptr = nullptr, Wont_Visit_Node *right_ptr = nullptr, const bool &is_root = false)
-        : Node_Base<Wont_Visit_Node>(left_ptr, right_ptr, is_root),
-          _wont_visit(false), _local_wont_visit_restart_times(0){};
+    Wont_Visit_Node(Wont_Visit_Node *parent_ptr, const bool &is_leaf = false);                           // Top-down
+    Wont_Visit_Node(Wont_Visit_Node *left_ptr, Wont_Visit_Node *right_ptr, const bool &is_root = false); // Bottom-up
     ~Wont_Visit_Node(){};
 
     void set_wont_visit(const std::size_t &global_wont_visit_restart_times);
@@ -119,6 +141,25 @@ protected:
 
     void _check_wont_visit(const std::size_t &global_wont_visit_restart_times);
     void _restart_if_needed(const std::size_t &global_wont_visit_restart_times);
+};
+
+class Building_Node : public Node_Base<Building_Node>
+{
+public:
+    Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const bool &is_leaf = false);
+    ~Building_Node(){};
+
+    double make_heuristic(const std::size_t &city_index);
+
+protected:
+    double _centroid_x, _centroid_y; // coordinate
+};
+
+class Building_Leaf : public Building_Node, public Leaf_Base
+{
+public:
+    Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index, const bool &is_leaf = false);
+    ~Building_Leaf(){};
 };
 
 #endif

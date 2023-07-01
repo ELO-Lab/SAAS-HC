@@ -176,6 +176,103 @@ long int att_distance(long int i, long int j)
     return dij;
 }
 
+double (*distance_with_coordinate)(const std::size_t &city_index, const double &x, const double &y); /* function pointer */
+
+/*
+      FUNCTION: the following four functions implement different ways of
+                computing distances for TSPLIB instances
+      INPUT:    two node indices
+      OUTPUT:   distance between the two nodes
+ */
+
+double euclid_distance(const std::size_t &city_index, const double &x, const double &y)
+/*
+      FUNCTION: compute Euclidean distances between two nodes
+      INPUT:    two node indices
+      OUTPUT:   distance between the two nodes
+      COMMENTS: for the definition of how to compute this distance see TSPLIB
+ */
+{
+    double xd = instance.nodeptr[city_index].x - x;
+    double yd = instance.nodeptr[city_index].y - y;
+    double r = sqrt(xd * xd + yd * yd) + 0.5;
+
+    return r;
+}
+
+double ceil_distance(const std::size_t &city_index, const double &x, const double &y)
+/*
+      FUNCTION: compute Euclidean distances between two nodes
+      INPUT:    two node indices
+      OUTPUT:   distance between the two nodes
+      COMMENTS: for the definition of how to compute this distance see TSPLIB
+ */
+{
+    double xd = instance.nodeptr[city_index].x - x;
+    double yd = instance.nodeptr[city_index].y - y;
+    double r = sqrt(xd * xd + yd * yd) + 0.5;
+
+    return ceil(r);
+}
+
+double geo_distance(const std::size_t &city_index, const double &x, const double &y)
+/*
+      FUNCTION: compute geometric distance between two nodes
+      INPUT:    two node indices
+      OUTPUT:   distance between the two nodes
+      COMMENTS: adapted from concorde code
+                for the definition of how to compute this distance see TSPLIB
+ */
+{
+    double deg, min;
+    double lati, latj, longi, longj;
+    double q1, q2, q3;
+    double dd;
+    double x = instance.nodeptr[city_index].x, x2 = x,
+           y = instance.nodeptr[city_index].y, y2 = y;
+
+    deg = dtrunc(x);
+    min = x - deg;
+    lati = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
+    deg = dtrunc(x2);
+    min = x2 - deg;
+    latj = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
+
+    deg = dtrunc(y);
+    min = y - deg;
+    longi = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
+    deg = dtrunc(y2);
+    min = y2 - deg;
+    longj = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
+
+    q1 = cos(longi - longj);
+    q2 = cos(lati - latj);
+    q3 = cos(lati + latj);
+    dd = 6378.388 * acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0;
+    return dd;
+}
+
+double att_distance(const std::size_t &city_index, const double &x, const double &y)
+/*
+      FUNCTION: compute ATT distance between two nodes
+      INPUT:    two node indices
+      OUTPUT:   distance between the two nodes
+      COMMENTS: for the definition of how to compute this distance see TSPLIB
+ */
+{
+    double xd = instance.nodeptr[city_index].x - x;
+    double yd = instance.nodeptr[city_index].y - y;
+    double rij = sqrt((xd * xd + yd * yd) / 10.0);
+    double tij = dtrunc(rij);
+    double dij;
+
+    if (tij < rij)
+        dij = tij + 1;
+    else
+        dij = tij;
+    return dij;
+}
+
 long int **compute_distances(void)
 /*
       FUNCTION: computes the matrix of all intercity distances

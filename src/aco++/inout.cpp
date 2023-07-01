@@ -346,13 +346,25 @@ void read_thop_instance(const char *input_file_name, struct point **nodeptr, str
     fscanf(input_file, "MAX SPEED: %lf\n", &instance.max_speed);
     fscanf(input_file, "EDGE_WEIGHT_TYPE: %s\n", buf);
     if (strcmp("EUC_2D", buf) == 0)
+    {
         distance = round_distance;
+        distance_with_coordinate = euclid_distance;
+    }
     else if (strcmp("CEIL_2D", buf) == 0)
+    {
         distance = ceil_distance;
+        distance_with_coordinate = ceil_distance;
+    }
     else if (strcmp("GEO", buf) == 0)
+    {
         distance = geo_distance;
+        distance_with_coordinate = geo_distance;
+    }
     else if (strcmp("ATT", buf) == 0)
+    {
         distance = att_distance;
+        distance_with_coordinate = att_distance;
+    }
     fgets(buf, LINE_BUF_LEN, input_file); /* NODE_COORD_SECTION  (INDEX, X, Y): */
 
     if ((*nodeptr = (point *)malloc(sizeof(struct point) * (instance.n))) == NULL)

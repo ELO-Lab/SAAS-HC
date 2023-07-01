@@ -56,9 +56,10 @@
 #include <vector>
 #include <cstddef>
 
-#define HEURISTIC(m, n) (1.0 / ((double)instance.distance[m][n] + 0.1))
+// #define HEURISTIC(m, n) (1.0 / ((double)instance.distance[m][n] + 0.1))
 /* add a small constant to avoid division by zero if a distance is
 zero */
+#define HEURISTIC(m, n) compute_heuristic(instance.distance[m][n])
 
 #define EPSILON 0.00000000000000000000000000000001
 
@@ -202,5 +203,7 @@ void local_acs_pheromone_update(ant_struct *a, long int phase);
 void bwas_worst_ant_update(ant_struct *a1, ant_struct *a2);
 
 void bwas_pheromone_mutation(void);
+
+double compute_heuristic(const double &distance);
 
 #endif
