@@ -32,7 +32,6 @@
 bool es_ant_flag = true;
 double par_a_mean, par_b_mean, par_c_mean,
 	par_a_stepsize, par_b_stepsize, par_c_stepsize,
-	alpha_max, beta_max,
 	alpha_mean, beta_mean, rho_mean,
 	alpha_stepsize, beta_stepsize, rho_stepsize,
 	q_0_mean, q_0_stepsize, rand_seed_stepsize;
@@ -238,12 +237,12 @@ void init_optimizer(void)
 	sigma[Q_0_IDX] = q_0_stepsize / (ubounds[Q_0_IDX] - lbounds[Q_0_IDX]);
 
 	lbounds[ALPHA_IDX] = 0.01;
-	ubounds[ALPHA_IDX] = alpha_max;
+	ubounds[ALPHA_IDX] = 10;
 	x0[ALPHA_IDX] = alpha_mean;
 	sigma[ALPHA_IDX] = alpha_stepsize / (ubounds[ALPHA_IDX] - lbounds[ALPHA_IDX]);
 
 	lbounds[BETA_IDX] = 0.01;
-	ubounds[BETA_IDX] = beta_max;
+	ubounds[BETA_IDX] = 10;
 	x0[BETA_IDX] = beta_mean;
 	sigma[BETA_IDX] = beta_stepsize / (ubounds[BETA_IDX] - lbounds[BETA_IDX]);
 
@@ -314,11 +313,9 @@ void es_ant_force_set_parameters(void)
 	min_n_ants = 0;
 	rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
 
-	alpha_max = 8.33;
 	alpha_mean = 1.550208;
 	alpha_stepsize = 1.523180 / 2;
 
-	beta_max = 9.18;
 	beta_mean = 4.893958;
 	beta_stepsize = 2.067786 / 2;
 
