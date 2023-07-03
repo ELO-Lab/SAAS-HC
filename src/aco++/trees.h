@@ -69,73 +69,32 @@ protected:
     void _bottom_up_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs);
 };
 
-// class Building_Tree : public Tree_Base<Building_Node, Building_Leaf>
-// {
-// public:
-//     Building_Tree(const problem &instance);
-//     ~Building_Tree(){};
+typedef struct
+{
+    unknown_classB indexes;
+    unknown_classA features;
+    double centroid_x;
+    double centroid_y;
+} cluster_struct;
 
-// protected:
-//     void _make_city_features(
-//         const problem &instance,
-//         // returning values
-//         unknown_classA &_city_features);
-//     void _cluster_cities(
-//         const unknown_classB &city_indexes,
-//         const unknown_classA &city_features,
-//         // returning values
-//         unknown_classB &fisrt_cluster_indexes,
-//         unknown_classA &fisrt_cluster_features,
-//         unknown_classB &second_cluster_indexes,
-//         unknown_classA &second_cluster_features,
-//         double &centroid_x,
-//         double &centroid_y);
-// };
+class Building_Tree : public Tree_Base<Building_Node, Building_Leaf>
+{
+public:
+    Building_Tree(const problem &instance);
+    ~Building_Tree(){};
 
-// Building_Tree::Building_Tree(const problem &instance)
-// {
-//     const std::size_t num_city = instance.n - 1;
-//     std::size_t vec_size = 1;
-//     std::vector<unknown_classA> features(vec_size);
-//     std::vector<unknown_classB> indexes(vec_size);
-//     std::vector<Building_Node *> parent_ptrs(vec_size);
-//     std::queue<std::size_t> temp_vec_idx_queue;
-
-//     indexes[vec_size - 1] = ? ? arange num_city ? ? ;
-//     _make_city_features(instance, features[vec_size - 1]);
-
-//     while (vec_size - temp_vec_idx_queue.size() > 0)
-//     {
-//         auto &city_features = features[vec_size - 1];
-//         auto &city_indexes = indexes[vec_size - 1];
-
-//         while (temp_vec_idx_queue.size() < 2)
-//         {
-//             temp_vec_idx_queue.push(vec_size);
-//             vec_size += 1;
-//         }
-//         features.resize(vec_size);
-//         indexes.resize(vec_size);
-//         parent_ptrs.resize(vec_size);
-
-//         temp_vec_idx_queue.add(vec_size - 1);
-//         vec_size -= 1;
-
-//         // check leaf, init leaf
-//         if (??)
-//         {
-//             ? ? ;
-//             continue;
-//         }
-
-//         // init node;
-//         ? ? ;
-
-//         // append stacks
-//         ? ? ;
-//         parent_ptr_stack.append(??);
-//         parent_ptr_stack.append(??);
-//     }
-// }
+protected:
+    void _make_first_cluster(
+        const problem &instance,
+        // returning values
+        cluster_struct &cluster);
+    void _cluster_cities(
+        const unknown_classB &city_indexes,
+        const unknown_classA &city_features,
+        // returning values
+        cluster_struct &first_cluster,
+        cluster_struct &second_cluster);
+    void _build_childs(Building_Node *parent_ptr, const unknown_classB &city_indexes, const unknown_classA &city_features);
+};
 
 #endif

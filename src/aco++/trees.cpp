@@ -4,32 +4,32 @@
 #include "thop.h"
 #include "trees.h"
 
-// Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, long int **&distance_matrix)
-// {
-//     std::size_t i;
-//     std::vector<Node *> node_ptrs;
-
-//     _leaf_ptrs.resize(num_city);
-//     _leaf_ptrs[0] = nullptr;           // Not allowed to revisit the starting city
-//     _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
-//         ? ? ? ;
-// }
-
 Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city)
 {
     std::size_t i;
     std::vector<Node *> node_ptrs;
 
     _leaf_ptrs.resize(num_city);
-    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
-    // _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
-    for (i = 1; i < num_city; i++)
-    {
-        _leaf_ptrs[i] = new Leaf(i, HEURISTIC(current_city, i));
-        node_ptrs.push_back(_leaf_ptrs[i]);
-    }
-    _bottom_up_build_tree(node_ptrs);
+    _leaf_ptrs[0] = nullptr;            // Not allowed to revisit the starting city
+    _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
+    ? ? ? ;
 }
+
+// Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city)
+// {
+//     std::size_t i;
+//     std::vector<Node *> node_ptrs;
+
+//     _leaf_ptrs.resize(num_city);
+//     _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+//     // _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
+//     for (i = 1; i < num_city; i++)
+//     {
+//         _leaf_ptrs[i] = new Leaf(i, HEURISTIC(current_city, i));
+//         node_ptrs.push_back(_leaf_ptrs[i]);
+//     }
+//     _bottom_up_build_tree(node_ptrs);
+// }
 
 void Tree_Edge::_bottom_up_build_tree(std::vector<Node *> &node_ptrs)
 {
@@ -134,20 +134,20 @@ double Tree_Edge::leaf_pheromone(
         global_evap_times);
 }
 
-Wont_Visit_Tree::Wont_Visit_Tree(const std::size_t &num_city)
-{
-    std::size_t i;
-    std::vector<Wont_Visit_Node *> node_ptrs;
+// Wont_Visit_Tree::Wont_Visit_Tree(const std::size_t &num_city)
+// {
+//     std::size_t i;
+//     std::vector<Wont_Visit_Node *> node_ptrs;
 
-    _leaf_ptrs.resize(num_city);
-    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
-    for (i = 1; i < num_city; i++)
-    {
-        _leaf_ptrs[i] = new Wont_Visit_Node(nullptr, nullptr);
-        node_ptrs.push_back(_leaf_ptrs[i]);
-    }
-    _bottom_up_build_tree(node_ptrs);
-}
+//     _leaf_ptrs.resize(num_city);
+//     _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+//     for (i = 1; i < num_city; i++)
+//     {
+//         _leaf_ptrs[i] = new Wont_Visit_Node(nullptr, nullptr);
+//         node_ptrs.push_back(_leaf_ptrs[i]);
+//     }
+//     _bottom_up_build_tree(node_ptrs);
+// }
 
 void Wont_Visit_Tree::_bottom_up_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs)
 {
@@ -178,3 +178,73 @@ void Wont_Visit_Tree::set_wont_visit(const std::size_t &city_index, const std::s
 }
 
 Wont_Visit_Node *Wont_Visit_Tree::get_root_ptr() { return _root_ptr; }
+
+Building_Tree::Building_Tree(const problem &instance)
+{
+    cluster_struct cluster;
+    const std::size_t num_city = instance.n - 1;
+
+    _make_first_cluster(instance, cluster);
+
+    _root_ptr = new Building_Node();
+    _root_ptr->child_ptrs[0] = new Building_Node(_root_ptr, cluster.centroid_x, cluster.centroid_y);
+    _root_ptr->child_ptrs[1] = new Building_Leaf(
+        _root_ptr,
+        instance.nodeptr[num_city - 1].x,
+        instance.nodeptr[num_city - 1].y,
+        num_city - 1);
+
+    // No use
+    // _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+    // _leaf_ptrs[num_city - 1] = (Building_Leaf *)(_root_ptr->child_ptrs[1]);
+
+    _build_childs(_root_ptr->child_ptrs[0], cluster.indexes, cluster.features);
+}
+
+void Building_Tree::_build_childs(Building_Node *parent_ptr, const unknown_classB &city_indexes, const unknown_classA &city_features)
+{
+    std::array<cluster_struct, 2> clusters;
+    std::size_t i;
+
+    _cluster_cities(
+        city_indexes,
+        city_features,
+        clusters[0],
+        clusters[1]);
+
+    for (i = 0; i < 2; i++)
+    {
+        if (?? clusters[i]_indexes.len() == 1)
+        {
+            parent_ptr->child_ptrs[i] = new Building_Leaf(parent_ptr, clusters[i].centroid_x, clusters[i].centroid_y, clusters[i].indexes[0]);
+            // No use // _leaf_ptrs[clusters[i].indexes[0]] = (Building_Leaf *)(parent_ptr->child_ptrs[i]);
+            continue;
+        }
+
+        parent_ptr->child_ptrs[i] = new Building_Node(parent_ptr, clusters[i].centroid_x, clusters[i].centroid_y);
+        _build_childs(parent_ptr->child_ptrs[i], clusters[i].indexes, clusters[i].features);
+    }
+}
+
+void Building_Tree::_make_first_cluster(const problem &instance, cluster_struct &cluster)
+{
+    const std::size_t num_city = instance.n - 1;
+    const std::size_t cluster_size = num_city - 2; // No starting or ending cites
+    std::size_t i;
+
+    cluster.centroid_x = 0;
+    cluster.centroid_y = 0;
+    ? ? cluster.indexes.resize(cluster_size);
+    ? ? cluster.features.resize(cluster_size);
+
+    for (i = 1; i < cluster_size + 1; i++)
+    {
+        cluster.indexes[i - 1] = i;
+        cluster.centroid_x += instance.nodeptr[i].x;
+        cluster.centroid_y += instance.nodeptr[i].y;
+        ? ? cluster.features[i] = (instance.nodeptr[i].x, instance.nodeptr[i].y);
+    }
+
+    cluster.centroid_x /= cluster_size;
+    cluster.centroid_y /= cluster_size;
+}

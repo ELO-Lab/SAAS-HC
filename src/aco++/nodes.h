@@ -146,6 +146,7 @@ protected:
 class Building_Node : public Node_Base<Building_Node>
 {
 public:
+    Building_Node(const bool &is_leaf = false);
     Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const bool &is_leaf = false);
     ~Building_Node(){};
 
@@ -158,7 +159,7 @@ protected:
 class Building_Leaf : public Building_Node, public Leaf_Base
 {
 public:
-    Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index, const bool &is_leaf = false);
+    Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index);
     ~Building_Leaf(){};
 };
 

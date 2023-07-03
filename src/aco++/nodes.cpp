@@ -50,6 +50,9 @@ Wont_Visit_Node::Wont_Visit_Node(Wont_Visit_Node *left_ptr, Wont_Visit_Node *rig
     _local_wont_visit_restart_times = 0;
 }
 
+Building_Node::Building_Node(const bool &is_leaf)
+    : Node_Base<Building_Node>(nullptr, is_leaf) {}
+
 Building_Node::Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const bool &is_leaf)
     : Node_Base<Building_Node>(parent_ptr, is_leaf)
 {
@@ -57,7 +60,7 @@ Building_Node::Building_Node(Building_Node *parent_ptr, const double &centroid_x
     this->_centroid_y = centroid_y;
 }
 
-Building_Leaf::Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index, const bool &is_leaf)
+Building_Leaf::Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index)
     : Building_Node(parent_ptr, centroid_x, centroid_y, true), Leaf_Base(city_index) {}
 
 void Node::_restart_if_needed(const std::size_t &global_restart_times, const double &past_trail_restart)
