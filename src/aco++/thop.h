@@ -113,14 +113,14 @@ long int **compute_nn_lists(void);
 
 long int compute_fitness(long int *t, char *visited, long int t_size, char *p);
 
-extern double (*distance_with_coordinate)(const std::size_t &city_index, const double &x, const double &y); /* function pointer */
+extern double (*distance_with_coordinate)(const std::size_t &city_index, const double &xx, const double &yy); /* function pointer */
 
-double euclid_distance(const std::size_t &city_index, const double &x, const double &y);
+double euclid_distance(const std::size_t &city_index, const double &xx, const double &yy);
 
-double ceil_distance(const std::size_t &city_index, const double &x, const double &y);
+double ceil_distance(const std::size_t &city_index, const double &xx, const double &yy);
 
-double geo_distance(const std::size_t &city_index, const double &x, const double &y);
+double geo_distance(const std::size_t &city_index, const double &xx, const double &yy);
 
-double att_distance(const std::size_t &city_index, const double &x, const double &y);
+double att_distance(const std::size_t &city_index, const double &xx, const double &yy);
 
 #endif

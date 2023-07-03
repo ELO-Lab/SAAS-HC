@@ -4,22 +4,34 @@
 #include "thop.h"
 #include "trees.h"
 
-Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, long int **&distance_matrix)
+// Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, long int **&distance_matrix)
+// {
+//     std::size_t i;
+//     std::vector<Node *> node_ptrs;
+
+//     _leaf_ptrs.resize(num_city);
+//     _leaf_ptrs[0] = nullptr;           // Not allowed to revisit the starting city
+//     _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
+//         ? ? ? ;
+// }
+
+Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city)
 {
     std::size_t i;
     std::vector<Node *> node_ptrs;
 
     _leaf_ptrs.resize(num_city);
-    _leaf_ptrs[0] = nullptr; // Do not go to the start city
+    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+    // _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
     for (i = 1; i < num_city; i++)
     {
-        _leaf_ptrs[i] = new Leaf(i, current_city, distance_matrix);
+        _leaf_ptrs[i] = new Leaf(i, HEURISTIC(current_city, i));
         node_ptrs.push_back(_leaf_ptrs[i]);
     }
-    _build_tree(node_ptrs);
+    _bottom_up_build_tree(node_ptrs);
 }
 
-void Tree_Edge::_build_tree(std::vector<Node *> &node_ptrs)
+void Tree_Edge::_bottom_up_build_tree(std::vector<Node *> &node_ptrs)
 {
     if (node_ptrs.size() == 2)
     {
@@ -37,7 +49,7 @@ void Tree_Edge::_build_tree(std::vector<Node *> &node_ptrs)
 
     node_ptrs.resize(0);
     node_ptrs.shrink_to_fit();
-    _build_tree(parent_ptrs);
+    _bottom_up_build_tree(parent_ptrs);
 }
 
 std::size_t Tree_Edge::choose_next_city(
@@ -78,7 +90,7 @@ std::size_t Tree_Edge::choose_next_city(
         current_wont_visit_ptr = current_wont_visit_ptr->child_ptrs[next_child_index];
     }
 
-    return ((Leaf *)current_ptr)->city_index();
+    return ((Leaf *)current_ptr)->get_city_index();
 }
 
 void Tree_Edge::reinforce(
@@ -128,16 +140,16 @@ Wont_Visit_Tree::Wont_Visit_Tree(const std::size_t &num_city)
     std::vector<Wont_Visit_Node *> node_ptrs;
 
     _leaf_ptrs.resize(num_city);
-    _leaf_ptrs[0] = nullptr; // Do not go to the start city
+    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
     for (i = 1; i < num_city; i++)
     {
-        _leaf_ptrs[i] = new Wont_Visit_Node();
+        _leaf_ptrs[i] = new Wont_Visit_Node(nullptr, nullptr);
         node_ptrs.push_back(_leaf_ptrs[i]);
     }
-    _build_tree(node_ptrs);
+    _bottom_up_build_tree(node_ptrs);
 }
 
-void Wont_Visit_Tree::_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs)
+void Wont_Visit_Tree::_bottom_up_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs)
 {
     if (node_ptrs.size() == 2)
     {
@@ -155,7 +167,7 @@ void Wont_Visit_Tree::_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs)
 
     node_ptrs.resize(0);
     node_ptrs.shrink_to_fit();
-    _build_tree(parent_ptrs);
+    _bottom_up_build_tree(parent_ptrs);
 }
 
 void Wont_Visit_Tree::set_wont_visit(const std::size_t &city_index, const std::size_t &num_city, const std::size_t &global_wont_visit_restart_times)

@@ -176,7 +176,7 @@ long int att_distance(long int i, long int j)
     return dij;
 }
 
-double (*distance_with_coordinate)(const std::size_t &city_index, const double &x, const double &y); /* function pointer */
+double (*distance_with_coordinate)(const std::size_t &city_index, const double &xx, const double &yy); /* function pointer */
 
 /*
       FUNCTION: the following four functions implement different ways of
@@ -185,7 +185,7 @@ double (*distance_with_coordinate)(const std::size_t &city_index, const double &
       OUTPUT:   distance between the two nodes
  */
 
-double euclid_distance(const std::size_t &city_index, const double &x, const double &y)
+double euclid_distance(const std::size_t &city_index, const double &xx, const double &yy)
 /*
       FUNCTION: compute Euclidean distances between two nodes
       INPUT:    two node indices
@@ -193,14 +193,14 @@ double euclid_distance(const std::size_t &city_index, const double &x, const dou
       COMMENTS: for the definition of how to compute this distance see TSPLIB
  */
 {
-    double xd = instance.nodeptr[city_index].x - x;
-    double yd = instance.nodeptr[city_index].y - y;
+    double xd = instance.nodeptr[city_index].x - xx;
+    double yd = instance.nodeptr[city_index].y - yy;
     double r = sqrt(xd * xd + yd * yd) + 0.5;
 
     return r;
 }
 
-double ceil_distance(const std::size_t &city_index, const double &x, const double &y)
+double ceil_distance(const std::size_t &city_index, const double &xx, const double &yy)
 /*
       FUNCTION: compute Euclidean distances between two nodes
       INPUT:    two node indices
@@ -208,14 +208,14 @@ double ceil_distance(const std::size_t &city_index, const double &x, const doubl
       COMMENTS: for the definition of how to compute this distance see TSPLIB
  */
 {
-    double xd = instance.nodeptr[city_index].x - x;
-    double yd = instance.nodeptr[city_index].y - y;
+    double xd = instance.nodeptr[city_index].x - xx;
+    double yd = instance.nodeptr[city_index].y - yy;
     double r = sqrt(xd * xd + yd * yd) + 0.5;
 
     return ceil(r);
 }
 
-double geo_distance(const std::size_t &city_index, const double &x, const double &y)
+double geo_distance(const std::size_t &city_index, const double &xx, const double &yy)
 /*
       FUNCTION: compute geometric distance between two nodes
       INPUT:    two node indices
@@ -228,18 +228,18 @@ double geo_distance(const std::size_t &city_index, const double &x, const double
     double lati, latj, longi, longj;
     double q1, q2, q3;
     double dd;
-    double x = instance.nodeptr[city_index].x, x2 = x,
-           y = instance.nodeptr[city_index].y, y2 = y;
+    double x = instance.nodeptr[city_index].x, x2 = xx,
+           y = instance.nodeptr[city_index].y, y2 = yy;
 
-    deg = dtrunc(x);
-    min = x - deg;
+    deg = dtrunc(xx);
+    min = xx - deg;
     lati = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
     deg = dtrunc(x2);
     min = x2 - deg;
     latj = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
 
-    deg = dtrunc(y);
-    min = y - deg;
+    deg = dtrunc(yy);
+    min = yy - deg;
     longi = M_PI * (deg + 5.0 * min / 3.0) / 180.0;
     deg = dtrunc(y2);
     min = y2 - deg;
@@ -252,7 +252,7 @@ double geo_distance(const std::size_t &city_index, const double &x, const double
     return dd;
 }
 
-double att_distance(const std::size_t &city_index, const double &x, const double &y)
+double att_distance(const std::size_t &city_index, const double &xx, const double &yy)
 /*
       FUNCTION: compute ATT distance between two nodes
       INPUT:    two node indices
@@ -260,8 +260,8 @@ double att_distance(const std::size_t &city_index, const double &x, const double
       COMMENTS: for the definition of how to compute this distance see TSPLIB
  */
 {
-    double xd = instance.nodeptr[city_index].x - x;
-    double yd = instance.nodeptr[city_index].y - y;
+    double xd = instance.nodeptr[city_index].x - xx;
+    double yd = instance.nodeptr[city_index].y - yy;
     double rij = sqrt((xd * xd + yd * yd) / 10.0);
     double tij = dtrunc(rij);
     double dij;

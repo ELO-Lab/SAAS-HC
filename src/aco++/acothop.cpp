@@ -420,7 +420,7 @@ void bwas_update(void)
     /*    printf("distance_best_worst %ld, tour length worst %ld\n",distance_best_worst,ant[iteration_worst_ant].fitness); */
     if (distance_best_worst < (long int)(0.05 * (double)instance.n))
     {
-        restart_best_ant->fitness = INFTY;
+        // restart_best_ant->fitness = INFTY;
         init_pheromone_trails(trail_0);
         restart_iteration = iteration;
         restart_time = elapsed_time(VIRTUAL);
@@ -636,5 +636,8 @@ int main(int argc, char *argv[])
 
     free(prob_of_selection);
 
+    // debug
+    printf("%ld", iteration);
+    ////
     return 0;
 }

@@ -3,14 +3,14 @@
 #include "inout.h"
 #include "tree_map.h"
 
-Tree_Map::Tree_Map(const std::size_t &num_city, long int **&distance_matrix)
+Tree_Map::Tree_Map(const std::size_t &num_city)
 {
     size_t i;
 
     this->_num_city = num_city;
     _tree_edge_ptrs.resize(num_city - 1);
     for (i = 0; i < num_city - 1; i++) // Do not go from the end city
-        _tree_edge_ptrs[i] = new Tree_Edge(num_city, i, distance_matrix);
+        _tree_edge_ptrs[i] = new Tree_Edge(num_city, i);
 
     _wont_visit_tree_ptr = new Wont_Visit_Tree(num_city);
 
@@ -179,7 +179,7 @@ Tree_Map *tree_map;
 
 void tree_map_init()
 {
-    tree_map = new Tree_Map(instance.n - 1, instance.distance);
+    tree_map = new Tree_Map(instance.n - 1);
 }
 void tree_map_force_set_parameters()
 {

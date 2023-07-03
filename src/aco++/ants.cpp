@@ -124,6 +124,7 @@ void init_pheromone_trails(double initial_trail)
       (SIDE)EFFECTS: pheromone matrix is reinitialized
  */
 {
+    restart_best_ant->fitness = INFTY;
     if (tree_map_flag)
     {
         tree_map->restart_pheromone(initial_trail);

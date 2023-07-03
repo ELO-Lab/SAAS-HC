@@ -30,6 +30,7 @@
 
 // hyperparameters
 bool es_ant_flag = true;
+// bool es_ant_flag = false;
 double par_a_mean, par_b_mean, par_c_mean,
 	par_a_stepsize, par_b_stepsize, par_c_stepsize,
 	alpha_mean, beta_mean, rho_mean,
@@ -172,7 +173,6 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 	if (tree_map_flag)
 		tree_map->choose_route(
 			ant[current_ant_idx],
-			instance.n - 1,
 			q_0,
 			alpha,
 			beta,
@@ -286,7 +286,7 @@ void es_ant_construct_and_local_search(void)
 	rho = best_iteration_rho;
 	n_ants = capacity_need;
 	// temp
-	std::cout << n_ants << std::endl;
+	// std::cout << n_ants << std::endl;
 	////
 }
 
@@ -309,8 +309,8 @@ void es_ant_force_set_parameters(void)
 
 	// temp
 	adaptive_evaporation_flag = false;
-	// min_n_ants = n_ants;
-	min_n_ants = 0;
+	min_n_ants = n_ants;
+	// min_n_ants = 0;
 	rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
 
 	alpha_mean = 1.550208;
