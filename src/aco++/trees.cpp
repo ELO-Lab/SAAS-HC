@@ -1,35 +1,65 @@
 #include <assert.h>
 
+#include <mlpack.hpp>
+
 #include "ants.h"
 #include "thop.h"
 #include "trees.h"
 
+Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, Building_Node *building_root_ptr)
+{
+    // Top-down
+    _root_ptr = new Node();
+    _leaf_ptrs.resize(num_city);
+    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+    _build_childs(_root_ptr, building_root_ptr, current_city);
+}
+
+void Tree_Edge::_build_childs(Node *&parent_ptr, Building_Node *building_parent_ptr, const std::size_t &current_city)
+{
+    std::size_t i;
+    bool is_leaf;
+    Building_Leaf *building_leaf_ptr;
+    Building_Node *building_child_ptr;
+    double heuristic;
+
+    for (i = 0; i < 2; i++)
+    {
+        building_child_ptr = building_parent_ptr->child_ptrs[i];
+        heuristic = building_child_ptr->make_heuristic(current_city);
+        is_leaf = building_child_ptr->child_ptrs[0] == nullptr;
+
+        if (is_leaf)
+        {
+            const std::size_t city_index = building_leaf_ptr->get_city_index();
+
+            building_leaf_ptr = (Building_Leaf *)(building_child_ptr, city_index);
+            parent_ptr->child_ptrs[i] = new Leaf(parent_ptr, heuristic, city_index);
+            _leaf_ptrs[city_index] = (Leaf *)(parent_ptr->child_ptrs[i]);
+            continue;
+        }
+
+        parent_ptr->child_ptrs[i] = new Node(parent_ptr, heuristic);
+        _build_childs(parent_ptr->child_ptrs[i], building_child_ptr, current_city);
+    }
+}
+
 Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city)
 {
+    // Bottom-up
     std::size_t i;
     std::vector<Node *> node_ptrs;
 
     _leaf_ptrs.resize(num_city);
-    _leaf_ptrs[0] = nullptr;            // Not allowed to revisit the starting city
-    _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
-    ? ? ? ;
+    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+    // _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
+    for (i = 1; i < num_city; i++)
+    {
+        _leaf_ptrs[i] = new Leaf(i, HEURISTIC(current_city, i));
+        node_ptrs.push_back(_leaf_ptrs[i]);
+    }
+    _bottom_up_build_tree(node_ptrs);
 }
-
-// Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city)
-// {
-//     std::size_t i;
-//     std::vector<Node *> node_ptrs;
-
-//     _leaf_ptrs.resize(num_city);
-//     _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
-//     // _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
-//     for (i = 1; i < num_city; i++)
-//     {
-//         _leaf_ptrs[i] = new Leaf(i, HEURISTIC(current_city, i));
-//         node_ptrs.push_back(_leaf_ptrs[i]);
-//     }
-//     _bottom_up_build_tree(node_ptrs);
-// }
 
 void Tree_Edge::_bottom_up_build_tree(std::vector<Node *> &node_ptrs)
 {
@@ -134,20 +164,55 @@ double Tree_Edge::leaf_pheromone(
         global_evap_times);
 }
 
-// Wont_Visit_Tree::Wont_Visit_Tree(const std::size_t &num_city)
-// {
-//     std::size_t i;
-//     std::vector<Wont_Visit_Node *> node_ptrs;
+Wont_Visit_Tree::Wont_Visit_Tree(const std::size_t &num_city, Building_Node *building_root_ptr)
+{
+    // Top-down
+    _root_ptr = new Wont_Visit_Node(nullptr);
+    _leaf_ptrs.resize(num_city);
+    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+    _build_childs(_root_ptr, building_root_ptr);
+}
 
-//     _leaf_ptrs.resize(num_city);
-//     _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
-//     for (i = 1; i < num_city; i++)
-//     {
-//         _leaf_ptrs[i] = new Wont_Visit_Node(nullptr, nullptr);
-//         node_ptrs.push_back(_leaf_ptrs[i]);
-//     }
-//     _bottom_up_build_tree(node_ptrs);
-// }
+void Wont_Visit_Tree::_build_childs(Wont_Visit_Node *&parent_ptr, Building_Node *building_parent_ptr)
+{
+    std::size_t i;
+    bool is_leaf;
+    Building_Leaf *building_leaf_ptr;
+    Building_Node *building_child_ptr;
+
+    for (i = 0; i < 2; i++)
+    {
+        building_child_ptr = building_parent_ptr->child_ptrs[i];
+        is_leaf = building_child_ptr->child_ptrs[0] == nullptr;
+
+        if (is_leaf)
+        {
+            building_leaf_ptr = (Building_Leaf *)(building_child_ptr);
+            parent_ptr->child_ptrs[i] = new Wont_Visit_Node(parent_ptr, true);
+            _leaf_ptrs[building_leaf_ptr->get_city_index()] = parent_ptr->child_ptrs[i];
+            continue;
+        }
+
+        parent_ptr->child_ptrs[i] = new Wont_Visit_Node(parent_ptr);
+        _build_childs(parent_ptr->child_ptrs[i], building_child_ptr);
+    }
+}
+
+Wont_Visit_Tree::Wont_Visit_Tree(const std::size_t &num_city)
+{
+    // Bottom-up
+    std::size_t i;
+    std::vector<Wont_Visit_Node *> node_ptrs;
+
+    _leaf_ptrs.resize(num_city);
+    _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
+    for (i = 1; i < num_city; i++)
+    {
+        _leaf_ptrs[i] = new Wont_Visit_Node(nullptr, nullptr);
+        node_ptrs.push_back(_leaf_ptrs[i]);
+    }
+    _bottom_up_build_tree(node_ptrs);
+}
 
 void Wont_Visit_Tree::_bottom_up_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs)
 {
@@ -177,8 +242,6 @@ void Wont_Visit_Tree::set_wont_visit(const std::size_t &city_index, const std::s
     assert(_root_ptr->get_wont_visit(global_wont_visit_restart_times) == false);
 }
 
-Wont_Visit_Node *Wont_Visit_Tree::get_root_ptr() { return _root_ptr; }
-
 Building_Tree::Building_Tree(const problem &instance)
 {
     cluster_struct cluster;
@@ -203,14 +266,13 @@ Building_Tree::Building_Tree(const problem &instance)
 
 void Building_Tree::_build_childs(Building_Node *parent_ptr, const unknown_classB &city_indexes, const unknown_classA &city_features)
 {
-    std::array<cluster_struct, 2> clusters;
+    std::vector<cluster_struct> clusters;
     std::size_t i;
 
     _cluster_cities(
         city_indexes,
         city_features,
-        clusters[0],
-        clusters[1]);
+        clusters);
 
     for (i = 0; i < 2; i++)
     {

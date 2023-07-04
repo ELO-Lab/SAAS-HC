@@ -10,7 +10,9 @@ class Tree_Base
 {
 public:
     Tree_Base() {}
-    ~Tree_Base() { delete _root_ptr; };
+    ~Tree_Base() { delete _root_ptr; }
+
+    RootT *get_root_ptr() { return _root_ptr; }
 
 protected:
     RootT *_root_ptr;
@@ -20,7 +22,8 @@ protected:
 class Tree_Edge : public Tree_Base<Node, Leaf>
 {
 public:
-    Tree_Edge(const std::size_t &num_city, const std::size_t &current_city);
+    Tree_Edge(const std::size_t &num_city, const std::size_t &current_city);                                   // Bottom-up
+    Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, Building_Node *building_root_ptr); // Top-down
     ~Tree_Edge(){};
 
     std::size_t choose_next_city(
@@ -53,17 +56,18 @@ public:
 
 protected:
     void _bottom_up_build_tree(std::vector<Node *> &node_ptrs);
-    void _build_branch(Node *&branch_ptr, const Building_Node *&building_branch_ptr);
+    void _build_childs(Node *&parent_ptr, Building_Node *building_parent_ptr, const std::size_t &current_city);
 };
 
 class Wont_Visit_Tree : public Tree_Base<Wont_Visit_Node, Wont_Visit_Node>
 {
 public:
-    Wont_Visit_Tree(const std::size_t &num_city);
+    Wont_Visit_Tree(const std::size_t &num_city);                                   // Bottom-up
+    Wont_Visit_Tree(const std::size_t &num_city, Building_Node *building_root_ptr); // Top-down
     ~Wont_Visit_Tree(){};
 
     void set_wont_visit(const std::size_t &city_index, const std::size_t &num_city, const std::size_t &global_wont_visit_restart_times);
-    Wont_Visit_Node *get_root_ptr();
+    void _build_childs(Wont_Visit_Node *&parent_ptr, Building_Node *building_parent_ptr);
 
 protected:
     void _bottom_up_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs);
@@ -92,8 +96,7 @@ protected:
         const unknown_classB &city_indexes,
         const unknown_classA &city_features,
         // returning values
-        cluster_struct &first_cluster,
-        cluster_struct &second_cluster);
+        std::vector<cluster_struct> &clusters);
     void _build_childs(Building_Node *parent_ptr, const unknown_classB &city_indexes, const unknown_classA &city_features);
 };
 

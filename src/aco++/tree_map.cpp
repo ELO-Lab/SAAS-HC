@@ -3,16 +3,22 @@
 #include "inout.h"
 #include "tree_map.h"
 
-Tree_Map::Tree_Map(const std::size_t &num_city)
+Tree_Map::Tree_Map(const std::size_t &num_city, const problem &instance)
 {
     size_t i;
+    Building_Tree building_tree(instance);
+    Building_Node *building_root_ptr = building_tree.get_root_ptr();
 
     this->_num_city = num_city;
     _tree_edge_ptrs.resize(num_city - 1);
     for (i = 0; i < num_city - 1; i++) // Do not go from the end city
-        _tree_edge_ptrs[i] = new Tree_Edge(num_city, i);
+    {
+        // _tree_edge_ptrs[i] = new Tree_Edge(num_city, i); // Bottom-up
+        _tree_edge_ptrs[i] = new Tree_Edge(num_city, i, building_root_ptr); // Top-down
+    }
 
-    _wont_visit_tree_ptr = new Wont_Visit_Tree(num_city);
+    // _wont_visit_tree_ptr = new Wont_Visit_Tree(num_city); // Bottom-up
+    _wont_visit_tree_ptr = new Wont_Visit_Tree(num_city, building_root_ptr); // Top-down
 
     _global_wont_visit_restart_times = 0;
     _global_restart_times = 0;
@@ -179,7 +185,7 @@ Tree_Map *tree_map;
 
 void tree_map_init()
 {
-    tree_map = new Tree_Map(instance.n - 1);
+    tree_map = new Tree_Map(instance.n - 1, instance);
 }
 void tree_map_force_set_parameters()
 {

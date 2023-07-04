@@ -6,6 +6,9 @@
 #include "thop.h"
 #include "ants.h"
 
+Node::Node(const bool &is_leaf)
+    : Node_Base<Node>(nullptr, is_leaf) {}
+
 Node::Node(Node *parent_ptr, const double &heuristic, const bool &is_leaf)
     : Node_Base<Node>(parent_ptr, is_leaf)
 {

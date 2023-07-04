@@ -59,6 +59,7 @@ protected:
 class Node : public Node_Base<Node>
 {
 public:
+    Node(const bool &is_leaf = false);                                            // Root, Top-down
     Node(Node *parent_ptr, const double &heuristic, const bool &is_leaf = false); // Top-down
     Node(Node *left_ptr, Node *right_ptr, const bool &is_root = false);           // Bottom-up
     ~Node(){};
@@ -146,7 +147,7 @@ protected:
 class Building_Node : public Node_Base<Building_Node>
 {
 public:
-    Building_Node(const bool &is_leaf = false);
+    Building_Node(const bool &is_leaf = false); // Root
     Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const bool &is_leaf = false);
     ~Building_Node(){};
 

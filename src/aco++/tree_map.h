@@ -7,7 +7,7 @@
 class Tree_Map
 {
 public:
-    Tree_Map(const std::size_t &num_city);
+    Tree_Map(const std::size_t &num_city, const problem &instance);
     ~Tree_Map();
 
     void evaporate(const double &past_trail_min);
