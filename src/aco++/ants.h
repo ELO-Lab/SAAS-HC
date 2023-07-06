@@ -168,6 +168,7 @@ void choose_closest_next(ant_struct *a, long int phase);
 
 void neighbour_choose_and_move_to_next(ant_struct *a, long int phase);
 
+void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, long int phase);
 /* Auxiliary procedures related to ants */
 
 long int find_best(void);

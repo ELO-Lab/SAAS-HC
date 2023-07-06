@@ -11,6 +11,18 @@
 #include "ls.h"
 #include "es_aco.h"
 
+extern int iLevyFlag;				// 0 or 1
+extern double dLevyThreshold;		//0--1
+extern double dLevyRatio;			//0.1--5
+
+extern double dContribution;  		//0--10
+
+extern int iGreedyLevyFlag;			// 0 or 1
+extern double dGreedyEpsilon;		//0--1
+extern double dGreedyLevyThreshold;	//0--1
+extern double dGreedyLevyRatio;		//0.1--5
+
+
 #ifndef STR_ERR_UNKNOWN_LONG_OPT
 #define STR_ERR_UNKNOWN_LONG_OPT "%s: unrecognized option `--%s'\n"
 #endif
@@ -122,6 +134,16 @@
 #define STR_HELP_CMAES \
     "  --cmaes               apply cmaes\n"
 
+#define STR_HELP_LEVYFLIGHT \
+  "  -L, --levyflight     # Levy Flight Parameters, Threshold;Ratio\n"
+  
+#define STR_HELP_CONTRIBUTION \
+  "  -C, --contribution   # Contribution based Pheromone Update Parameter of Altering Ratio. \n"
+  
+#define STR_HELP_GREEDYLEVY \
+  "  -G, --greedylevy     # Greedy Levy Flight Espsilon;Threadhold;Ratio.\n"
+  
+
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
     STR_HELP_OUTPUTFILE,
@@ -152,6 +174,9 @@ static const char *const STR_HELP[] = {
     STR_HELP_HELP,
     STR_HELP_LOGITER,
     STR_HELP_CMAES,
+    STR_HELP_LEVYFLIGHT ,
+    STR_HELP_CONTRIBUTION ,
+    STR_HELP_GREEDYLEVY ,
     NULL};
 
 struct options
@@ -246,6 +271,14 @@ struct options
 
     /* Set to 1 if option --cmaes mode has been specified.  */
     unsigned int opt_cmaes : 1;
+    /* Set to 1 if option --levyflight (-L) has been specified.  */
+    unsigned int opt_levyflight : 1;
+
+    /* Set to 1 if option --contribution (-C) has been specified.  */
+    unsigned int opt_contribution : 1;
+
+    /* Set to 1 if option --greedylevy (-G) has been specified.  */
+    unsigned int opt_greedylevy : 1;
 
     /* Argument to option --inputfile (-i).  */
     const char *arg_inputfile;
@@ -306,6 +339,15 @@ struct options
 
     /* Argument to option --cmaes (-c).  */
     const char *arg_cmaes;
+    
+    /* Argument to option --levyflight (-L).  */
+    const char *arg_levyflight;
+
+    /* Argument to option --contribution (-C).  */
+    const char *arg_contribution;					
+
+    /* Argument to option --greedylevy (-G).  */
+    const char *arg_greedylevy;			
 };
 
 /* Parse command line options.  Return index of first non-option argument,
@@ -344,6 +386,9 @@ parse_options(struct options *const options, const char *const program_name,
     static const char *const optstr__help = "help";
     static const char *const optstr__calibration = "calibration";
     static const char *const optstr__cmaes = "cmaes";
+    static const char *const optstr__levyflight = "levyflight";
+    static const char *const optstr__contribution = "contribution";
+    static const char *const optstr__greedylevy = "greedylevy";
     int i = 0;
     options->opt_inputfile = 0;
     options->opt_outputfile = 0;
@@ -395,6 +440,9 @@ parse_options(struct options *const options, const char *const program_name,
     options->arg_localsearch = 0;
     options->arg_dlb = 0;
     options->arg_cmaes = 0;
+    options->opt_levyflight = 0;
+    options->opt_contribution = 0;					   
+    options->opt_greedylevy = 0;		
     while (++i < argc)
     {
         const char *option = argv[i];
@@ -515,6 +563,19 @@ parse_options(struct options *const options, const char *const program_name,
                     }
                     options->opt_calibration = 1;
                     break;
+                }else if (strncmp (option + 1, optstr__contribution + 1, option_len - 1) == 0)
+                {
+                    if (argument != 0)
+                        options->arg_contribution = argument;
+                    else if (++i < argc)
+                        options->arg_contribution = argv [i];
+                    else
+                    {
+                        option = optstr__contribution;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_contribution = 1;
+                    break;
                 }
                 else if (strncmp(option + 1, optstr__cmaes + 1, option_len - 1) == 0)
                 {
@@ -526,6 +587,7 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_cmaes = 1;
                     break;
                 }
+                goto error_unknown_long_opt;	   
                 goto error_unknown_long_opt;
             case 'd':
                 if (strncmp(option + 1, optstr__dlb + 1, option_len - 1) == 0)
@@ -636,6 +698,20 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_unexpec_arg_long;
                     }
                     options->opt_logiter = 1;
+                    break;
+                }
+                else if (strncmp (option + 1, optstr__levyflight + 1, option_len - 1) == 0)
+                {
+                    if (argument != 0)
+                        options->arg_levyflight = argument;
+                    else if (++i < argc)
+                        options->arg_levyflight = argv [i];
+                    else
+                    {
+                        option = optstr__levyflight;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_levyflight = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -864,6 +940,18 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_tries = 1;
                     break;
                 }
+            case 'g':
+                if (strncmp (option + 1, optstr__greedylevy + 1, option_len - 1) == 0)
+                {
+                if (argument != 0)
+                {
+                    option = optstr__greedylevy;
+                    goto error_unexpec_arg_long;
+                }
+                options->opt_greedylevy = 1;
+                return i + 1;
+                }
+                goto error_unknown_long_opt;
             default:
             error_unknown_long_opt:
                 fprintf(stderr, STR_ERR_UNKNOWN_LONG_OPT, program_name, option);
@@ -1085,6 +1173,36 @@ parse_options(struct options *const options, const char *const program_name,
                 case 'z':
                     options->opt_acs = 1;
                     break;
+
+                case 'C':
+                    if (option [1] != '\0')
+                        options->arg_contribution = option + 1;
+                    else if (++i < argc)
+                        options->arg_contribution = argv [i];
+                    else
+                        goto error_missing_arg_short;
+                    option = "\0";
+                    options->opt_contribution = 1;
+                    break;
+                case 'G':
+                    if (option [1] != '\0')
+                        options->arg_greedylevy = option + 1;
+                    else if (++i < argc)
+                        options->arg_greedylevy = argv [i];
+                    else
+                        goto error_missing_arg_short;
+                    option = "\0";
+                    options->opt_greedylevy = 1;
+                    break;
+                case 'L':
+                    if (option [1] != '\0')
+                        options->arg_levyflight = option + 1;
+                    else if (++i < argc)
+                        options->arg_levyflight = argv [i];
+                    else
+                        goto error_missing_arg_short;
+                    option = "\0";
+                    options->opt_levyflight = 1;
                 default:
                     fprintf(stderr, STR_ERR_UNKNOWN_SHORT_OPT, program_name, *option);
                     return -1;
@@ -1570,6 +1688,36 @@ int parse_commandline(int argc, char *argv[])
     */
 
     /*puts ("Non-option arguments:");*/
+
+    
+    if ( options.opt_levyflight ) {
+		iLevyFlag = 1;
+        sscanf(options.arg_levyflight, "%lf;%lf", &dLevyThreshold, &dLevyRatio);
+        fputs ("  -L  --levyflight ", stdout);
+        if (options.arg_levyflight != NULL)
+            printf ("with argument \"%lf\" \"%lf\"\n", dLevyThreshold, dLevyRatio);
+        check_out_of_range(dLevyThreshold, 0, 1, "dLevyThreshold");
+		check_out_of_range(dLevyRatio, 0, 50, "dLevyRatio");
+    }
+	
+    if ( options.opt_contribution ) {
+        dContribution = atof(options.arg_contribution);
+        fputs ("  -C  --contribution ", stdout);
+        if (options.arg_contribution != NULL)
+            printf ("with argument \"%lf\"\n", dContribution);
+        check_out_of_range(dContribution, 0, 10, "dContribution");
+    }
+	
+    if ( options.opt_greedylevy ) {
+		iGreedyLevyFlag = 1;
+        sscanf(options.arg_greedylevy, "%lf:%lf:%lf", &dGreedyEpsilon, &dGreedyLevyThreshold, &dGreedyLevyRatio);
+        fputs ("  -G  --greedylevy ", stdout);
+        if (options.arg_greedylevy != NULL)
+            printf ("with argument \"%lf\" \"%lf\" \"%lf\"\n", dGreedyEpsilon, dGreedyLevyThreshold, dGreedyLevyRatio);
+        check_out_of_range(dGreedyEpsilon, 0, 1, "dGreedyEpsilon");
+        check_out_of_range(dGreedyLevyThreshold, 0, 1, "dGreedyLevyThreshold");
+		check_out_of_range(dGreedyLevyRatio, 0, 50, "dGreedyLevyRatio");
+    }
 
     while (i < argc)
     {
