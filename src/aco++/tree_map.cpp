@@ -1,3 +1,6 @@
+#define TOP_DOWN true
+// #define TOP_DOWN false
+
 #include "utilities.h"
 #include "thop.h"
 #include "inout.h"
@@ -13,12 +16,18 @@ Tree_Map::Tree_Map(const std::size_t &num_city, const struct problem &instance)
     _tree_edge_ptrs.resize(num_city - 1);
     for (i = 0; i < num_city - 1; i++) // Do not go from the end city
     {
-        // _tree_edge_ptrs[i] = new Tree_Edge(num_city, i); // Bottom-up
+#if TOP_DOWN
         _tree_edge_ptrs[i] = new Tree_Edge(num_city, i, building_root_ptr); // Top-down
+#else
+        _tree_edge_ptrs[i] = new Tree_Edge(num_city, i);  // Bottom-up
+#endif
     }
 
-    // _wont_visit_tree_ptr = new Wont_Visit_Tree(num_city); // Bottom-up
+#if TOP_DOWN
     _wont_visit_tree_ptr = new Wont_Visit_Tree(num_city, building_root_ptr); // Top-down
+#else
+    _wont_visit_tree_ptr = new Wont_Visit_Tree(num_city); // Bottom-up
+#endif
 
     _global_wont_visit_restart_times = 0;
     _global_restart_times = 0;
@@ -180,6 +189,7 @@ double Tree_Map::node_branching(const double &lambda)
 
 // hyperparameters
 bool tree_map_flag = true;
+// bool tree_map_flag = false;
 
 Tree_Map *tree_map;
 

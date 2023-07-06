@@ -142,8 +142,12 @@ void init_pheromone_trails(double initial_trail)
         {
             pheromone[i][j] = initial_trail;
             pheromone[j][i] = initial_trail;
-            total[i][j] = initial_trail;
-            total[j][i] = initial_trail;
+
+            if (!es_ant_flag)
+            {
+                total[i][j] = initial_trail;
+                total[j][i] = initial_trail;
+            }
         }
     }
 }

@@ -40,7 +40,7 @@ void Tree_Edge::_build_childs(Node *&parent_ptr, Building_Node *building_parent_
             continue;
         }
 
-        parent_ptr->child_ptrs[i] = new Node(parent_ptr, heuristic);
+        parent_ptr->child_ptrs[i] = new Node(parent_ptr, heuristic, building_child_ptr->get_n_child_leaf());
         _build_childs(parent_ptr->child_ptrs[i], building_child_ptr, current_city);
     }
 }
@@ -251,7 +251,7 @@ Building_Tree::Building_Tree(const struct problem &instance)
     _make_first_cluster(instance, cluster);
 
     _root_ptr = new Building_Node();
-    _root_ptr->child_ptrs[0] = new Building_Node(_root_ptr, cluster.centroid_x, cluster.centroid_y);
+    _root_ptr->child_ptrs[0] = new Building_Node(_root_ptr, cluster.centroid_x, cluster.centroid_y, cluster.indexes.size());
     _root_ptr->child_ptrs[1] = new Building_Leaf(
         _root_ptr,
         instance.nodeptr[num_city - 1].x,
@@ -279,46 +279,77 @@ void Building_Tree::_build_childs(Building_Node *parent_ptr, const std::vector<s
             continue;
         }
 
-        parent_ptr->child_ptrs[i] = new Building_Node(parent_ptr, clusters[i].centroid_x, clusters[i].centroid_y);
+        parent_ptr->child_ptrs[i] = new Building_Node(parent_ptr, clusters[i].centroid_x, clusters[i].centroid_y, clusters[i].indexes.size());
         _build_childs(parent_ptr->child_ptrs[i], clusters[i].indexes, clusters[i].features);
     }
 }
 
 void Building_Tree::_make_first_cluster(const struct problem &instance, cluster_struct &cluster)
 {
-    std::size_t i;
+    std::vector<std::vector<double>> weights, profits, profit_over_weight_ratios;
+    std::size_t i, cluster_index;
     const std::size_t num_city = instance.n - 1;
     const std::size_t cluster_size = num_city - 2; // No starting or ending cites
-    // const std::size_t n_features = 8;
-    const std::size_t n_features = 2;
+    const std::size_t n_features = 8;
+    // const std::size_t n_features = 2;
+    double p_w_ratio, mean_value, std_value;
 
     cluster.centroid_x = 0;
     cluster.centroid_y = 0;
     cluster.indexes.resize(cluster_size);
     cluster.features = arma::mat(n_features, cluster_size);
+    weights.resize(cluster_size);
+    profits.resize(cluster_size);
+    profit_over_weight_ratios.resize(cluster_size);
+
+    for (i = 0; i < instance.m; i++)
+    {
+        cluster_index = instance.itemptr[i].id_city - 1;
+        p_w_ratio = double(instance.itemptr[i].profit) / instance.itemptr[i].weight;
+
+        weights[cluster_index].push_back(instance.itemptr[i].weight);
+        profits[cluster_index].push_back(instance.itemptr[i].profit);
+        profit_over_weight_ratios[cluster_index].push_back(p_w_ratio);
+    }
 
     for (i = 1; i < cluster_size + 1; i++)
     {
-        cluster.indexes[i - 1] = i;
+        cluster_index = i - 1;
+        cluster.indexes[cluster_index] = i;
         cluster.centroid_x += instance.nodeptr[i].x / cluster_size;
         cluster.centroid_y += instance.nodeptr[i].y / cluster_size;
-        cluster.features(0, i - 1) = instance.nodeptr[i].x;
-        cluster.features(1, i - 1) = instance.nodeptr[i].y;
+        cluster.features(0, cluster_index) = instance.nodeptr[i].x;
+        cluster.features(1, cluster_index) = instance.nodeptr[i].y;
+
+        mean_and_std(weights[cluster_index], mean_value, std_value);
+        cluster.features(2, cluster_index) = mean_value - 2 * std_value;
+        cluster.features(3, cluster_index) = mean_value + 2 * std_value;
+
+        mean_and_std(profits[cluster_index], mean_value, std_value);
+        cluster.features(4, cluster_index) = mean_value - 2 * std_value;
+        cluster.features(5, cluster_index) = mean_value + 2 * std_value;
+
+        mean_and_std(profit_over_weight_ratios[cluster_index], mean_value, std_value);
+        cluster.features(6, cluster_index) = mean_value - 2 * std_value;
+        cluster.features(7, cluster_index) = mean_value + 2 * std_value;
     }
 }
 
 void Building_Tree::_cluster_cities(const std::vector<std::size_t> &indexes, const arma::mat &features, std::vector<cluster_struct> &clusters)
 {
-    const std::size_t n_clusters = 2;
-    const std::size_t max_iteration = 10;
-    const std::size_t n_features = features.n_rows;
+    if (indexes.size() <= 1)
+        return;
+    mlpack::Log::Info.ignoreInput = true;
+
+    const int n_clusters = 2;
     const std::size_t n_cities = features.n_cols;
+    const std::size_t n_features = features.n_rows;
     std::size_t i, cluster_index;
+
     arma::Row<std::size_t> assignments;
     arma::mat centroid;
-    mlpack::tree::KMeans<> kmeans(max_iteration);
 
-    mlpack::Log::Info.ignoreInput = true;
+    mlpack::tree::KMeans<> kmeans;
 
     kmeans.Cluster(features, n_clusters, assignments, centroid);
 
@@ -336,5 +367,21 @@ void Building_Tree::_cluster_cities(const std::vector<std::size_t> &indexes, con
         cluster_index = assignments[i];
         clusters[cluster_index].indexes.push_back(indexes[i]);
         clusters[cluster_index].features = arma::join_rows(clusters[cluster_index].features, arma::mat(features.col(i)));
+    }
+
+    int index = -1;
+    if (clusters[0].indexes.size() == 0)
+        index = 0;
+    if (clusters[1].indexes.size() == 0)
+        index = 1;
+
+    if (index != -1)
+    {
+        int len = clusters[1 - index].indexes.size();
+        clusters[index].indexes.push_back(clusters[1 - index].indexes[len - 1]);
+        clusters[index].features = arma::mat(clusters[1 - index].features.col(len - 1));
+
+        clusters[1 - index].indexes.pop_back();
+        clusters[1 - index].features.shed_col(len - 1);
     }
 }

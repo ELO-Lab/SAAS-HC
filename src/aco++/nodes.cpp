@@ -9,12 +9,13 @@
 Node::Node(const bool &is_leaf)
     : Node_Base<Node>(nullptr, is_leaf) {}
 
-Node::Node(Node *parent_ptr, const double &heuristic, const bool &is_leaf)
+Node::Node(Node *parent_ptr, const double &heuristic, const std::size_t &n_child_leaf, const bool &is_leaf)
     : Node_Base<Node>(parent_ptr, is_leaf)
 {
     _local_evap_times = 0;
     _local_restart_times = 0;
     _heuristic = heuristic;
+    _n_child_leaf = n_child_leaf;
 }
 
 Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
@@ -22,6 +23,7 @@ Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
 {
     const bool is_leaf = (left_ptr == nullptr) and (right_ptr == nullptr);
 
+    _n_child_leaf = 1;
     _local_evap_times = 0;
     _local_restart_times = 0;
     if (!is_leaf)
@@ -29,7 +31,7 @@ Node::Node(Node *left_ptr, Node *right_ptr, const bool &is_root)
 }
 
 Leaf::Leaf(Node *parent_ptr, const double &heuristic, const std::size_t &city_index)
-    : Node(parent_ptr, heuristic, true), Leaf_Base(city_index) {}
+    : Node(parent_ptr, heuristic, 1, true), Leaf_Base(city_index) {}
 
 Leaf::Leaf(
     const std::size_t &city_index,
@@ -56,15 +58,16 @@ Wont_Visit_Node::Wont_Visit_Node(Wont_Visit_Node *left_ptr, Wont_Visit_Node *rig
 Building_Node::Building_Node(const bool &is_leaf)
     : Node_Base<Building_Node>(nullptr, is_leaf) {}
 
-Building_Node::Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const bool &is_leaf)
+Building_Node::Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &n_child_leaf, const bool &is_leaf)
     : Node_Base<Building_Node>(parent_ptr, is_leaf)
 {
     this->_centroid_x = centroid_x;
     this->_centroid_y = centroid_y;
+    _n_child_leaf = n_child_leaf;
 }
 
 Building_Leaf::Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index)
-    : Building_Node(parent_ptr, centroid_x, centroid_y, true), Leaf_Base(city_index) {}
+    : Building_Node(parent_ptr, centroid_x, centroid_y, 1, true), Leaf_Base(city_index) {}
 
 void Node::_restart_if_needed(const std::size_t &global_restart_times, const double &past_trail_restart)
 {
@@ -130,11 +133,15 @@ std::size_t Node::choose_child_with_prob(const double &one_minus_q_0,
     // IMPORTANCE NOTE: Remember to check won't visit before go to this function
 
     std::array<double, 2> weights;
-    std::size_t index_of_min;
+    std::size_t index_of_min, i;
     double prob_of_min;
 
-    weights[0] = child_ptrs[0]->_prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
-    weights[1] = child_ptrs[1]->_prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+    for (i = 0; i < 2; i++)
+    {
+        weights[i] = child_ptrs[i]->_prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+        weights[i] *= child_ptrs[i]->_n_child_leaf;
+    }
+
     if (weights[0] < weights[1])
         index_of_min = 0;
     else
@@ -180,4 +187,9 @@ bool Wont_Visit_Node::get_wont_visit(const std::size_t &global_wont_visit_restar
 double Building_Node::make_heuristic(const std::size_t &city_index)
 {
     return compute_heuristic(distance_with_coordinate(city_index, _centroid_x, _centroid_y));
+}
+
+std::size_t Building_Node::get_n_child_leaf()
+{
+    return _n_child_leaf;
 }

@@ -59,9 +59,9 @@ protected:
 class Node : public Node_Base<Node>
 {
 public:
-    Node(const bool &is_leaf = false);                                            // Root, Top-down
-    Node(Node *parent_ptr, const double &heuristic, const bool &is_leaf = false); // Top-down
-    Node(Node *left_ptr, Node *right_ptr, const bool &is_root = false);           // Bottom-up
+    Node(const bool &is_leaf = false);                                                                             // Root, Top-down
+    Node(Node *parent_ptr, const double &heuristic, const std::size_t &n_child_leaf, const bool &is_leaf = false); // Top-down
+    Node(Node *left_ptr, Node *right_ptr, const bool &is_root = false);                                            // Bottom-up
     ~Node(){};
 
     void reinforce(
@@ -93,6 +93,7 @@ protected:
     double _heuristic;      // heuristic of the edge from the parent node to itself
     std::size_t _local_restart_times;
     std::size_t _local_evap_times;
+    std::size_t _n_child_leaf;
 
     void _pay_evaporation_debt(
         const double &one_minus_rho,
@@ -148,13 +149,15 @@ class Building_Node : public Node_Base<Building_Node>
 {
 public:
     Building_Node(const bool &is_leaf = false); // Root
-    Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const bool &is_leaf = false);
+    Building_Node(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &n_child_leaf, const bool &is_leaf = false);
     ~Building_Node(){};
 
     double make_heuristic(const std::size_t &city_index);
+    std::size_t get_n_child_leaf();
 
 protected:
     double _centroid_x, _centroid_y; // coordinate
+    std::size_t _n_child_leaf;
 };
 
 class Building_Leaf : public Building_Node, public Leaf_Base

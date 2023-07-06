@@ -421,6 +421,12 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
             profit_accumulated[i] = weight_accumulated[i] = 0;
         }
 
+        if (!es_ant_flag)
+        {
+            par_a = new_rand01();
+            par_b = new_rand01();
+            par_c = new_rand01();
+        }
         const double par_sum = (par_a + par_b + par_c);
         par_a /= par_sum;
         par_b /= par_sum;

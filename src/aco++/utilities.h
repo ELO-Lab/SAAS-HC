@@ -116,4 +116,21 @@ double **generate_double_matrix(long int n, long int m);
 double new_rand01(void);
 
 template <class numericT>
-void mean_and_std(const std::vector<numericT> &vec, double &mean_value, double &std_value);
+void mean_and_std(const std::vector<numericT> &vec, double &mean_value, double &std_value)
+{
+      double dtemp;
+
+      mean_value = 0;
+      for (const auto &value : vec)
+      {
+            mean_value += double(value) / vec.size();
+      }
+
+      std_value = 0;
+      for (const auto &value : vec)
+      {
+            dtemp = value - mean_value;
+            std_value += dtemp / vec.size() * dtemp;
+      }
+      std_value = sqrt(std_value);
+}
