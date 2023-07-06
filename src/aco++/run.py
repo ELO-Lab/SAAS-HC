@@ -605,7 +605,8 @@ def build():
     command = [
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
-        "-GNinja",
+        "-G",
+        f"{'Ninja' if not debug else 'Unix Makefiles'}",
         f"-S{acopp_dir}",
         f"-B{acopp_dir}/build",
         f"-DCMAKE_BUILD_TYPE:STRING={'Release' if not debug else 'Debug'}",
