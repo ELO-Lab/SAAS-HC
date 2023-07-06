@@ -3,7 +3,7 @@
 #include "inout.h"
 #include "tree_map.h"
 
-Tree_Map::Tree_Map(const std::size_t &num_city, const problem &instance)
+Tree_Map::Tree_Map(const std::size_t &num_city, const struct problem &instance)
 {
     size_t i;
     Building_Tree building_tree(instance);

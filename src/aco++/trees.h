@@ -2,6 +2,7 @@
 #define _TREES_H_
 
 #include <vector>
+#include <mlpack.hpp>
 
 #include "nodes.h"
 
@@ -75,29 +76,28 @@ protected:
 
 typedef struct
 {
-    unknown_classB indexes;
-    unknown_classA features;
-    double centroid_x;
-    double centroid_y;
+    std::vector<std::size_t> indexes;
+    arma::mat features;
+    double centroid_x, centroid_y;
 } cluster_struct;
 
 class Building_Tree : public Tree_Base<Building_Node, Building_Leaf>
 {
 public:
-    Building_Tree(const problem &instance);
+    Building_Tree(const struct problem &instance);
     ~Building_Tree(){};
 
 protected:
     void _make_first_cluster(
-        const problem &instance,
+        const struct problem &instance,
         // returning values
         cluster_struct &cluster);
     void _cluster_cities(
-        const unknown_classB &city_indexes,
-        const unknown_classA &city_features,
+        const std::vector<std::size_t> &indexes,
+        const arma::mat &features,
         // returning values
         std::vector<cluster_struct> &clusters);
-    void _build_childs(Building_Node *parent_ptr, const unknown_classB &city_indexes, const unknown_classA &city_features);
+    void _build_childs(Building_Node *parent_ptr, const std::vector<std::size_t> &city_indexes, const arma::mat &city_features);
 };
 
 #endif

@@ -423,3 +423,23 @@ double new_rand01(void)
 {
     return distribution(rand_gen);
 }
+
+template <class numericT>
+void mean_and_std(const std::vector<numericT> &vec, double &mean_value, double &std_value)
+{
+    double dtemp;
+
+    mean_value = 0;
+    for (const auto &value : vec)
+    {
+        mean_value += double(value) / vec.size();
+    }
+
+    std_value = 0;
+    for (const auto &value : vec)
+    {
+        dtemp = value - mean_value;
+        std_value += dtemp / vec.size() * dtemp;
+    }
+    std_value = sqrt(std_value);
+}

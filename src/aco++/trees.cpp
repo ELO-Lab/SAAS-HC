@@ -2,6 +2,7 @@
 
 #include <mlpack.hpp>
 
+#include "utilities.h"
 #include "ants.h"
 #include "thop.h"
 #include "trees.h"
@@ -31,9 +32,9 @@ void Tree_Edge::_build_childs(Node *&parent_ptr, Building_Node *building_parent_
 
         if (is_leaf)
         {
+            building_leaf_ptr = (Building_Leaf *)(building_child_ptr);
             const std::size_t city_index = building_leaf_ptr->get_city_index();
 
-            building_leaf_ptr = (Building_Leaf *)(building_child_ptr, city_index);
             parent_ptr->child_ptrs[i] = new Leaf(parent_ptr, heuristic, city_index);
             _leaf_ptrs[city_index] = (Leaf *)(parent_ptr->child_ptrs[i]);
             continue;
@@ -242,7 +243,7 @@ void Wont_Visit_Tree::set_wont_visit(const std::size_t &city_index, const std::s
     assert(_root_ptr->get_wont_visit(global_wont_visit_restart_times) == false);
 }
 
-Building_Tree::Building_Tree(const problem &instance)
+Building_Tree::Building_Tree(const struct problem &instance)
 {
     cluster_struct cluster;
     const std::size_t num_city = instance.n - 1;
@@ -257,14 +258,10 @@ Building_Tree::Building_Tree(const problem &instance)
         instance.nodeptr[num_city - 1].y,
         num_city - 1);
 
-    // No use
-    // _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
-    // _leaf_ptrs[num_city - 1] = (Building_Leaf *)(_root_ptr->child_ptrs[1]);
-
     _build_childs(_root_ptr->child_ptrs[0], cluster.indexes, cluster.features);
 }
 
-void Building_Tree::_build_childs(Building_Node *parent_ptr, const unknown_classB &city_indexes, const unknown_classA &city_features)
+void Building_Tree::_build_childs(Building_Node *parent_ptr, const std::vector<std::size_t> &city_indexes, const arma::mat &city_features)
 {
     std::vector<cluster_struct> clusters;
     std::size_t i;
@@ -276,10 +273,9 @@ void Building_Tree::_build_childs(Building_Node *parent_ptr, const unknown_class
 
     for (i = 0; i < 2; i++)
     {
-        if (?? clusters[i]_indexes.len() == 1)
+        if (clusters[i].indexes.size() == 1)
         {
             parent_ptr->child_ptrs[i] = new Building_Leaf(parent_ptr, clusters[i].centroid_x, clusters[i].centroid_y, clusters[i].indexes[0]);
-            // No use // _leaf_ptrs[clusters[i].indexes[0]] = (Building_Leaf *)(parent_ptr->child_ptrs[i]);
             continue;
         }
 
@@ -288,25 +284,57 @@ void Building_Tree::_build_childs(Building_Node *parent_ptr, const unknown_class
     }
 }
 
-void Building_Tree::_make_first_cluster(const problem &instance, cluster_struct &cluster)
+void Building_Tree::_make_first_cluster(const struct problem &instance, cluster_struct &cluster)
 {
+    std::size_t i;
     const std::size_t num_city = instance.n - 1;
     const std::size_t cluster_size = num_city - 2; // No starting or ending cites
-    std::size_t i;
+    // const std::size_t n_features = 8;
+    const std::size_t n_features = 2;
 
     cluster.centroid_x = 0;
     cluster.centroid_y = 0;
-    ? ? cluster.indexes.resize(cluster_size);
-    ? ? cluster.features.resize(cluster_size);
+    cluster.indexes.resize(cluster_size);
+    cluster.features = arma::mat(n_features, cluster_size);
 
     for (i = 1; i < cluster_size + 1; i++)
     {
         cluster.indexes[i - 1] = i;
-        cluster.centroid_x += instance.nodeptr[i].x;
-        cluster.centroid_y += instance.nodeptr[i].y;
-        ? ? cluster.features[i] = (instance.nodeptr[i].x, instance.nodeptr[i].y);
+        cluster.centroid_x += instance.nodeptr[i].x / cluster_size;
+        cluster.centroid_y += instance.nodeptr[i].y / cluster_size;
+        cluster.features(0, i - 1) = instance.nodeptr[i].x;
+        cluster.features(1, i - 1) = instance.nodeptr[i].y;
+    }
+}
+
+void Building_Tree::_cluster_cities(const std::vector<std::size_t> &indexes, const arma::mat &features, std::vector<cluster_struct> &clusters)
+{
+    const std::size_t n_clusters = 2;
+    const std::size_t max_iteration = 10;
+    const std::size_t n_features = features.n_rows;
+    const std::size_t n_cities = features.n_cols;
+    std::size_t i, cluster_index;
+    arma::Row<std::size_t> assignments;
+    arma::mat centroid;
+    mlpack::tree::KMeans<> kmeans(max_iteration);
+
+    mlpack::Log::Info.ignoreInput = true;
+
+    kmeans.Cluster(features, n_clusters, assignments, centroid);
+
+    clusters = std::vector<cluster_struct>(n_clusters);
+
+    for (i = 0; i < n_clusters; i++)
+    {
+        clusters[i].features = arma::mat(n_features, 0);
+        clusters[i].centroid_x = centroid(0, i);
+        clusters[i].centroid_y = centroid(1, i);
     }
 
-    cluster.centroid_x /= cluster_size;
-    cluster.centroid_y /= cluster_size;
+    for (i = 0; i < indexes.size(); i++)
+    {
+        cluster_index = assignments[i];
+        clusters[cluster_index].indexes.push_back(indexes[i]);
+        clusters[cluster_index].features = arma::join_rows(clusters[cluster_index].features, arma::mat(features.col(i)));
+    }
 }

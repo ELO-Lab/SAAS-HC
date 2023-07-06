@@ -114,3 +114,6 @@ long int **generate_int_matrix(long int n, long int m);
 double **generate_double_matrix(long int n, long int m);
 
 double new_rand01(void);
+
+template <class numericT>
+void mean_and_std(const std::vector<numericT> &vec, double &mean_value, double &std_value);
