@@ -177,7 +177,9 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 			alpha,
 			beta,
 			rho,
-			n_tours);
+			n_tours,
+			nn_ants,
+			instance.nn_list);
 	else
 		an_ant_run();
 
@@ -322,7 +324,9 @@ void es_ant_force_set_parameters(void)
 	rho_mean = 0.468542;
 	rho_stepsize = 0.253226 / 2;
 
-	q_0_mean = 0;
+	// q_0_mean = 0;
+	// q_0_stepsize = 0.05;
+	q_0_mean = 0.5;
 	q_0_stepsize = 0.05;
 
 	par_a_mean = 0.5;

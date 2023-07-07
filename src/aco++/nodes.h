@@ -73,7 +73,19 @@ public:
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times);
     std::size_t choose_child_with_prob(
-        const double &one_minus_q_0,
+        const double &alpha, const double &beta, const double &one_minus_rho,
+        const double &past_trail_restart,
+        const double &past_trail_min,
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times,
+        const double &elite_prob = 0);
+    double get_pheromone(
+        const double &one_minus_rho,
+        const double &past_trail_restart,
+        const double &past_trail_min,
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times);
+    double prob_weight(
         const double &alpha,
         const double &beta,
         const double &one_minus_rho,
@@ -81,12 +93,15 @@ public:
         const double &past_trail_min,
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times);
-    double get_pheromone(
+    void pay_evaporation_debt(
         const double &one_minus_rho,
         const double &past_trail_restart,
         const double &past_trail_min,
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times);
+    void restart_if_needed(
+        const std::size_t &global_restart_times,
+        const double &past_trail_restart);
 
 protected:
     double _past_pheromone; // pheromone of the edge from the parent node to itself at the time of last local evaporation
@@ -94,24 +109,6 @@ protected:
     std::size_t _local_restart_times;
     std::size_t _local_evap_times;
     std::size_t _n_child_leaf;
-
-    void _pay_evaporation_debt(
-        const double &one_minus_rho,
-        const double &past_trail_restart,
-        const double &past_trail_min,
-        const std::size_t &global_restart_times,
-        const std::size_t &global_evap_times);
-    double _prob_weight(
-        const double &alpha,
-        const double &beta,
-        const double &one_minus_rho,
-        const double &past_trail_restart,
-        const double &past_trail_min,
-        const std::size_t &global_restart_times,
-        const std::size_t &global_evap_times);
-    void _restart_if_needed(
-        const std::size_t &global_restart_times,
-        const double &past_trail_restart);
 };
 
 class Leaf : public Node, public Leaf_Base

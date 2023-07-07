@@ -20,6 +20,21 @@ protected:
     std::vector<LeafT *> _leaf_ptrs;
 };
 
+class Wont_Visit_Tree : public Tree_Base<Wont_Visit_Node, Wont_Visit_Node>
+{
+public:
+    Wont_Visit_Tree(const std::size_t &num_city);                                   // Bottom-up
+    Wont_Visit_Tree(const std::size_t &num_city, Building_Node *building_root_ptr); // Top-down
+    ~Wont_Visit_Tree(){};
+
+    void set_wont_visit(const std::size_t &city_index, const std::size_t &num_city, const std::size_t &global_wont_visit_restart_times);
+    bool check_city_visited(const std::size_t &city_index, const std::size_t &global_wont_visit_restart_times);
+
+protected:
+    void _build_childs(Wont_Visit_Node *&parent_ptr, Building_Node *building_parent_ptr);
+    void _bottom_up_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs);
+};
+
 class Tree_Edge : public Tree_Base<Node, Leaf>
 {
 public:
@@ -28,8 +43,8 @@ public:
     ~Tree_Edge(){};
 
     std::size_t choose_next_city(
-        Wont_Visit_Node *wont_visit_root_ptr,
-        const double &one_minus_q_0,
+        Wont_Visit_Tree *wont_visit_tree_ptr,
+        const double &neighbour_prob,
         const double &alpha,
         const double &beta,
         const double &one_minus_rho,
@@ -37,7 +52,10 @@ public:
         const double &past_trail_min,
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times,
-        const std::size_t &global_wont_visit_restart_times);
+        const std::size_t &global_wont_visit_restart_times,
+        const std::size_t &nn_ants,
+        long *nn_list,
+        const std::size_t &num_city);
     void reinforce(
         const std::size_t &city_index,
         const double &invert_fitness,
@@ -56,22 +74,33 @@ public:
         const std::size_t &global_evap_times);
 
 protected:
+    // std::size_t _current_city;
+
     void _bottom_up_build_tree(std::vector<Node *> &node_ptrs);
     void _build_childs(Node *&parent_ptr, Building_Node *building_parent_ptr, const std::size_t &current_city);
-};
-
-class Wont_Visit_Tree : public Tree_Base<Wont_Visit_Node, Wont_Visit_Node>
-{
-public:
-    Wont_Visit_Tree(const std::size_t &num_city);                                   // Bottom-up
-    Wont_Visit_Tree(const std::size_t &num_city, Building_Node *building_root_ptr); // Top-down
-    ~Wont_Visit_Tree(){};
-
-    void set_wont_visit(const std::size_t &city_index, const std::size_t &num_city, const std::size_t &global_wont_visit_restart_times);
-    void _build_childs(Wont_Visit_Node *&parent_ptr, Building_Node *building_parent_ptr);
-
-protected:
-    void _bottom_up_build_tree(std::vector<Wont_Visit_Node *> &node_ptrs);
+    std::size_t _walk_from_root(
+        Wont_Visit_Node *wont_visit_root_ptr,
+        const double &alpha,
+        const double &beta,
+        const double &one_minus_rho,
+        const double &past_trail_restart,
+        const double &past_trail_min,
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times,
+        const std::size_t &global_wont_visit_restart_times);
+    std::size_t _choose_neighbour(
+        Wont_Visit_Tree *wont_visit_tree_ptr,
+        const double &alpha,
+        const double &beta,
+        const double &one_minus_rho,
+        const double &past_trail_restart,
+        const double &past_trail_min,
+        const std::size_t &global_restart_times,
+        const std::size_t &global_evap_times,
+        const std::size_t &global_wont_visit_restart_times,
+        const std::size_t &nn_ants,
+        long *nn_list,
+        const std::size_t &num_city);
 };
 
 typedef struct

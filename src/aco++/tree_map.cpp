@@ -88,13 +88,14 @@ void Tree_Map::restart_pheromone(const double &past_trail_restart)
 
 void Tree_Map::choose_route(
     ant_struct &an_ant,
-    const double &q_0,
+    const double &neighbour_prob,
     const double &alpha,
     const double &beta,
     const double &rho,
-    long int &n_tours)
+    long int &n_tours,
+    const std::size_t &nn_ants,
+    long **nn_list)
 {
-    const double &one_minus_q_0 = 1 - q_0;
     const double &one_minus_rho = 1 - rho;
     size_t current_city, i;
 
@@ -106,15 +107,12 @@ void Tree_Map::choose_route(
     an_ant.visited[0] = TRUE;
     an_ant.visited[_num_city] = TRUE; // virtual city
 
-    while (true)
+    current_city = an_ant.tour[an_ant.tour_size - 1];
+    while (current_city != _num_city - 1)
     {
-        current_city = an_ant.tour[an_ant.tour_size - 1];
-        if (current_city == _num_city + 1 - 2)
-            break;
-
         current_city = _tree_edge_ptrs[current_city]->choose_next_city(
-            _wont_visit_tree_ptr->get_root_ptr(),
-            one_minus_q_0,
+            _wont_visit_tree_ptr,
+            neighbour_prob,
             alpha,
             beta,
             one_minus_rho,
@@ -122,7 +120,10 @@ void Tree_Map::choose_route(
             _past_trail_min,
             _global_restart_times,
             _global_evap_times,
-            _global_wont_visit_restart_times);
+            _global_wont_visit_restart_times,
+            nn_ants,
+            nn_list[current_city],
+            _num_city);
         an_ant.tour[an_ant.tour_size] = current_city;
         an_ant.visited[current_city] = TRUE;
         an_ant.tour_size++;
@@ -210,5 +211,7 @@ void tree_map_construct_solutions()
 {
     std::size_t i;
     for (i = 0; i < n_ants; i++)
-        tree_map->choose_route(ant[i], instance.n - 1, alpha, beta, rho, n_tours);
+        tree_map->choose_route(ant[i], q_0, alpha, beta, rho, n_tours,
+                               nn_ants,
+                               instance.nn_list);
 }

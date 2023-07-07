@@ -963,7 +963,7 @@ void mmas_evaporation_nn_list(void)
 
     TRACE(printf("mmas specific evaporation on nn_lists\n"););
 
-    for (i = 0; i < instance.n; i++)
+    for (i = 0; i <= instance.n - 3; i++)
     {
         for (j = 0; j < nn_ants; j++)
         {

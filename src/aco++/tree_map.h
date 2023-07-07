@@ -18,11 +18,13 @@ public:
         const double &trail_max);
     void choose_route(
         ant_struct &an_ant,
-        const double &q_0,
+        const double &neighbour_prob,
         const double &alpha,
         const double &beta,
         const double &rho,
-        long int &n_tours);
+        long int &n_tours,
+        const std::size_t &nn_ants,
+        long **nn_list);
     double leaf_pheromone(
         const std::size_t &i,
         const std::size_t &j,

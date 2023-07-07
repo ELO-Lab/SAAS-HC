@@ -549,9 +549,9 @@ int main(int argc, char *argv[])
 
     init_program(argc, argv);
 
+    instance.nn_list = compute_nn_lists();
     if (!tree_map_flag)
     {
-        instance.nn_list = compute_nn_lists();
         pheromone = generate_double_matrix(instance.n, instance.n);
     }
 

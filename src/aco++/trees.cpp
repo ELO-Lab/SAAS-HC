@@ -10,6 +10,8 @@
 Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city, Building_Node *building_root_ptr)
 {
     // Top-down
+
+    // _current_city = current_city;
     _root_ptr = new Node();
     _leaf_ptrs.resize(num_city);
     _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
@@ -48,9 +50,11 @@ void Tree_Edge::_build_childs(Node *&parent_ptr, Building_Node *building_parent_
 Tree_Edge::Tree_Edge(const std::size_t &num_city, const std::size_t &current_city)
 {
     // Bottom-up
+
     std::size_t i;
     std::vector<Node *> node_ptrs;
 
+    // _current_city = current_city;
     _leaf_ptrs.resize(num_city);
     _leaf_ptrs[0] = nullptr; // Not allowed to revisit the starting city
     // _leaf_ptrs[current_city] = nullptr; // Not allowed to stand still
@@ -84,8 +88,49 @@ void Tree_Edge::_bottom_up_build_tree(std::vector<Node *> &node_ptrs)
 }
 
 std::size_t Tree_Edge::choose_next_city(
+    Wont_Visit_Tree *wont_visit_tree_ptr,
+    const double &neighbour_prob,
+    const double &alpha,
+    const double &beta,
+    const double &one_minus_rho,
+    const double &past_trail_restart,
+    const double &past_trail_min,
+    const std::size_t &global_restart_times,
+    const std::size_t &global_evap_times,
+    const std::size_t &global_wont_visit_restart_times,
+    const std::size_t &nn_ants,
+    long *nn_list,
+    const std::size_t &num_city)
+{
+    if (new_rand01() < neighbour_prob)
+        return _choose_neighbour(
+            wont_visit_tree_ptr,
+            alpha,
+            beta,
+            one_minus_rho,
+            past_trail_restart,
+            past_trail_min,
+            global_restart_times,
+            global_evap_times,
+            global_wont_visit_restart_times,
+            nn_ants,
+            nn_list,
+            num_city);
+    else
+        return _walk_from_root(
+            wont_visit_tree_ptr->get_root_ptr(),
+            alpha,
+            beta,
+            one_minus_rho,
+            past_trail_restart,
+            past_trail_min,
+            global_restart_times,
+            global_evap_times,
+            global_wont_visit_restart_times);
+}
+
+std::size_t Tree_Edge::_walk_from_root(
     Wont_Visit_Node *wont_visit_root_ptr,
-    const double &one_minus_q_0,
     const double &alpha,
     const double &beta,
     const double &one_minus_rho,
@@ -111,7 +156,6 @@ std::size_t Tree_Edge::choose_next_city(
             next_child_index = 0;
         else if (!left_wont_visit && !right_wont_visit)
             next_child_index = current_ptr->choose_child_with_prob(
-                one_minus_q_0,
                 alpha, beta, one_minus_rho, past_trail_restart, past_trail_min,
                 global_restart_times, global_evap_times);
         else
@@ -122,6 +166,75 @@ std::size_t Tree_Edge::choose_next_city(
     }
 
     return ((Leaf *)current_ptr)->get_city_index();
+}
+
+std::size_t Tree_Edge::_choose_neighbour(
+    Wont_Visit_Tree *wont_visit_tree_ptr,
+    const double &alpha,
+    const double &beta,
+    const double &one_minus_rho,
+    const double &past_trail_restart,
+    const double &past_trail_min,
+    const std::size_t &global_restart_times,
+    const std::size_t &global_evap_times,
+    const std::size_t &global_wont_visit_restart_times,
+    const std::size_t &nn_ants,
+    long *nn_list,
+    const std::size_t &num_city)
+{
+    std::size_t i, city_index;
+    double rnd, sum_prob, _partial_sum;
+    std::vector<double> city_probs(nn_ants);
+
+    sum_prob = 0.0;
+    for (i = 0; i < nn_ants; i++)
+    {
+        city_index = nn_list[i];
+        assert(0 < city_index && city_index < num_city);
+        if (city_index == num_city || wont_visit_tree_ptr->check_city_visited(city_index, global_wont_visit_restart_times))
+            city_probs[i] = 0.0;
+        else
+        {
+            city_probs[i] = _leaf_ptrs[city_index]->prob_weight(
+                alpha,
+                beta,
+                one_minus_rho,
+                past_trail_restart,
+                past_trail_min,
+                global_restart_times,
+                global_evap_times);
+            sum_prob += city_probs[i];
+        }
+    }
+
+    if (sum_prob <= 0.0)
+    {
+        // All neighbours are visited
+        return _walk_from_root(
+            wont_visit_tree_ptr->get_root_ptr(),
+            alpha,
+            beta,
+            one_minus_rho,
+            past_trail_restart,
+            past_trail_min,
+            global_restart_times,
+            global_evap_times,
+            global_wont_visit_restart_times);
+    }
+
+    rnd = new_rand01() * sum_prob;
+    i = 0;
+    _partial_sum = city_probs[i];
+    while (_partial_sum <= rnd)
+    {
+        i++;
+        _partial_sum += city_probs[i];
+    }
+    city_index = nn_list[i];
+
+    assert(0 <= i && i < nn_ants);
+    assert(city_probs[i] >= 0.0);
+    return city_index;
 }
 
 void Tree_Edge::reinforce(
@@ -241,6 +354,11 @@ void Wont_Visit_Tree::set_wont_visit(const std::size_t &city_index, const std::s
     if (city_index != 0 and city_index != num_city - 1)
         _leaf_ptrs[city_index]->set_wont_visit(global_wont_visit_restart_times);
     assert(_root_ptr->get_wont_visit(global_wont_visit_restart_times) == false);
+}
+
+bool Wont_Visit_Tree::check_city_visited(const std::size_t &city_index, const std::size_t &global_wont_visit_restart_times)
+{
+    return _leaf_ptrs[city_index]->get_wont_visit(global_wont_visit_restart_times);
 }
 
 Building_Tree::Building_Tree(const struct problem &instance)

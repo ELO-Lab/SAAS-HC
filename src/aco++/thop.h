@@ -53,7 +53,7 @@
 #ifndef _THOP_H_
 #define _THOP_H_
 
-#define M_PI 3.14159265358979323846264
+// #define M_PI 3.14159265358979323846264
 #define RRR 6378.388
 
 #ifndef PI /* as in stroustrup */

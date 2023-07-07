@@ -323,17 +323,13 @@ long int **compute_nn_lists(void)
       OUTPUT:   pointer to the nearest neighbor lists
  */
 {
-    long int i, node, nn;
+    long int i, node;
     long int *distance_vector;
     long int *help_vector;
     long int **m_nnear;
+    const std::size_t nn = instance.n - 3;
 
     TRACE(printf("\n computing nearest neighbor lists, ");)
-
-    nn = MAX(nn_ls, nn_ants);
-    if (nn >= instance.n)
-        nn = instance.n - 1;
-    DEBUG(assert(instance.n > nn);)
 
     TRACE(printf("nn = %ld ... \n", nn);)
 
@@ -344,20 +340,20 @@ long int **compute_nn_lists(void)
     distance_vector = (long int *)calloc(instance.n, sizeof(long int));
     help_vector = (long int *)calloc(instance.n, sizeof(long int));
 
-    for (node = 0; node < instance.n; node++)
+    for (node = 0; node <= instance.n - 3; node++)
     { /* compute cnd-sets for all node */
         m_nnear[node] = (long int *)(m_nnear + instance.n) + node * nn;
 
-        for (i = 0; i < instance.n; i++)
+        for (i = 1; i <= instance.n - 2; i++)
         { /* Copy distances from nodes to the others */
             distance_vector[i] = instance.distance[node][i];
             help_vector[i] = i;
         }
         distance_vector[node] = LONG_MAX; /* city is not nearest neighbour */
-        sort2(distance_vector, help_vector, 0, instance.n - 1);
+        sort2(distance_vector, help_vector, 1, instance.n - 2);
         for (i = 0; i < nn; i++)
         {
-            m_nnear[node][i] = help_vector[i];
+            m_nnear[node][i] = help_vector[i + 1];
         }
     }
     free(distance_vector);

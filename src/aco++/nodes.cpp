@@ -69,7 +69,7 @@ Building_Node::Building_Node(Building_Node *parent_ptr, const double &centroid_x
 Building_Leaf::Building_Leaf(Building_Node *parent_ptr, const double &centroid_x, const double &centroid_y, const std::size_t &city_index)
     : Building_Node(parent_ptr, centroid_x, centroid_y, 1, true), Leaf_Base(city_index) {}
 
-void Node::_restart_if_needed(const std::size_t &global_restart_times, const double &past_trail_restart)
+void Node::restart_if_needed(const std::size_t &global_restart_times, const double &past_trail_restart)
 {
     if (_local_restart_times < global_restart_times)
     {
@@ -84,7 +84,7 @@ double Node::get_pheromone(const double &one_minus_rho,
                            const double &past_trail_min,
                            const std::size_t &global_restart_times, const std::size_t &global_evap_times)
 {
-    _restart_if_needed(global_restart_times, past_trail_restart);
+    restart_if_needed(global_restart_times, past_trail_restart);
     double pheromone = _past_pheromone * pow(one_minus_rho, global_evap_times - _local_evap_times);
     if (pheromone < past_trail_min)
         pheromone = past_trail_min;
@@ -92,10 +92,10 @@ double Node::get_pheromone(const double &one_minus_rho,
     return pheromone;
 }
 
-void Node::_pay_evaporation_debt(const double &one_minus_rho,
-                                 const double &past_trail_restart,
-                                 const double &past_trail_min,
-                                 const std::size_t &global_restart_times, const std::size_t &global_evap_times)
+void Node::pay_evaporation_debt(const double &one_minus_rho,
+                                const double &past_trail_restart,
+                                const double &past_trail_min,
+                                const std::size_t &global_restart_times, const std::size_t &global_evap_times)
 {
 
     _past_pheromone = get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
@@ -108,27 +108,33 @@ void Node::reinforce(const double &invert_fitness, const double &one_minus_rho,
                      const double &trail_max,
                      const std::size_t &global_restart_times, const std::size_t &global_evap_times)
 {
-    _pay_evaporation_debt(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+    pay_evaporation_debt(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
     _past_pheromone += invert_fitness;
     if (_past_pheromone > trail_max)
         _past_pheromone = trail_max;
 }
 
-double Node::_prob_weight(const double &alpha, const double &beta, const double &one_minus_rho,
-                          const double &past_trail_restart,
-                          const double &past_trail_min,
-                          const std::size_t &global_restart_times, const std::size_t &global_evap_times)
+double Node::prob_weight(const double &alpha, const double &beta, const double &one_minus_rho,
+                         const double &past_trail_restart,
+                         const double &past_trail_min,
+                         const std::size_t &global_restart_times, const std::size_t &global_evap_times)
 {
+    double weight;
     const double pheromone = this->get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
-    return pow(pheromone, alpha) * pow(_heuristic, beta);
+
+    weight = pow(pheromone, alpha) * pow(_heuristic, beta);
+    weight *= _n_child_leaf;
+
+    return weight;
 }
 
-std::size_t Node::choose_child_with_prob(const double &one_minus_q_0,
-                                         const double &alpha, const double &beta, const double &one_minus_rho,
-                                         const double &past_trail_restart,
-                                         const double &past_trail_min,
-                                         const std::size_t &global_restart_times,
-                                         const std::size_t &global_evap_times)
+std::size_t Node::choose_child_with_prob(
+    const double &alpha, const double &beta, const double &one_minus_rho,
+    const double &past_trail_restart,
+    const double &past_trail_min,
+    const std::size_t &global_restart_times,
+    const std::size_t &global_evap_times,
+    const double &elite_prob)
 {
     // IMPORTANCE NOTE: Remember to check won't visit before go to this function
 
@@ -137,10 +143,7 @@ std::size_t Node::choose_child_with_prob(const double &one_minus_q_0,
     double prob_of_min;
 
     for (i = 0; i < 2; i++)
-    {
-        weights[i] = child_ptrs[i]->_prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
-        weights[i] *= child_ptrs[i]->_n_child_leaf;
-    }
+        weights[i] = child_ptrs[i]->prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
 
     if (weights[0] < weights[1])
         index_of_min = 0;
@@ -148,7 +151,7 @@ std::size_t Node::choose_child_with_prob(const double &one_minus_q_0,
         index_of_min = 1;
 
     prob_of_min = weights[index_of_min] / (weights[0] + weights[1]);
-    prob_of_min *= one_minus_q_0;
+    prob_of_min *= 1 - elite_prob;
     if (new_rand01() < prob_of_min)
         return index_of_min;
     else
