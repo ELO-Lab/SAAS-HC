@@ -18,7 +18,7 @@
 #include "custom_strategy.h"
 #include "tree_map.h"
 
-#define SEED_IDX 0
+#define NEIGHBOUR_PROB_IDX 0
 #define PAR_A_IDX 1
 #define PAR_B_IDX 2
 #define PAR_C_IDX 3
@@ -26,7 +26,8 @@
 #define ALPHA_IDX 5
 #define BETA_IDX 6
 #define RHO_IDX 7
-#define ES_ANT_DIM 8
+#define SEED_IDX 8
+#define ES_ANT_DIM 9
 
 // hyperparameters
 bool es_ant_flag = true;
@@ -35,7 +36,8 @@ double par_a_mean, par_b_mean, par_c_mean,
 	par_a_stepsize, par_b_stepsize, par_c_stepsize,
 	alpha_mean, beta_mean, rho_mean,
 	alpha_stepsize, beta_stepsize, rho_stepsize,
-	q_0_mean, q_0_stepsize, rand_seed_stepsize;
+	q_0_mean, q_0_stepsize, rand_seed_stepsize,
+	neighbour_prob_mean, neighbour_prob_stepsize;
 size_t min_n_ants;
 
 double par_a, par_b, par_c;
@@ -169,17 +171,19 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 	alpha = parameters[ALPHA_IDX];
 	beta = parameters[BETA_IDX];
 	rho = parameters[RHO_IDX];
+	neighbour_prob = parameters[NEIGHBOUR_PROB_IDX];
 
 	if (tree_map_flag)
 		tree_map->choose_route(
 			ant[current_ant_idx],
-			q_0,
+			neighbour_prob,
 			alpha,
 			beta,
 			rho,
 			n_tours,
 			nn_ants,
-			instance.nn_list);
+			instance.nn_list,
+			q_0);
 	else
 		an_ant_run();
 
@@ -253,6 +257,11 @@ void init_optimizer(void)
 	x0[RHO_IDX] = rho_mean;
 	sigma[RHO_IDX] = rho_stepsize / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
 
+	lbounds[NEIGHBOUR_PROB_IDX] = 0.01;
+	ubounds[NEIGHBOUR_PROB_IDX] = 0.99;
+	x0[NEIGHBOUR_PROB_IDX] = neighbour_prob_mean;
+	sigma[NEIGHBOUR_PROB_IDX] = neighbour_prob_stepsize / (ubounds[NEIGHBOUR_PROB_IDX] - lbounds[NEIGHBOUR_PROB_IDX]);
+
 	for (i = 0; i < ES_ANT_DIM; i++)
 	{
 		assert(x0[i] >= lbounds[i]);
@@ -312,7 +321,7 @@ void es_ant_force_set_parameters(void)
 	// temp
 	adaptive_evaporation_flag = false;
 	min_n_ants = n_ants;
-	// min_n_ants = 0;
+	// min_n_ants = -1;
 	rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
 
 	alpha_mean = 1.550208;
@@ -324,9 +333,7 @@ void es_ant_force_set_parameters(void)
 	rho_mean = 0.468542;
 	rho_stepsize = 0.253226 / 2;
 
-	// q_0_mean = 0;
-	// q_0_stepsize = 0.05;
-	q_0_mean = 0.5;
+	q_0_mean = 0;
 	q_0_stepsize = 0.05;
 
 	par_a_mean = 0.5;
@@ -337,6 +344,9 @@ void es_ant_force_set_parameters(void)
 
 	par_c_mean = 0.5;
 	par_c_stepsize = 0.05;
+
+	neighbour_prob_mean = 0.5;
+	neighbour_prob_stepsize = 0.05;
 	////
 }
 

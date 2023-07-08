@@ -138,24 +138,29 @@ std::size_t Node::choose_child_with_prob(
 {
     // IMPORTANCE NOTE: Remember to check won't visit before go to this function
 
-    std::array<double, 2> weights;
-    std::size_t index_of_min, i;
-    double prob_of_min;
+    std::array<double, 2> weights, pheromones;
+    std::size_t i;
+    double move_prob;
+
+    for (i = 0; i < 2; i++)
+        pheromones[i] = child_ptrs[i]->get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+
+    if (elite_prob != 0.0 && new_rand01() < elite_prob)
+    {
+        if (pheromones[0] < pheromones[1])
+            return 1;
+        else
+            return 0;
+    }
 
     for (i = 0; i < 2; i++)
         weights[i] = child_ptrs[i]->prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
 
-    if (weights[0] < weights[1])
-        index_of_min = 0;
+    move_prob = weights[1] / (weights[0] + weights[1]);
+    if (new_rand01() < move_prob)
+        return 1;
     else
-        index_of_min = 1;
-
-    prob_of_min = weights[index_of_min] / (weights[0] + weights[1]);
-    prob_of_min *= 1 - elite_prob;
-    if (new_rand01() < prob_of_min)
-        return index_of_min;
-    else
-        return 1 - index_of_min;
+        return 0;
 }
 
 void Wont_Visit_Node::_restart_if_needed(const std::size_t &global_wont_visit_restart_times)

@@ -24,7 +24,8 @@ public:
         const double &rho,
         long int &n_tours,
         const std::size_t &nn_ants,
-        long **nn_list);
+        long **nn_list,
+        const double &elite_prob);
     double leaf_pheromone(
         const std::size_t &i,
         const std::size_t &j,
@@ -49,6 +50,7 @@ protected:
 extern bool tree_map_flag;
 
 extern Tree_Map *tree_map;
+extern double neighbour_prob;
 
 void tree_map_init();
 void tree_map_force_set_parameters();

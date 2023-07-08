@@ -94,7 +94,8 @@ void Tree_Map::choose_route(
     const double &rho,
     long int &n_tours,
     const std::size_t &nn_ants,
-    long **nn_list)
+    long **nn_list,
+    const double &elite_prob)
 {
     const double &one_minus_rho = 1 - rho;
     size_t current_city, i;
@@ -123,7 +124,8 @@ void Tree_Map::choose_route(
             _global_wont_visit_restart_times,
             nn_ants,
             nn_list[current_city],
-            _num_city);
+            _num_city,
+            elite_prob);
         an_ant.tour[an_ant.tour_size] = current_city;
         an_ant.visited[current_city] = TRUE;
         an_ant.tour_size++;
@@ -193,6 +195,7 @@ bool tree_map_flag = true;
 // bool tree_map_flag = false;
 
 Tree_Map *tree_map;
+double neighbour_prob;
 
 void tree_map_init()
 {
@@ -201,6 +204,8 @@ void tree_map_init()
 void tree_map_force_set_parameters()
 {
     mmas_flag = true;
+    q_0 = 0.0;
+    neighbour_prob = 0.5;
 }
 void tree_map_deallocate()
 {
@@ -211,7 +216,7 @@ void tree_map_construct_solutions()
 {
     std::size_t i;
     for (i = 0; i < n_ants; i++)
-        tree_map->choose_route(ant[i], q_0, alpha, beta, rho, n_tours,
+        tree_map->choose_route(ant[i], neighbour_prob, alpha, beta, rho, n_tours,
                                nn_ants,
-                               instance.nn_list);
+                               instance.nn_list, q_0);
 }

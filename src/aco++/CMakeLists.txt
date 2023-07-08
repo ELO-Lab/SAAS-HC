@@ -8,9 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(OMP_NUM_THREADS 1)
 
 # add_compile_options(-O3)
-# add_compile_options(-w)
-# add_compile_options(-pg)
-# string(REPLACE "-O2" "-O0" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) 
+add_compile_options(-w)
 set(CMAKE_C_COMPILER $ENV{CONDA_PREFIX}/bin/gcc)
 set(CMAKE_CXX_COMPILER $ENV{CONDA_PREFIX}/bin/g++)
 

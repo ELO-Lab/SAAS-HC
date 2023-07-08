@@ -55,7 +55,8 @@ public:
         const std::size_t &global_wont_visit_restart_times,
         const std::size_t &nn_ants,
         long *nn_list,
-        const std::size_t &num_city);
+        const std::size_t &num_city,
+        const double &elite_prob);
     void reinforce(
         const std::size_t &city_index,
         const double &invert_fitness,
@@ -87,7 +88,8 @@ protected:
         const double &past_trail_min,
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times,
-        const std::size_t &global_wont_visit_restart_times);
+        const std::size_t &global_wont_visit_restart_times,
+        const double &elite_prob);
     std::size_t _choose_neighbour(
         Wont_Visit_Tree *wont_visit_tree_ptr,
         const double &alpha,
@@ -100,7 +102,8 @@ protected:
         const std::size_t &global_wont_visit_restart_times,
         const std::size_t &nn_ants,
         long *nn_list,
-        const std::size_t &num_city);
+        const std::size_t &num_city,
+        const double &elite_prob);
 };
 
 typedef struct

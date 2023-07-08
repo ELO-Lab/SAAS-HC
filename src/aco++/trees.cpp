@@ -100,7 +100,8 @@ std::size_t Tree_Edge::choose_next_city(
     const std::size_t &global_wont_visit_restart_times,
     const std::size_t &nn_ants,
     long *nn_list,
-    const std::size_t &num_city)
+    const std::size_t &num_city,
+    const double &elite_prob)
 {
     if (new_rand01() < neighbour_prob)
         return _choose_neighbour(
@@ -115,7 +116,8 @@ std::size_t Tree_Edge::choose_next_city(
             global_wont_visit_restart_times,
             nn_ants,
             nn_list,
-            num_city);
+            num_city,
+            elite_prob);
     else
         return _walk_from_root(
             wont_visit_tree_ptr->get_root_ptr(),
@@ -126,7 +128,8 @@ std::size_t Tree_Edge::choose_next_city(
             past_trail_min,
             global_restart_times,
             global_evap_times,
-            global_wont_visit_restart_times);
+            global_wont_visit_restart_times,
+            elite_prob);
 }
 
 std::size_t Tree_Edge::_walk_from_root(
@@ -138,7 +141,8 @@ std::size_t Tree_Edge::_walk_from_root(
     const double &past_trail_min,
     const std::size_t &global_restart_times,
     const std::size_t &global_evap_times,
-    const std::size_t &global_wont_visit_restart_times)
+    const std::size_t &global_wont_visit_restart_times,
+    const double &elite_prob)
 {
     Node *current_ptr = _root_ptr;
     Wont_Visit_Node *current_wont_visit_ptr = wont_visit_root_ptr;
@@ -157,7 +161,7 @@ std::size_t Tree_Edge::_walk_from_root(
         else if (!left_wont_visit && !right_wont_visit)
             next_child_index = current_ptr->choose_child_with_prob(
                 alpha, beta, one_minus_rho, past_trail_restart, past_trail_min,
-                global_restart_times, global_evap_times);
+                global_restart_times, global_evap_times, elite_prob);
         else
             assert(false);
 
@@ -180,22 +184,23 @@ std::size_t Tree_Edge::_choose_neighbour(
     const std::size_t &global_wont_visit_restart_times,
     const std::size_t &nn_ants,
     long *nn_list,
-    const std::size_t &num_city)
+    const std::size_t &num_city,
+    const double &elite_prob)
 {
     std::size_t i, city_index;
-    double rnd, sum_prob, _partial_sum;
-    std::vector<double> city_probs(nn_ants);
+    double rand_num, total_weights, partial_sum;
+    std::vector<double> prob_weights(nn_ants);
 
-    sum_prob = 0.0;
+    total_weights = 0.0;
     for (i = 0; i < nn_ants; i++)
     {
         city_index = nn_list[i];
         assert(0 < city_index && city_index < num_city);
         if (city_index == num_city || wont_visit_tree_ptr->check_city_visited(city_index, global_wont_visit_restart_times))
-            city_probs[i] = 0.0;
+            prob_weights[i] = 0.0;
         else
         {
-            city_probs[i] = _leaf_ptrs[city_index]->prob_weight(
+            prob_weights[i] = _leaf_ptrs[city_index]->prob_weight(
                 alpha,
                 beta,
                 one_minus_rho,
@@ -203,11 +208,11 @@ std::size_t Tree_Edge::_choose_neighbour(
                 past_trail_min,
                 global_restart_times,
                 global_evap_times);
-            sum_prob += city_probs[i];
+            total_weights += prob_weights[i];
         }
     }
 
-    if (sum_prob <= 0.0)
+    if (total_weights <= 0.0)
     {
         // All neighbours are visited
         return _walk_from_root(
@@ -219,21 +224,22 @@ std::size_t Tree_Edge::_choose_neighbour(
             past_trail_min,
             global_restart_times,
             global_evap_times,
-            global_wont_visit_restart_times);
+            global_wont_visit_restart_times,
+            elite_prob);
     }
 
-    rnd = new_rand01() * sum_prob;
+    rand_num = new_rand01() * total_weights;
     i = 0;
-    _partial_sum = city_probs[i];
-    while (_partial_sum <= rnd)
+    partial_sum = prob_weights[i];
+    while (partial_sum <= rand_num)
     {
         i++;
-        _partial_sum += city_probs[i];
+        partial_sum += prob_weights[i];
     }
     city_index = nn_list[i];
 
     assert(0 <= i && i < nn_ants);
-    assert(city_probs[i] >= 0.0);
+    assert(prob_weights[i] >= 0.0);
     return city_index;
 }
 

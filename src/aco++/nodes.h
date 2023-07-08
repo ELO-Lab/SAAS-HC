@@ -78,7 +78,7 @@ public:
         const double &past_trail_min,
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times,
-        const double &elite_prob = 0);
+        const double &elite_prob);
     double get_pheromone(
         const double &one_minus_rho,
         const double &past_trail_restart,
