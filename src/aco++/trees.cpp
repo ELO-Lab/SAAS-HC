@@ -104,7 +104,7 @@ std::size_t Tree_Edge::choose_next_city(
     const double &elite_prob)
 {
     if (new_rand01() < neighbour_prob)
-        return _choose_neighbour(
+        return _choose_neighbour_leaf(
             wont_visit_tree_ptr,
             alpha,
             beta,
@@ -118,6 +118,13 @@ std::size_t Tree_Edge::choose_next_city(
             nn_list,
             num_city,
             elite_prob);
+    // return _choose_best_leaf(
+    //     wont_visit_tree_ptr,
+    //     alpha, beta, one_minus_rho,
+    //     past_trail_restart, past_trail_min,
+    //     global_restart_times, global_evap_times,
+    //     global_wont_visit_restart_times,
+    //     num_city);
     else
         return _walk_from_root(
             wont_visit_tree_ptr->get_root_ptr(),
@@ -172,7 +179,7 @@ std::size_t Tree_Edge::_walk_from_root(
     return ((Leaf *)current_ptr)->get_city_index();
 }
 
-std::size_t Tree_Edge::_choose_neighbour(
+std::size_t Tree_Edge::_choose_neighbour_leaf(
     Wont_Visit_Tree *wont_visit_tree_ptr,
     const double &alpha,
     const double &beta,
@@ -241,6 +248,40 @@ std::size_t Tree_Edge::_choose_neighbour(
     assert(0 <= i && i < nn_ants);
     assert(prob_weights[i] >= 0.0);
     return city_index;
+}
+
+std::size_t Tree_Edge::_choose_best_leaf(
+    Wont_Visit_Tree *wont_visit_tree_ptr,
+    const double &alpha, const double &beta, const double &one_minus_rho,
+    const double &past_trail_restart, const double &past_trail_min,
+    const std::size_t &global_restart_times, const std::size_t &global_evap_times,
+    const std::size_t &global_wont_visit_restart_times,
+    const std::size_t &num_city)
+{
+
+    std::size_t i, best_city;
+    double max_prob_weight, temp_prob_weight;
+
+    best_city = 0;
+    max_prob_weight = 0;
+    for (i = 1; i < num_city; i++)
+    {
+        if (wont_visit_tree_ptr->check_city_visited(i, global_wont_visit_restart_times))
+            continue;
+
+        temp_prob_weight = _leaf_ptrs[i]->prob_weight_without_child_leaf(
+            alpha, beta, one_minus_rho,
+            past_trail_restart, past_trail_min,
+            global_restart_times, global_evap_times);
+        if (temp_prob_weight > max_prob_weight)
+        {
+            max_prob_weight = temp_prob_weight;
+            best_city = i;
+        }
+    }
+
+    assert(best_city > 0);
+    return best_city;
 }
 
 void Tree_Edge::reinforce(

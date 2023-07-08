@@ -110,6 +110,7 @@ void Node::reinforce(const double &invert_fitness, const double &one_minus_rho,
 {
     pay_evaporation_debt(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
     _past_pheromone += invert_fitness;
+    // _past_pheromone += invert_fitness / _n_child_leaf;
     if (_past_pheromone > trail_max)
         _past_pheromone = trail_max;
 }
@@ -120,12 +121,26 @@ double Node::prob_weight(const double &alpha, const double &beta, const double &
                          const std::size_t &global_restart_times, const std::size_t &global_evap_times)
 {
     double weight;
-    const double pheromone = this->get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
 
-    weight = pow(pheromone, alpha) * pow(_heuristic, beta);
+    weight = prob_weight_without_child_leaf(
+        alpha, beta, one_minus_rho,
+        past_trail_restart,
+        past_trail_min,
+        global_restart_times, global_evap_times);
     weight *= _n_child_leaf;
 
     return weight;
+}
+
+double Node::prob_weight_without_child_leaf(
+    const double &alpha, const double &beta, const double &one_minus_rho,
+    const double &past_trail_restart,
+    const double &past_trail_min,
+    const std::size_t &global_restart_times, const std::size_t &global_evap_times)
+{
+    const double pheromone = this->get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+
+    return pow(pheromone, alpha) * pow(_heuristic, beta);
 }
 
 std::size_t Node::choose_child_with_prob(
@@ -138,23 +153,27 @@ std::size_t Node::choose_child_with_prob(
 {
     // IMPORTANCE NOTE: Remember to check won't visit before go to this function
 
-    std::array<double, 2> weights, pheromones;
+    std::array<double, 2> weights;
     std::size_t i;
     double move_prob;
 
     for (i = 0; i < 2; i++)
-        pheromones[i] = child_ptrs[i]->get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+        weights[i] = child_ptrs[i]->prob_weight_without_child_leaf(
+            alpha, beta, one_minus_rho,
+            past_trail_restart, past_trail_min,
+            global_restart_times, global_evap_times);
 
     if (elite_prob != 0.0 && new_rand01() < elite_prob)
     {
-        if (pheromones[0] < pheromones[1])
+        if (weights[1] > weights[0])
             return 1;
         else
             return 0;
     }
 
     for (i = 0; i < 2; i++)
-        weights[i] = child_ptrs[i]->prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+        // weights[i] = child_ptrs[i]->prob_weight(alpha, beta, one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+        weights[i] *= child_ptrs[i]->get_n_child_leaf();
 
     move_prob = weights[1] / (weights[0] + weights[1]);
     if (new_rand01() < move_prob)
@@ -162,6 +181,8 @@ std::size_t Node::choose_child_with_prob(
     else
         return 0;
 }
+
+std::size_t Node::get_n_child_leaf() { return _n_child_leaf; }
 
 void Wont_Visit_Node::_restart_if_needed(const std::size_t &global_wont_visit_restart_times)
 {

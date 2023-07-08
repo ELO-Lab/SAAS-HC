@@ -321,7 +321,7 @@ void es_ant_force_set_parameters(void)
 	// temp
 	adaptive_evaporation_flag = false;
 	min_n_ants = n_ants;
-	// min_n_ants = -1;
+	// min_n_ants = 0;
 	rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
 
 	alpha_mean = 1.550208;

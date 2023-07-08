@@ -102,6 +102,12 @@ public:
     void restart_if_needed(
         const std::size_t &global_restart_times,
         const double &past_trail_restart);
+    double prob_weight_without_child_leaf(
+        const double &alpha, const double &beta, const double &one_minus_rho,
+        const double &past_trail_restart,
+        const double &past_trail_min,
+        const std::size_t &global_restart_times, const std::size_t &global_evap_times);
+    std::size_t get_n_child_leaf();
 
 protected:
     double _past_pheromone; // pheromone of the edge from the parent node to itself at the time of last local evaporation

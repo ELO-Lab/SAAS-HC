@@ -90,7 +90,7 @@ protected:
         const std::size_t &global_evap_times,
         const std::size_t &global_wont_visit_restart_times,
         const double &elite_prob);
-    std::size_t _choose_neighbour(
+    std::size_t _choose_neighbour_leaf(
         Wont_Visit_Tree *wont_visit_tree_ptr,
         const double &alpha,
         const double &beta,
@@ -104,6 +104,13 @@ protected:
         long *nn_list,
         const std::size_t &num_city,
         const double &elite_prob);
+    std::size_t _choose_best_leaf(
+        Wont_Visit_Tree *wont_visit_tree_ptr,
+        const double &alpha, const double &beta, const double &one_minus_rho,
+        const double &past_trail_restart, const double &past_trail_min,
+        const std::size_t &global_restart_times, const std::size_t &global_evap_times,
+        const std::size_t &global_wont_visit_restart_times,
+        const std::size_t &num_city);
 };
 
 typedef struct
