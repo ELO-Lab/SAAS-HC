@@ -1,10 +1,13 @@
 #include "es_aco.h"
 
-#define ALPHA_IDX 1
-#define BETA_IDX  2
-#define PAR_A_IDX 3
-#define PAR_B_IDX 4
-#define PAR_C_IDX 5
+#define ALPHA_IDX 0
+#define BETA_IDX  1
+#define PAR_A_IDX 2
+#define PAR_B_IDX 3
+#define PAR_C_IDX 4
+#define EPSILON_IDX 5
+#define LEVY_THRESHOLD_IDX 6
+#define LEVY_RATIO_IDX 7
 
 const unsigned long int initial_nb_dims = 5;
 const unsigned long int initial_lambda = 10;
@@ -60,7 +63,13 @@ void _es_construct_solutions(int index)
             { /* previous city is the last one */
                 continue;
             }
-            neighbour_choose_and_move_to_next(&ant[k], step);
+            
+            if (iLevyFlag || iGreedyLevyFlag){
+                neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
+            }else{ 
+                neighbour_choose_and_move_to_next(&ant[k], step);
+            }
+
             if (acs_flag)
                 local_acs_pheromone_update(&ant[k], step);
             ant[k].tour_size++;

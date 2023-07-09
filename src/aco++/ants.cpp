@@ -71,16 +71,16 @@
 #include "utilities.h"
 #include "timer.h"
 
-extern int iLevyFlag;				// 0 or 1
-extern double dLevyThreshold;		//0--1
-extern double dLevyRatio;			//0.1--5
+int iLevyFlag = 0;				// 0 or 1, default 0;
+double dLevyThreshold=1;		//0--1
+double dLevyRatio=1;			//0.1--5
 
-extern double dContribution;  		//0--10
+double dContribution=0;  		//0--10
 
-extern int iGreedyLevyFlag;			// 0 or 1
-extern double dGreedyEpsilon;		//0--1
-extern double dGreedyLevyThreshold;	//0--1
-extern double dGreedyLevyRatio;		//0.1--5
+int iGreedyLevyFlag = 0;		// 0 or 1
+double dGreedyEpsilon = 0.9;	// 0--1
+double dGreedyLevyThreshold = 1;//0--1
+double dGreedyLevyRatio = 1;	//0.1--5
 
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
@@ -563,14 +563,14 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
     prob_ptr = prob_of_selection;
 
     current_city = a->tour[phase - 1]; /* current_city city of ant k */
-    DEBUG(assert(current_city >= 0 && current_city < n);)
+    DEBUG(assert(current_city >= 0 && current_city < instance.n);)
     for (i = 0; i < nn_ants; i++)
     {
         if (a->visited[instance.nn_list[current_city][i]])
             prob_ptr[i] = 0.0; /* city already visited */
         else
         {
-            DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < n);)
+            DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
             prob_ptr[i] = total[current_city][instance.nn_list[current_city][i]];
             sum_prob += prob_ptr[i];
         }
@@ -688,7 +688,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
             DEBUG(assert(prob_ptr[i] >= 0.0););
             help = instance.nn_list[current_city][i];
         }
-        DEBUG(assert(help >= 0 && help < n);)
+        DEBUG(assert(help >= 0 && help < instance.n);)
         DEBUG(assert(a->visited[help] == FALSE);)
         a->tour[phase] = help; /* instance.nn_list[current_city][i]; */
         a->visited[help] = TRUE;

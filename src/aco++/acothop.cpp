@@ -64,17 +64,8 @@
 #include "thop.h"
 #include "timer.h"
 #include "ls.h"
+#include "es_aco.h"
 
-int iLevyFlag = 0;				// 0 or 1, default 0;
-double dLevyThreshold=1;		//0--1
-double dLevyRatio=1;			//0.1--5
-
-double dContribution=0;  		//0--10
-
-int iGreedyLevyFlag = 0;		// 0 or 1
-double dGreedyEpsilon = 0.9;	// 0--1
-double dGreedyLevyThreshold = 1;//0--1
-double dGreedyLevyRatio = 1;	//0.1--5
 
 long int termination_condition(void)
 /*
@@ -127,8 +118,11 @@ void construct_solutions(void)
             { /* previous city is the last one */
                 continue;
             }
-            neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
-            // neighour_choose_and_move_to_next(&ant[k], step);
+            if (iLevyFlag || iGreedyLevyFlag){
+                neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
+            }else{ 
+                neighbour_choose_and_move_to_next(&ant[k], step);
+            }
             if (acs_flag)
                 local_acs_pheromone_update(&ant[k], step);
             ant[k].tour_size++;

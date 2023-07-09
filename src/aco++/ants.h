@@ -94,6 +94,17 @@ private:
     void free_ant(ant_struct &);
 };
 
+extern int iLevyFlag;				// 0 or 1
+extern double dLevyThreshold;		//0--1
+extern double dLevyRatio;			//0.1--5
+
+extern double dContribution;  		//0--10
+
+extern int iGreedyLevyFlag;			// 0 or 1
+extern double dGreedyEpsilon;		//0--1
+extern double dGreedyLevyThreshold;	//0--1
+extern double dGreedyLevyRatio;		//0.1--5
+
 extern Ant_Swarm ant; /* this class will hold the colony */
 extern Ant_Swarm prev_ls_ant;
 extern ant_struct *best_so_far_ant;  /* struct that contains the best-so-far ant */
