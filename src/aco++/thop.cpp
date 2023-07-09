@@ -66,6 +66,8 @@
 
 struct problem instance;
 
+double par_a, par_b, par_c;
+
 static double dtrunc(double x)
 {
     int k;
@@ -288,7 +290,7 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
         exit(0);
     }
 
-    double par_a, par_b, par_c, par_sum;
+    double par_sum;
     long int prev_city, curr_city;
     double _total_time;
     long int _total_weight, total_weight, total_profit;
@@ -402,6 +404,150 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
             }
         }
     }
+
+    free(distance_accumulated);
+    free(item_vector);
+    free(help_vector);
+    free(profit_accumulated);
+    free(weight_accumulated);
+    free(tmp_packing_plan);
+
+    return instance.UB + 1 - best_packing_plan_profit;
+}
+
+
+long int compute_fitness_es(long int *t, char *visited, long int t_size, char *p)
+/*
+      FUNCTION: compute the fitness of the ThOP solution generated from tour t
+      INPUT:    pointer to tour t and pointer to packing plan p
+      OUTPUT:   fitness of the ThOP solution generated from tour t
+ */
+{
+
+    int i, j, k, l;
+
+    /* for ( i = 0; i <= instance.n; ++i) printf("%d", t[i]); printf("\n"); */
+
+    if (t[0] != 0 || t[t_size - 1] != 0 || t[t_size - 3] != instance.n - 2 || t[t_size - 2] != instance.n - 1)
+    {
+        printf("error: compute_fitness\n");
+        exit(0);
+    }
+
+    double par_sum;
+    long int prev_city, curr_city;
+    double _total_time;
+    long int _total_weight, total_weight, total_profit;
+    int violate_max_time;
+
+    const double v = (instance.max_speed - instance.min_speed) / instance.capacity_of_knapsack;
+
+    long int *distance_accumulated = (long int *)malloc(instance.n * sizeof(long int));
+
+    long int total_distance = 0;
+
+    for (i = 0; i < t_size - 1; i++)
+    {
+        distance_accumulated[t[i]] = total_distance;
+        total_distance += instance.distance[t[i]][t[i + 1]];
+    }
+
+    double *item_vector = (double *)malloc(instance.m * sizeof(double));
+    double *help_vector = (double *)malloc(instance.m * sizeof(double));
+
+    long int *profit_accumulated = (long int *)malloc(instance.n * sizeof(long int));
+    long int *weight_accumulated = (long int *)malloc(instance.n * sizeof(long int));
+
+    long int best_packing_plan_profit = 0;
+    char *tmp_packing_plan = (char *)malloc(instance.m * sizeof(char));
+
+    long int _try;
+
+    // for (_try = 0; _try < max_packing_tries; _try++)
+    // {
+
+        for (i = 0; i < instance.n; i++)
+        {
+            profit_accumulated[i] = weight_accumulated[i] = 0;
+        }
+
+        // par_a = new_rand01(); /* uniform random number between [0.0, 1.0] */
+        // par_b = new_rand01(); /* uniform random number between [0.0, 1.0] */
+        // par_c = new_rand01(); /* uniform random number between [0.0, 1.0] */
+
+        par_sum = (par_a + par_b + par_c);
+        par_a /= par_sum;
+        par_b /= par_sum;
+        par_c /= par_sum;
+
+        l = 0;
+
+        for (j = 0; j < instance.m; j++)
+        {
+            tmp_packing_plan[j] = 0;
+            if (visited[instance.itemptr[j].id_city] == FALSE)
+                continue;
+            item_vector[l] = (-1.0 * pow(instance.itemptr[j].profit, par_a)) /
+                             (pow(instance.itemptr[j].weight, par_b) * pow((distance_accumulated[instance.n - 2] - distance_accumulated[instance.itemptr[j].id_city]), par_c));
+            help_vector[l] = j;
+            l++;
+        }
+
+        sort2_double(item_vector, help_vector, 0, l - 1);
+
+        total_weight = 0, total_profit = 0;
+
+        for (k = 0; k < l; k++)
+        {
+
+            j = help_vector[k];
+
+            if (total_weight + instance.itemptr[j].weight > instance.capacity_of_knapsack)
+                continue;
+
+            profit_accumulated[instance.itemptr[j].id_city] += instance.itemptr[j].profit;
+            weight_accumulated[instance.itemptr[j].id_city] += instance.itemptr[j].weight;
+
+            violate_max_time = FALSE;
+            _total_time = _total_weight = 0;
+            prev_city = 0;
+            for (i = 1; i < t_size; i++)
+            {
+                curr_city = t[i];
+                if (weight_accumulated[curr_city] == 0 && curr_city != instance.n - 2)
+                    continue;
+                _total_time += instance.distance[prev_city][curr_city] / (instance.max_speed - v * _total_weight);
+                if (_total_time - EPSILON > instance.max_time)
+                {
+                    violate_max_time = TRUE;
+                    break;
+                }
+                _total_weight += weight_accumulated[curr_city];
+                prev_city = curr_city;
+            }
+
+            if (violate_max_time == FALSE)
+            {
+                total_profit += instance.itemptr[j].profit;
+                total_weight += instance.itemptr[j].weight;
+                tmp_packing_plan[j] = 1;
+            }
+            else
+            {
+                profit_accumulated[instance.itemptr[j].id_city] -= instance.itemptr[j].profit;
+                weight_accumulated[instance.itemptr[j].id_city] -= instance.itemptr[j].weight;
+            }
+        }
+
+        if (total_profit > best_packing_plan_profit)
+        {
+            best_packing_plan_profit = total_profit;
+            for (j = 0; j < instance.m; j++)
+            {
+                p[j] = tmp_packing_plan[j];
+            }
+        }
+    // }
 
     free(distance_accumulated);
     free(item_vector);

@@ -2668,7 +2668,6 @@ cmaes_readpara_ReadFromFile(cmaes_readpara_t *t, const char * filename)
     printf("using default init file\n");
     filename = ss;
   }
-    FATAL("using default init file\n",0,0,0); 
   t->filename = NULL; /* nothing read so far */
   fp = fopen( filename, "r"); 
   if (fp == NULL) {

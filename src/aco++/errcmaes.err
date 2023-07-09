@@ -1,0 +1,38 @@
+
+ -- Mon Jul 10 00:13:14 2023
+ using default init file
+
+
+ -- Mon Jul 10 00:13:14 2023
+ *** Exiting cmaes_t ***
+
+ -- Mon Jul 10 00:13:24 2023
+ using default init file
+
+
+ -- Mon Jul 10 00:13:24 2023
+ *** Exiting cmaes_t ***
+
+ -- Mon Jul 10 00:14:02 2023
+ using default init file
+
+
+ -- Mon Jul 10 00:14:02 2023
+ *** Exiting cmaes_t ***
+
+ -- Mon Jul 10 00:22:59 2023
+ using default init file
+
+
+ -- Mon Jul 10 00:22:59 2023
+ *** Exiting cmaes_t ***
+
+ -- Mon Jul 10 00:25:04 2023
+ cmaes_ReadFromFile(): could not open ' cmaes_params.par '
+
+ -- Mon Jul 10 00:25:04 2023
+ cmaes_readpara_t(): problem dimension N undefined.
+   (no default value available).
+
+ -- Mon Jul 10 00:25:04 2023
+ *** Exiting cmaes_t ***

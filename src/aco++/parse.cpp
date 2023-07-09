@@ -9,6 +9,7 @@
 #include "utilities.h"
 #include "ants.h"
 #include "ls.h"
+#include "es_aco.h"
 
 #ifndef STR_ERR_UNKNOWN_LONG_OPT
 #define STR_ERR_UNKNOWN_LONG_OPT "%s: unrecognized option `--%s'\n"
@@ -116,7 +117,10 @@
     "  -h, --help            display this help text and exit\n"
 
 #define STR_HELP_LOGITER \
-    "  --logiter            log each iteration\n"
+    "  --logiter             log each iteration\n"
+
+#define STR_HELP_CMAES \
+    "  --cmaes               apply cmaes\n"
 
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
@@ -147,6 +151,7 @@ static const char *const STR_HELP[] = {
     STR_HELP_LOG,
     STR_HELP_HELP,
     STR_HELP_LOGITER,
+    STR_HELP_CMAES,
     NULL};
 
 struct options
@@ -239,6 +244,9 @@ struct options
     /* Set to 1 if option --calibration mode has been specified.  */
     unsigned int opt_calibration : 1;
 
+    /* Set to 1 if option --cmaes mode has been specified.  */
+    unsigned int opt_cmaes : 1;
+
     /* Argument to option --inputfile (-i).  */
     const char *arg_inputfile;
 
@@ -295,6 +303,9 @@ struct options
 
     /* Argument to option --dlb (-d).  */
     const char *arg_dlb;
+
+    /* Argument to option --cmaes (-c).  */
+    const char *arg_cmaes;
 };
 
 /* Parse command line options.  Return index of first non-option argument,
@@ -332,6 +343,7 @@ parse_options(struct options *const options, const char *const program_name,
     static const char *const optstr__logiter = "logiter";
     static const char *const optstr__help = "help";
     static const char *const optstr__calibration = "calibration";
+    static const char *const optstr__cmaes = "cmaes";
     int i = 0;
     options->opt_inputfile = 0;
     options->opt_outputfile = 0;
@@ -362,6 +374,7 @@ parse_options(struct options *const options, const char *const program_name,
     options->opt_logiter = 0;
     options->opt_help = 0;
     options->opt_calibration = 0;
+    options->opt_cmaes = 0;
     options->arg_inputfile = 0;
     options->arg_outputfile = 0;
     options->arg_tries = 0;
@@ -381,6 +394,7 @@ parse_options(struct options *const options, const char *const program_name,
     options->arg_nnls = 0;
     options->arg_localsearch = 0;
     options->arg_dlb = 0;
+    options->arg_cmaes = 0;
     while (++i < argc)
     {
         const char *option = argv[i];
@@ -500,6 +514,16 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_unexpec_arg_long;
                     }
                     options->opt_calibration = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__cmaes + 1, option_len - 1) == 0)
+                {
+                    if (argument != 0)
+                    {
+                        option = optstr__cmaes;
+                        goto error_unexpec_arg_long;
+                    }
+                    options->opt_cmaes = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -1125,6 +1149,8 @@ int parse_commandline(int argc, char *argv[])
     /*puts ("\t OPTIONS:");*/
 
     calibration_mode = options.opt_calibration;
+
+    cmaes_flag = options.opt_cmaes;
 
     log_flag = !options.opt_log;
     logiter_flag = !options.opt_logiter;

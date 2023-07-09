@@ -7,28 +7,25 @@
 #include "cmaes_interface.h"
 #include "boundary_transformation.h"
 
-#define ALPHA_IDX 1
-#define BETA_IDX  2
-#define PAR_A_IDX 3
-#define PAR_B_IDX 4
-#define PAR_C_IDX 5
+class boundary_cmaes {
+private:
+    cmaes_t evo; 
+    cmaes_boundary_transformation_t boundaries;
+    std::function<double(int , double const * , unsigned long)> eval_function;
 
-class bounded_cmaes {
-    public:
-        cmaes_t evo; 
-        cmaes_boundary_transformation_t boundaries;
-        std::function<double<double const *x, unsigned long N> eval_function;
+    int is_feasible(double const *x, unsigned long N) {
+        N = (long) x[0]; 
+        return 1;
+    }
 
-        unsigned long dimension;
-        double *arFunvals, *x_in_bounds, *const*pop;
+public:
+    unsigned long dimension;
+    double *arFunvals, *x_in_bounds, *const*pop;
 
-        //                      alpha   beta par_a par_b par_c
-        double lowerBounds[] = { 0.0f,  0.0f, 0.0f, 0.0f, 0.0f}; 
-        double upperBounds[] = {10.0f, 10.0f, 1.0f, 1.0f, 1.0f};
+    boundary_cmaes(){}
 
-    bounded_cmaes(){}
-
-    void init(std::function<double<double const *x, unsigned long N> eval_function){
+    void init(std::function<double(int , double const * , unsigned long)> eval_function, 
+                const double *lowerBounds, const double *upperBounds){
         this->eval_function = eval_function;
 
         arFunvals = cmaes_init(&evo, 0, NULL, NULL, 0, 0, "cmaes_params.par");
@@ -44,6 +41,7 @@ class bounded_cmaes {
     }
 
     void run_a_generation(){
+        int i;
         pop = cmaes_SamplePopulation(&evo);
 
         for (i = 0; i < cmaes_Get(&evo, "lambda"); ++i)
@@ -55,7 +53,7 @@ class bounded_cmaes {
                 cmaes_ReSampleSingle(&evo, i);
                 cmaes_boundary_transformation(&boundaries, pop[i], x_in_bounds, dimension);
             }
-            arFunvals[i] = eval_function(x_in_bounds, dimension);
+            arFunvals[i] = eval_function(i, x_in_bounds, dimension);
         }
 
         cmaes_UpdateDistribution(&evo, arFunvals);
@@ -65,6 +63,7 @@ class bounded_cmaes {
     }
 
     void end(){
+        int i;
         printf("Stop:\n%s\n", cmaes_TestForTermination(&evo));
         cmaes_WriteToFile(&evo, "all", "cmaes_data/allcmaes.dat");
 
@@ -82,10 +81,10 @@ class bounded_cmaes {
         return cmaes_Get(&evo, keyword);
     }
 
-    ~bounded_cmaes()
+    void boundary_cmaes_exit()
     {
         cmaes_exit(&evo);
         cmaes_boundary_transformation_exit(&boundaries);
         free(x_in_bounds);
     }
-}
+};

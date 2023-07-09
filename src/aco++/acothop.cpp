@@ -65,6 +65,8 @@
 #include "timer.h"
 #include "ls.h"
 
+#include "es_aco.h"
+
 long int termination_condition(void)
 /*
       FUNCTION:       checks whether termination condition is met
@@ -531,22 +533,28 @@ int main(int argc, char *argv[])
     for (n_try = 0; n_try < max_tries; n_try++)
     {
         init_try(n_try);
+
+        if (cmaes_flag) es_aco_init();
         // printf("%dth try \n", n_try + 1);
         while (!termination_condition())
         {
-            construct_solutions();
-            if (ls_flag > 0)
-            {
-                for (k = 0; k < ant.size(); k++)
+            if (cmaes_flag){
+                es_aco_construct_solutions();
+            }else{
+                construct_solutions();
+                if (ls_flag > 0)
                 {
-                    copy_from_to(&ant[k], &prev_ls_ant[k]);
-                }
-                local_search();
-                for (k = 0; k < ant.size(); k++)
-                {
-                    if (ant[k].fitness > prev_ls_ant[k].fitness)
+                    for (k = 0; k < ant.size(); k++)
                     {
-                        copy_from_to(&prev_ls_ant[k], &ant[k]);
+                        copy_from_to(&ant[k], &prev_ls_ant[k]);
+                    }
+                    local_search();
+                    for (k = 0; k < ant.size(); k++)
+                    {
+                        if (ant[k].fitness > prev_ls_ant[k].fitness)
+                        {
+                            copy_from_to(&prev_ls_ant[k], &ant[k]);
+                        }
                     }
                 }
             }
@@ -556,8 +564,10 @@ int main(int argc, char *argv[])
             iteration++;
         }
         exit_try(n_try);
+        if (cmaes_flag) es_aco_export_result();
     }
     exit_program();
+    if (cmaes_flag) es_aco_exit();
 
     free(instance.distance);
     free(instance.nn_list);

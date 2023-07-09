@@ -61,6 +61,8 @@
 #define LINE_BUF_LEN 255
 #endif
 
+extern double par_a, par_b, par_c;
+
 struct point
 {
     double x;
@@ -110,5 +112,7 @@ long int **compute_distances(void);
 long int **compute_nn_lists(void);
 
 long int compute_fitness(long int *t, char *visited, long int t_size, char *p);
+
+long int compute_fitness_es(long int *t, char *visited, long int t_size, char *p);
 
 #endif
