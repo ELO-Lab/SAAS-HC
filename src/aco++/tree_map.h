@@ -46,15 +46,12 @@ protected:
     void _reset_wont_visit();
 };
 
-// hyperparameters
-extern bool tree_map_flag;
-
-extern Tree_Map *tree_map;
-extern double neighbour_prob;
-
 void tree_map_init();
 void tree_map_force_set_parameters();
 void tree_map_deallocate();
 void tree_map_construct_solutions();
+
+extern Tree_Map *tree_map;
+extern double neighbour_prob;
 
 #endif

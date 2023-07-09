@@ -4,7 +4,6 @@
 #include <libcmaes/eo_matrix.h>
 
 // Hyperparameters
-extern bool es_ant_flag;
 extern double par_a_mean, par_b_mean, par_c_mean,
     par_a_stepsize, par_b_stepsize, par_c_stepsize,
     alpha_mean, beta_mean, rho_mean,
@@ -18,7 +17,6 @@ extern double par_a, par_b, par_c;
 void es_ant_force_set_parameters(void);
 void es_ant_init(void);
 void es_ant_construct_and_local_search(void);
-double edge_weight(size_t, size_t);
 void repair_candidates(dMat &);
 void es_ant_deallocate();
 

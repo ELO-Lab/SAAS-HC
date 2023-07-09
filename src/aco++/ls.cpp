@@ -60,12 +60,16 @@
 #include "thop.h"
 #include "ants.h"
 #include "utilities.h"
+#include "algo_config.h"
 
 long int ls_flag;         /* indicates whether and which local search is used */
 long int nn_ls;           /* maximal depth of nearest neighbour lists used in the
                              local search */
 long int dlb_flag = TRUE; /* flag indicating whether don't look bits are used. I recommend
                              to always use it if local search is applied */
+
+// ls_n_square_flag
+long int **new_compute_local_nn_lists(long int *tour, const long int &n);
 
 void rotate_tour(long int *tour, long int n)
 {
@@ -246,7 +250,11 @@ void two_opt_first(long int *tour, long int t_size)
 
     long int **distance = compute_local_distances(tour, n);
 
-    long int **nn_list = compute_local_nn_lists(distance, n);
+    long int **nn_list;
+    if (ls_n_square_flag)
+        nn_list = new_compute_local_nn_lists(tour, t_size);
+    else
+        nn_list = compute_local_nn_lists(distance, n);
 
     long int *original_tour = (long int *)malloc(n * sizeof(long int));
 
@@ -464,7 +472,11 @@ void two_h_opt_first(long int *tour, long int t_size)
 
     long int **distance = compute_local_distances(tour, n);
 
-    long int **nn_list = compute_local_nn_lists(distance, n);
+    long int **nn_list;
+    if (ls_n_square_flag)
+        nn_list = new_compute_local_nn_lists(tour, t_size);
+    else
+        nn_list = compute_local_nn_lists(distance, n);
 
     long int *original_tour = (long int *)malloc(n * sizeof(long int));
 
@@ -792,7 +804,11 @@ void three_opt_first(long int *tour, long int t_size)
 
     long int **distance = compute_local_distances(tour, n);
 
-    long int **nn_list = compute_local_nn_lists(distance, n);
+    long int **nn_list;
+    if (ls_n_square_flag)
+        nn_list = new_compute_local_nn_lists(tour, t_size);
+    else
+        nn_list = compute_local_nn_lists(distance, n);
 
     long int *original_tour = (long int *)malloc(n * sizeof(long int));
 
@@ -1976,4 +1992,63 @@ void three_opt_first(long int *tour, long int t_size)
     free(distance);
     free(nn_list);
     free(original_tour);
+}
+
+long int **new_compute_local_nn_lists(long int *tour, const long int &n)
+{
+
+    std::size_t i, node, nn, city_i, j;
+    long int **m_nnear;
+    std::vector<bool> visited(instance.n);
+
+    for (i = 0; i < instance.n; i++)
+        visited[i] = false;
+    for (i = 0; i < n; i++)
+        visited[tour[i]] = true;
+
+    TRACE(printf("\n computing nearest neighbor lists, ");)
+
+    nn = MAX(nn_ls, nn_ants);
+    if (nn >= n)
+        nn = n - 1;
+    DEBUG(assert(n - 3 > nn);)
+    // nn = MAX(nn, n - 3); // remove start city, remove virtual city, remove standing still
+
+    TRACE(printf("nn = %ld ... \n", nn);)
+
+    if ((m_nnear = (long int **)malloc(sizeof(long int) * n * nn + n * sizeof(long int *))) == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    for (node = 0; node < n; node++)
+    {
+        m_nnear[node] = (long int *)(m_nnear + n) + node * nn;
+        city_i = tour[node];
+        if (city_i == instance.n - 1)
+        {
+            for (i = 0; i < nn; i++)
+                m_nnear[node][i] = 0;
+        }
+        else if (city_i == instance.n - 2)
+        {
+            for (i = 0; i < nn; i++)
+                m_nnear[node][i] = instance.n - 1;
+        }
+        else
+        {
+            j = 0;
+            for (i = 0; i < nn; i++)
+            {
+                while (!visited[instance.nn_list[city_i][j]])
+                    j++;
+
+                m_nnear[node][i] = instance.nn_list[city_i][j];
+                j++;
+            }
+        }
+    }
+    TRACE(printf("\n    .. done\n");)
+
+    return m_nnear;
 }

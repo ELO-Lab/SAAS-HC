@@ -61,8 +61,8 @@
 #include "ants.h"
 #include "ls.h"
 #include "utilities.h"
-
 #include "es_ant.h"
+#include "algo_config.h"
 
 struct problem instance;
 
@@ -327,7 +327,7 @@ long int **compute_nn_lists(void)
     long int *distance_vector;
     long int *help_vector;
     long int **m_nnear;
-    const std::size_t nn = instance.n - 3;
+    const std::size_t nn = instance.n - 3; // remove virtual city, start city, standing still
 
     TRACE(printf("\n computing nearest neighbor lists, ");)
 

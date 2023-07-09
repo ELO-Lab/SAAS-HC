@@ -72,6 +72,7 @@
 #include "acothop.h"
 #include "custom_strategy.h"
 #include "tree_map.h"
+#include "algo_config.h"
 
 long int termination_condition(void)
 /*
@@ -465,7 +466,9 @@ void pheromone_trail_update(void)
         tree_map->evaporate(trail_min);
     else if (!acs_flag)
     {
-        if (node_clustering_flag)
+        if (o1_evap_flag)
+            o1_evaporate();
+        else if (node_clustering_flag)
             evaporation_nc_list();
         else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
         {
@@ -489,7 +492,7 @@ void pheromone_trail_update(void)
     }
 
     /* Next, apply the pheromone deposit for the various ACO algorithms */
-    if (tree_map_flag)
+    if (tree_map_flag || o1_evap_flag)
         mmas_update();
     else if (as_flag)
         as_update();
@@ -548,20 +551,6 @@ int main(int argc, char *argv[])
     start_timers();
 
     init_program(argc, argv);
-
-    instance.nn_list = compute_nn_lists();
-    if (!tree_map_flag)
-    {
-        pheromone = generate_double_matrix(instance.n, instance.n);
-    }
-
-    if (!es_ant_flag and !tree_map_flag)
-    {
-        total = generate_double_matrix(instance.n, instance.n);
-    }
-
-    if (node_clustering_flag == TRUE)
-        create_cluster();
 
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/

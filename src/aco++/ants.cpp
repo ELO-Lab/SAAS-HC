@@ -73,6 +73,7 @@
 
 #include "es_ant.h"
 #include "tree_map.h"
+#include "algo_config.h"
 
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
@@ -110,6 +111,15 @@ long int u_gb;    /* every u_gb iterations update with best-so-far ant */
 
 double trail_0; /* initial pheromone level in ACS and BWAS */
 
+// o1_evap_flag
+std::size_t global_evap_times;                             // evaporation times since last restart
+std::size_t global_restart_times;                          // times restarting pheromone trial so far
+std::vector<std::vector<std::size_t>> local_evap_times;    // evaporation times of edges since last restart
+std::vector<std::vector<std::size_t>> local_restart_times; // times restarting pheromone of edges since last restart
+double past_trail_restart;                                 // pheromone trail during th last restart
+double past_trail_min;                                     // minimum pheromone trail in MMAS during the last evaporation
+void pay_evaporation_debt(const std::size_t &i, const std::size_t &j);
+
 /************************************************************
  ************************************************************
 Procedures for pheromone manipulation
@@ -128,6 +138,13 @@ void init_pheromone_trails(double initial_trail)
     if (tree_map_flag)
     {
         tree_map->restart_pheromone(initial_trail);
+        return;
+    }
+    if (o1_evap_flag)
+    {
+        past_trail_restart = initial_trail;
+        global_restart_times += 1;
+        global_evap_times = 0;
         return;
     }
 
@@ -225,6 +242,19 @@ void global_update_pheromone(ant_struct *a)
         return;
     }
 
+    if (o1_evap_flag)
+    {
+
+        std::size_t i, j, h;
+
+        for (i = 0; i <= a->tour_size - 3; i++)
+        {
+            j = a->tour[i];
+            h = a->tour[i + 1];
+            pay_evaporation_debt(i, h);
+        }
+    }
+
     long int i, j, h;
     double d_tau;
 
@@ -250,6 +280,7 @@ void global_update_pheromone_weighted(ant_struct *a, long int weight)
  */
 {
     assert(!tree_map_flag);
+    assert(!o1_evap_flag);
 
     long int i, j, h;
     double d_tau;
@@ -273,7 +304,7 @@ void compute_total_information(void)
       OUTPUT:   none
  */
 {
-    if (es_ant_flag or tree_map_flag)
+    if (es_ant_flag || tree_map_flag || o1_evap_flag)
         return;
 
     long int i, j;
@@ -297,7 +328,7 @@ void compute_nn_list_total_information(void)
       OUTPUT:   none
  */
 {
-    if (es_ant_flag or tree_map_flag)
+    if (es_ant_flag || tree_map_flag || o1_evap_flag)
         return;
 
     long int i, j, h;
@@ -1228,4 +1259,38 @@ void bwas_pheromone_mutation(void)
 double compute_heuristic(const double &distance)
 {
     return 1.0 / (distance + 0.1);
+}
+
+void pay_evaporation_debt(const std::size_t &i, const std::size_t &j)
+{
+    if (local_restart_times[i][j] < global_restart_times)
+    {
+        pheromone[i][j] = past_trail_restart;
+        local_restart_times[i][j] = global_restart_times;
+        local_evap_times[i][j] = 0;
+    }
+    else if (local_evap_times[i][j] < global_evap_times)
+    {
+        pheromone[i][j] *= pow(1 - rho, global_evap_times - local_evap_times[i][j]);
+        if (local_evap_times[i][j] < past_trail_min)
+            local_evap_times[i][j] = past_trail_min;
+        local_evap_times[i][j] = global_evap_times;
+    }
+}
+
+void o1_evaporate()
+{
+    global_evap_times += 1;
+    past_trail_min = trail_min;
+}
+
+double edge_weight(const std::size_t &i, const std::size_t &j)
+{
+    assert(!tree_map_flag);
+    if (!es_ant_flag && !o1_evap_flag)
+        return total[i][j];
+
+    if (o1_evap_flag)
+        pay_evaporation_debt(i, j);
+    return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
 }

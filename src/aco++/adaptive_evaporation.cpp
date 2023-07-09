@@ -6,7 +6,6 @@
 #include "ants.h"
 
 // Hyperparameters
-bool adaptive_evaporation_flag;
 float min_rho = 0.01;
 float max_rho = 0.5;
 

@@ -11,12 +11,11 @@
 #include "thop.h"
 #include "ls.h"
 
-#include "adaptive_evaporation.h"
-#include "node_clustering.h"
 #include "es_ant.h"
 #include "acothop.h"
 #include "custom_strategy.h"
 #include "tree_map.h"
+#include "algo_config.h"
 
 #define NEIGHBOUR_PROB_IDX 0
 #define PAR_A_IDX 1
@@ -30,8 +29,6 @@
 #define ES_ANT_DIM 9
 
 // hyperparameters
-bool es_ant_flag = true;
-// bool es_ant_flag = false;
 double par_a_mean, par_b_mean, par_c_mean,
 	par_a_stepsize, par_b_stepsize, par_c_stepsize,
 	alpha_mean, beta_mean, rho_mean,
@@ -299,15 +296,6 @@ void es_ant_construct_and_local_search(void)
 	// temp
 	// std::cout << n_ants << std::endl;
 	////
-}
-
-double edge_weight(size_t i, size_t j)
-{
-	assert(!tree_map_flag);
-	if (!es_ant_flag)
-		return total[i][j];
-
-	return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
 }
 
 void es_ant_force_set_parameters(void)

@@ -1,4 +1,3 @@
-extern int node_clustering_flag;
 extern int n_cluster;
 extern int cluster_size;
 extern int n_sector;

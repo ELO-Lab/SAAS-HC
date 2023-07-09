@@ -6,6 +6,9 @@
 #include "inout.h"
 #include "tree_map.h"
 
+Tree_Map *tree_map;
+double neighbour_prob;
+
 Tree_Map::Tree_Map(const std::size_t &num_city, const struct problem &instance)
 {
     size_t i;
@@ -189,13 +192,6 @@ double Tree_Map::node_branching(const double &lambda)
 
     return (sum_num_branches / (double)(num_city * 2));
 }
-
-// hyperparameters
-bool tree_map_flag = true;
-// bool tree_map_flag = false;
-
-Tree_Map *tree_map;
-double neighbour_prob;
 
 void tree_map_init()
 {

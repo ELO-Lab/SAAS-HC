@@ -206,4 +206,14 @@ void bwas_pheromone_mutation(void);
 
 double compute_heuristic(const double &distance);
 
+// o1_evap_flag
+extern std::size_t global_evap_times;                             // evaporation times since last restart
+extern std::size_t global_restart_times;                          // times restarting pheromone trial so far
+extern std::vector<std::vector<std::size_t>> local_evap_times;    // evaporation times of edges since last restart
+extern std::vector<std::vector<std::size_t>> local_restart_times; // times restarting pheromone of edges since last restart
+void o1_evaporate();
+
+// es_ant_flag || o1_evap_flag
+double edge_weight(const std::size_t &i, const std::size_t &j);
+
 #endif

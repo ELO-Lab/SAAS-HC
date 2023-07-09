@@ -69,6 +69,7 @@
 #include "adaptive_evaporation.h"
 #include "es_ant.h"
 #include "tree_map.h"
+#include "algo_config.h"
 
 long int *best_in_try;
 long int *best_found_at;
@@ -195,6 +196,31 @@ void init_program(long int argc, char *argv[])
         es_ant_init();
     if (tree_map_flag)
         tree_map_init();
+
+    instance.nn_list = compute_nn_lists();
+    if (!tree_map_flag)
+    {
+        pheromone = generate_double_matrix(instance.n, instance.n);
+    }
+
+    if (!es_ant_flag && !tree_map_flag && !o1_evap_flag)
+    {
+        total = generate_double_matrix(instance.n, instance.n);
+    }
+
+    if (node_clustering_flag == TRUE)
+        create_cluster();
+
+    if (o1_evap_flag)
+    {
+        local_evap_times.resize(instance.n - 1);
+        for (auto &vec : local_evap_times)
+            vec.resize(instance.n - 1);
+
+        local_restart_times.resize(instance.n - 1);
+        for (auto &vec : local_restart_times)
+            vec.resize(instance.n - 1);
+    }
 }
 
 void exit_program(void)
@@ -241,6 +267,16 @@ void init_try(long int ntry)
     start_timers();
     time_used = elapsed_time(VIRTUAL);
     time_passed = time_used;
+
+    if (o1_evap_flag)
+    {
+        for (auto &vec : local_evap_times)
+            for (auto &value : vec)
+                value = 0;
+        for (auto &vec : local_restart_times)
+            for (auto &value : vec)
+                value = 0;
+    }
 
     /* Initialize variables concerning statistics etc. */
 

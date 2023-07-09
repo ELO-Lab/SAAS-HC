@@ -13,6 +13,7 @@
 #include "adaptive_evaporation.h"
 #include "es_ant.h"
 #include "tree_map.h"
+#include "algo_config.h"
 
 #ifndef STR_ERR_UNKNOWN_LONG_OPT
 #define STR_ERR_UNKNOWN_LONG_OPT "%s: unrecognized option `--%s'\n"

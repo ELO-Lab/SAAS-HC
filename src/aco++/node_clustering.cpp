@@ -5,7 +5,6 @@
 #include <limits.h>
 #include <time.h>
 #include <float.h>
-
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -16,7 +15,6 @@
 #include "ls.h"
 #include "utilities.h"
 #include "timer.h"
-
 #include "es_ant.h"
 
 std::vector<std::vector<std::vector<int>>> cluster_chunk;
@@ -26,7 +24,6 @@ std::vector<int> cluster;
 std::vector<std::vector<double>> total_cluster;
 std::vector<double> t_cluster;
 
-int node_clustering_flag;
 int n_cluster;
 int cluster_size;
 int n_sector;
