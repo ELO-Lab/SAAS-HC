@@ -50,6 +50,9 @@
 
  ***************************************************************************/
 
+#include <vector>
+#include <cstddef>
+
 #define HEURISTIC(m, n) (1.0 / ((double)instance.distance[m][n] + 0.1))
 /* add a small constant to avoid division by zero if a distance is
 zero */
@@ -72,8 +75,25 @@ typedef struct
     long int tour_size;
 } ant_struct;
 
-extern ant_struct *ant; /* this (array of) struct will hold the colony */
-extern ant_struct *prev_ls_ant;
+class Ant_Swarm
+{
+public:
+    Ant_Swarm();
+    ~Ant_Swarm();
+    size_t size();
+    void resize(const size_t &);
+    ant_struct &operator[](size_t pos);
+
+private:
+    std::vector<ant_struct> _ant_vec;
+    size_t _size = 0;
+
+    void allocate_ant(ant_struct &);
+    void free_ant(ant_struct &);
+};
+
+extern Ant_Swarm ant; /* this class will hold the colony */
+extern Ant_Swarm prev_ls_ant;
 extern ant_struct *best_so_far_ant;  /* struct that contains the best-so-far ant */
 extern ant_struct *restart_best_ant; /* struct that contains the restart-best ant */
 extern ant_struct *global_best_ant;  /* struct that contains the global-best ant */
@@ -116,6 +136,8 @@ void evaporation(void);
 
 void evaporation_nn_list(void);
 
+void evaporation_nc_list(void);
+
 void global_update_pheromone(ant_struct *a);
 
 void global_update_pheromone_weighted(ant_struct *a, long int weight);
@@ -123,6 +145,12 @@ void global_update_pheromone_weighted(ant_struct *a, long int weight);
 void compute_total_information(void);
 
 void compute_nn_list_total_information(void);
+
+void compute_nc_list_total_information(void);
+
+void update_cluter_total(void);
+
+void create_cluster(void);
 
 /* Ants' solution construction */
 
