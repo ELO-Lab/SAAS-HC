@@ -539,6 +539,7 @@ int main(int argc, char *argv[])
         while (!termination_condition())
         {
             if (cmaes_flag){
+                if (es_aco_termination_condition()) es_aco_init();
                 es_aco_construct_solutions();
             }else{
                 construct_solutions();
@@ -564,7 +565,7 @@ int main(int argc, char *argv[])
             iteration++;
         }
         exit_try(n_try);
-        if (cmaes_flag) es_aco_export_result();
+        // if (cmaes_flag) es_aco_export_result();
     }
     exit_program();
     if (cmaes_flag) es_aco_exit();

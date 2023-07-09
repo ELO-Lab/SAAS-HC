@@ -238,6 +238,7 @@ void compute_total_information(void)
       OUTPUT:   none
  */
 {
+    return;
     long int i, j;
 
     TRACE(printf("compute total information\n"););
@@ -259,6 +260,7 @@ void compute_nn_list_total_information(void)
       OUTPUT:   none
  */
 {
+    return;
     long int i, j, h;
 
     TRACE(printf("compute total information nn_list\n"););
@@ -318,6 +320,10 @@ void place_ant(ant_struct *a, long int step)
     a->visited[rnd] = TRUE;
 }
 
+double calculate_total_information(int i, int j){
+    return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+}
+
 void choose_best_next(ant_struct *a, long int phase)
 /*
       FUNCTION:      chooses for an ant as the next city the one with
@@ -340,10 +346,10 @@ void choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            if (total[current_city][city] > value_best)
+            if (calculate_total_information(current_city,city) > value_best)
             {
                 next_city = city;
-                value_best = total[current_city][city];
+                value_best = calculate_total_information(current_city,city);
             }
         }
     }
@@ -378,7 +384,7 @@ void neighbour_choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            help = total[current_city][help_city];
+            help = calculate_total_information(current_city,help_city);
             if (help > value_best)
             {
                 value_best = help;
@@ -470,7 +476,7 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
         else
         {
             DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
-            prob_ptr[i] = total[current_city][instance.nn_list[current_city][i]];
+            prob_ptr[i] = calculate_total_information(current_city,instance.nn_list[current_city][i]);
             sum_prob += prob_ptr[i];
         }
     }

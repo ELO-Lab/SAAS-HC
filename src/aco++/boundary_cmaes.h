@@ -6,6 +6,7 @@
 
 #include "cmaes_interface.h"
 #include "boundary_transformation.h"
+#include "utilities.h"
 
 class boundary_cmaes {
 private:
@@ -28,7 +29,7 @@ public:
                 const double *lowerBounds, const double *upperBounds){
         this->eval_function = eval_function;
 
-        arFunvals = cmaes_init(&evo, 0, NULL, NULL, 0, 0, "cmaes_params.par");
+        arFunvals = cmaes_init(&evo, 0, NULL, NULL, seed, 0, "cmaes_initials.par");
         dimension = (unsigned long)cmaes_Get(&evo, "dimension");
         
         const int nb_bounds = dimension;
@@ -86,5 +87,10 @@ public:
         cmaes_exit(&evo);
         cmaes_boundary_transformation_exit(&boundaries);
         free(x_in_bounds);
+    }
+
+    bool termination_condition(){
+        if (cmaes_TestForTermination(&evo)) return true;
+        return false;
     }
 };

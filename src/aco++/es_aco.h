@@ -1,6 +1,9 @@
 #ifndef ES_ACO_H /* only include ones */ 
 #define ES_ACO_H 
 
+#include <iostream>
+#include <cstdio>
+
 #include "boundary_cmaes.h"
 #include "ants.h"
 #include "utilities.h"
@@ -9,11 +12,11 @@
 #include "timer.h"
 #include "ls.h"
 
-#define ALPHA_IDX 1
-#define BETA_IDX  2
-#define PAR_A_IDX 3
-#define PAR_B_IDX 4
-#define PAR_C_IDX 5
+#define ALPHA_IDX 0
+#define BETA_IDX  1
+#define PAR_A_IDX 2
+#define PAR_B_IDX 3
+#define PAR_C_IDX 4
 
 extern double lowerBounds[];
 extern double upperBounds[];
@@ -36,5 +39,7 @@ void es_aco_construct_solutions();
 void es_aco_export_result();
 
 void es_aco_exit();
+
+bool es_aco_termination_condition();
 
 #endif

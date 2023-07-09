@@ -61,6 +61,7 @@ void cmaes_boundary_transformation_exit(cmaes_boundary_transformation_t *t)
 void cmaes_boundary_transformation(cmaes_boundary_transformation_t *t,
         double const *x, double *y, unsigned long len)
 {
+
     double lb, ub, al, au;
     unsigned long i;
     cmaes_boundary_transformation_shift_into_feasible_preimage(t, x, y, len);
@@ -74,12 +75,21 @@ void cmaes_boundary_transformation(cmaes_boundary_transformation_t *t,
         else if (y[i] > ub - au)
             y[i] = ub - (y[i] - (ub + au)) * (y[i] - (ub + au)) / 4. / au;
     }
+
+    
+    
+    // for (int i = 0; i < len; i++) printf("%f, ", x[i]);
+    // printf("\n");
+    
+    // for (int i = 0; i < len; i++) printf("%f, ", y[i]);
+    // printf("\n");
 }
 void cmaes_boundary_transformation_shift_into_feasible_preimage(
             cmaes_boundary_transformation_t *t, double const *x, double *y, unsigned long len)
 {
     double lb, ub, al, au, r, xlow, xup;
     unsigned long i;
+    
 
     for(i = 0; i < len; ++i) {
         lb = t->lower_bounds[_index(t, i)];
@@ -93,10 +103,10 @@ void cmaes_boundary_transformation_shift_into_feasible_preimage(
         y[i] = x[i];
 
         if (y[i] < xlow) { /* shift up */
-            y[i] += r * (1 + (int)((xlow - y[i]) / r));
+            y[i] += r * (1 + (long int)((xlow - y[i]) / r));
         }
         if (y[i] > xup) { /* shift down */
-            y[i] -= r * (1 + (int)((y[i] - xup) / r));
+            y[i] -= r * (1 + (long int)((y[i] - xup) / r));
             /* printf(" \n%f\n", fmod(y[i] - ub - au, r)); */
         }
         if (y[i] < lb - al) /* mirror */
@@ -105,8 +115,8 @@ void cmaes_boundary_transformation_shift_into_feasible_preimage(
             y[i] -= 2 * (y[i] - ub - au);
 
         if ((y[i] < lb - al - 1e-15) || (y[i] > ub + au + 1e-15)) {
-            printf("BUG in cmaes_boundary_transformation_shift_into_feasible_preimage: lb=%f, ub=%f, al=%f au=%f, y=%f\n",
-                    lb, ub, al, au, y[i]);
+            printf("BUG in cmaes_boundary_transformation_shift_into_feasible_preimage: lb=%f, ub=%f, al=%f au=%f, i=%d, x=%f, y=%f\n",
+                    lb, ub, al, au, i, x[i], y[i]);
             _FatalError("BUG");
         }
     }
