@@ -72,15 +72,15 @@
 #include "timer.h"
 
 int iLevyFlag = 0;				// 0 or 1, default 0;
-double dLevyThreshold=1;		//0--1
-double dLevyRatio=1;			//0.1--5
+double dLevyThreshold=1;		// 0--1
+double dLevyRatio=1;			// 0.1--5
 
-double dContribution=0;  		//0--10
+double dContribution=0;  		// 0--10
 
 int iGreedyLevyFlag = 0;		// 0 or 1
 double dGreedyEpsilon = 0.9;	// 0--1
-double dGreedyLevyThreshold = 1;//0--1
-double dGreedyLevyRatio = 1;	//0.1--5
+double dGreedyLevyThreshold = 1;// 0--1
+double dGreedyLevyRatio = 1;	// 0.1--5
 
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
@@ -545,7 +545,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
     of the nearest neighbor cities */
     double *prob_ptr;
 
-    long int ordered_city[nn_ants];
+    long int ordered_city[nn_ants+1];
 
     // Both q_0 and dGreedyEpsilon will run these codes.
     rnd = new_rand01();
@@ -561,6 +561,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
     }
 
     prob_ptr = prob_of_selection;
+    ordered_city[nn_ants] = nn_ants;
 
     current_city = a->tour[phase - 1]; /* current_city city of ant k */
     DEBUG(assert(current_city >= 0 && current_city < instance.n);)
@@ -662,7 +663,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
         {
             i++;
             if (iLevyFlag || iGreedyLevyFlag)
-            {
+            {                 
                 partial_sum += prob_ptr[ordered_city[i]];
             }
             else

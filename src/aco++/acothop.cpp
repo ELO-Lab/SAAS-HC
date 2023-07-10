@@ -538,14 +538,18 @@ int main(int argc, char *argv[])
     {
         init_try(n_try);
 
-        if (cmaes_flag) es_aco_init();
+        if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) es_aco_init();
         // printf("%dth try \n", n_try + 1);
         while (!termination_condition())
         {
             if (cmaes_flag){
-                if (es_aco_termination_condition()) es_aco_init();
                 es_aco_construct_solutions();
-            }else{
+            }else if(ipopcmaes_flag){
+                ipop_cmaes_aco_construct_solutions();
+            }else if(bipopcmaes_flag){
+                bipop_cmaes_aco_construct_solutions();
+            }
+            else{
                 construct_solutions();
                 if (ls_flag > 0)
                 {
@@ -563,16 +567,19 @@ int main(int argc, char *argv[])
                     }
                 }
             }
+
             update_statistics();
             pheromone_trail_update();
             search_control_and_statistics();
+
+
             iteration++;
         }
         exit_try(n_try);
         // if (cmaes_flag) es_aco_export_result();
     }
     exit_program();
-    if (cmaes_flag) es_aco_exit();
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) es_aco_exit();
 
     free(instance.distance);
     free(instance.nn_list);

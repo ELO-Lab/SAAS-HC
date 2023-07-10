@@ -81,6 +81,11 @@ public:
     double get(const char *keyword){
         return cmaes_Get(&evo, keyword);
     }
+    
+    double *getInto(const char *keyword, double *mem){
+        return cmaes_GetInto(&evo, keyword, mem);
+    }
+
 
     void boundary_cmaes_exit()
     {

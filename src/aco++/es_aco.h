@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <math.h>
 
 #include "boundary_cmaes.h"
 #include "ants.h"
@@ -12,16 +13,15 @@
 #include "timer.h"
 #include "ls.h"
 
-#define ALPHA_IDX 0
-#define BETA_IDX  1
-#define PAR_A_IDX 2
-#define PAR_B_IDX 3
-#define PAR_C_IDX 4
+extern unsigned long int initial_nb_dims;
+extern unsigned long int initial_lambda;
 
 extern double lowerBounds[];
 extern double upperBounds[];
 
 extern int cmaes_flag;
+extern int ipopcmaes_flag;
+extern int bipopcmaes_flag;
 
 extern boundary_cmaes optimizer;
 
@@ -36,10 +36,16 @@ void es_aco_init();
 
 void es_aco_construct_solutions();
 
+void ipop_cmaes_aco_construct_solutions();
+
+void bipop_cmaes_aco_construct_solutions();
+
 void es_aco_export_result();
 
 void es_aco_exit();
 
 bool es_aco_termination_condition();
+
+void es_aco_set_best_params();
 
 #endif

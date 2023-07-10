@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <assert.h>
 
+#include "utilities.h"
 #include "ants.h"
 #include "thop.h"
 
@@ -56,6 +57,7 @@ void Ant_Swarm::allocate_ant(ant_struct &ant_i)
     ant_i.tour = (long int *)calloc(instance.n + 1, sizeof(long int));
     ant_i.packing_plan = (char *)calloc(instance.m, sizeof(char));
     ant_i.visited = (char *)calloc(instance.n, sizeof(char));
+    ant_i.fitness = INFTY;
 }
 
 Ant_Swarm ant, prev_ls_ant;

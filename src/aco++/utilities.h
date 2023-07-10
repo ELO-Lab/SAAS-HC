@@ -53,6 +53,7 @@
 #define UTILITIES_H 
 
 #include <random>
+#include <climits>
 
 #define INFTY LONG_MAX
 #define MAXIMUM_NO_TRIES 100
@@ -65,7 +66,7 @@
 #define MAX(x, y) ((x) >= (y) ? (x) : (y))
 #define MIN(x, y) ((x) <= (y) ? (x) : (y))
 
-#define DEBUG(x) x
+#define DEBUG(x) 
 
 #define TRACE(x)
 
