@@ -65,7 +65,6 @@
 #include "thop.h"
 #include "timer.h"
 #include "ls.h"
-
 #include "node_clustering.h"
 #include "adaptive_evaporation.h"
 #include "es_ant.h"
@@ -625,8 +624,9 @@ int main(int argc, char *argv[])
 
     free(prob_of_selection);
 
-    // debug
-    printf("%ld", iteration);
-    ////
+    if (verbose > 0)
+    {
+        printf("iteration: %ld\n", iteration);
+    }
     return 0;
 }

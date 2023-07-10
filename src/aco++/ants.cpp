@@ -982,13 +982,11 @@ void mmas_evaporation_nn_list(void)
                      only considers links between a city and those cities of its candidate list
  */
 {
-    // temp
     if (tree_map_flag)
     {
         tree_map->evaporate(trail_min);
         return;
     }
-    ////
 
     long int i, j, help_city;
 

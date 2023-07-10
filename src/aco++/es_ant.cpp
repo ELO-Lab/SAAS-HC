@@ -1,9 +1,7 @@
 #include <cstddef>
 #include <assert.h>
 #include <limits.h>
-// temp
 #include <iostream>
-////
 
 #include "ants.h"
 #include "inout.h"
@@ -293,8 +291,13 @@ void es_ant_construct_and_local_search(void)
 	beta = best_iteration_beta;
 	rho = best_iteration_rho;
 	n_ants = capacity_need;
-	// temp
-	// std::cout << n_ants << std::endl;
+
+	if (verbose > 0)
+	{
+		printf("n_ants: %ld\n", n_ants);
+		printf("neighbour_prob: %.2f\n", neighbour_prob);
+		printf("\n");
+	}
 	////
 }
 
@@ -306,7 +309,6 @@ void es_ant_force_set_parameters(void)
 
 	max_packing_tries = 1;
 
-	// temp
 	adaptive_evaporation_flag = false;
 	min_n_ants = n_ants;
 	// min_n_ants = 0;
@@ -335,7 +337,6 @@ void es_ant_force_set_parameters(void)
 
 	neighbour_prob_mean = 0.5;
 	neighbour_prob_stepsize = 0.05;
-	////
 }
 
 void es_ant_init(void)

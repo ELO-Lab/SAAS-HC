@@ -1,5 +1,7 @@
 #include "algo_config.h"
 
+int_fast8_t verbose = 1;
+
 bool node_clustering_flag;
 bool adaptive_evaporation_flag;
 
