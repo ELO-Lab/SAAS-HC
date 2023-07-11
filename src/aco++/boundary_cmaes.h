@@ -94,8 +94,13 @@ public:
         free(x_in_bounds);
     }
 
-    bool termination_condition(){
-        if (cmaes_TestForTermination(&evo)) return true;
-        return false;
+    const char* termination_condition(){
+        return cmaes_TestForTermination(&evo);
+    }
+
+    double* boundary_transformation(double * x){
+        double* xinbounds = cmaes_NewDouble(cmaes_Get(&evo, "dim"));
+        cmaes_boundary_transformation(&boundaries, x, xinbounds, dimension);
+        return xinbounds;
     }
 };
