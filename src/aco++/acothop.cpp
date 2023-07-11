@@ -72,6 +72,7 @@
 #include "custom_strategy.h"
 #include "tree_map.h"
 #include "algo_config.h"
+#include "es_aco.h"
 
 long int termination_condition(void)
 /*
@@ -100,13 +101,13 @@ void construct_solutions(void)
     TRACE(printf("construct solutions for all ants\n"););
 
     /* Mark all cities as unvisited */
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant_empty_memory(&ant[k]);
     }
 
     /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant[k].tour_size = 1;
         ant[k].tour[0] = 0;
@@ -118,20 +119,27 @@ void construct_solutions(void)
     while (step < instance.n - 2)
     {
         step++;
-        for (k = 0; k < n_ants; k++)
+        for (k = 0; k < ant.size(); k++)
         {
             if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
             { /* previous city is the last one */
                 continue;
             }
-            neighbour_choose_and_move_to_next(&ant[k], step);
+            if (iLevyFlag || iGreedyLevyFlag)
+            {
+                neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
+            }
+            else
+            {
+                neighbour_choose_and_move_to_next(&ant[k], step);
+            }
             if (acs_flag)
                 local_acs_pheromone_update(&ant[k], step);
             ant[k].tour_size++;
         }
     }
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
@@ -141,7 +149,7 @@ void construct_solutions(void)
         if (acs_flag)
             local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
     }
-    n_tours += n_ants;
+    n_tours += ant.size();
 }
 
 void local_search(void)
@@ -163,7 +171,7 @@ void local_search(void)
 
     TRACE(printf("apply local search to all ants\n"););
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
     {
         switch (ls_flag)
         {
@@ -290,7 +298,7 @@ void as_update(void)
 
     TRACE(printf("Ant System pheromone deposit\n"););
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
         global_update_pheromone(&ant[k]);
 }
 
@@ -306,7 +314,7 @@ void eas_update(void)
 
     TRACE(printf("Elitist Ant System pheromone deposit\n"););
 
-    for (k = 0; k < n_ants; k++)
+    for (k = 0; k < ant.size(); k++)
         global_update_pheromone(&ant[k]);
     global_update_pheromone_weighted(best_so_far_ant, elitist_ants);
 }
@@ -328,15 +336,15 @@ void ras_update(void)
 
     TRACE(printf("Rank-based Ant System pheromone deposit\n"););
 
-    help_b = (long int *)malloc(n_ants * sizeof(long int));
-    for (k = 0; k < n_ants; k++)
+    help_b = (long int *)malloc(ant.size() * sizeof(long int));
+    for (k = 0; k < ant.size(); k++)
         help_b[k] = ant[k].fitness;
 
     for (i = 0; i < ras_ranks - 1; i++)
     {
         b = help_b[0];
         target = 0;
-        for (k = 0; k < n_ants; k++)
+        for (k = 0; k < ant.size(); k++)
         {
             if (help_b[k] < b)
             {
@@ -557,28 +565,35 @@ int main(int argc, char *argv[])
     for (n_try = 0; n_try < max_tries; n_try++)
     {
         init_try(n_try);
+
+        if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+            es_aco_init();
         // printf("%dth try \n", n_try + 1);
         while (!termination_condition())
         {
-            if (es_ant_flag)
-                es_ant_construct_and_local_search();
+            if (cmaes_flag)
+            {
+                es_aco_construct_solutions();
+            }
+            else if (ipopcmaes_flag)
+            {
+                ipop_cmaes_aco_construct_solutions();
+            }
+            else if (bipopcmaes_flag)
+            {
+                bipop_cmaes_aco_construct_solutions();
+            }
             else
             {
-                if (tree_map_flag)
-                    tree_map_construct_solutions();
-                else if (node_clustering_flag)
-                    construct_node_clustering_solution();
-                else
-                    construct_solutions();
-
+                construct_solutions();
                 if (ls_flag > 0)
                 {
-                    for (k = 0; k < n_ants; k++)
+                    for (k = 0; k < ant.size(); k++)
                     {
                         copy_from_to(&ant[k], &prev_ls_ant[k]);
                     }
                     local_search();
-                    for (k = 0; k < n_ants; k++)
+                    for (k = 0; k < ant.size(); k++)
                     {
                         if (ant[k].fitness > prev_ls_ant[k].fitness)
                         {
@@ -587,14 +602,19 @@ int main(int argc, char *argv[])
                     }
                 }
             }
+
             update_statistics();
             pheromone_trail_update();
             search_control_and_statistics();
+
             iteration++;
         }
         exit_try(n_try);
+        // if (cmaes_flag) es_aco_export_result();
     }
     exit_program();
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+        es_aco_exit();
 
     if (es_ant_flag)
         es_ant_deallocate();

@@ -49,6 +49,11 @@
           Belgium
 
  ***************************************************************************/
+#ifndef UTILITIES_H /* only include ones */
+#define UTILITIES_H
+
+#include <random>
+#include <climits>
 
 #include <random>
 
@@ -134,3 +139,5 @@ void mean_and_std(const std::vector<numericT> &vec, double &mean_value, double &
       }
       std_value = sqrt(std_value);
 }
+
+#endif

@@ -66,6 +66,8 @@
 
 struct problem instance;
 
+double par_a, par_b, par_c;
+
 static double dtrunc(double x)
 {
     int k;
@@ -381,6 +383,7 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
         exit(0);
     }
 
+    double par_sum;
     long int prev_city, curr_city;
     double _total_time;
     long int _total_weight, total_weight, total_profit;
@@ -423,7 +426,7 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
             par_b = new_rand01();
             par_c = new_rand01();
         }
-        const double par_sum = (par_a + par_b + par_c);
+        par_sum = (par_a + par_b + par_c);
         par_a /= par_sum;
         par_b /= par_sum;
         par_c /= par_sum;

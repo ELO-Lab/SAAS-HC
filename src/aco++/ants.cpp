@@ -74,6 +74,16 @@
 #include "es_ant.h"
 #include "tree_map.h"
 #include "algo_config.h"
+int iLevyFlag = 0;         // 0 or 1, default 0;
+double dLevyThreshold = 1; // 0--1
+double dLevyRatio = 1;     // 0.1--5
+
+double dContribution = 0; // 0--10
+
+int iGreedyLevyFlag = 0;         // 0 or 1
+double dGreedyEpsilon = 0.9;     // 0--1
+double dGreedyLevyThreshold = 1; // 0--1
+double dGreedyLevyRatio = 1;     // 0.1--5
 
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
@@ -304,7 +314,8 @@ void compute_total_information(void)
       OUTPUT:   none
  */
 {
-    if (es_ant_flag || tree_map_flag || o1_evap_flag)
+    if (es_ant_flag || tree_map_flag || o1_evap_flag ||
+        cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         return;
 
     long int i, j;
@@ -328,7 +339,8 @@ void compute_nn_list_total_information(void)
       OUTPUT:   none
  */
 {
-    if (es_ant_flag || tree_map_flag || o1_evap_flag)
+    if (es_ant_flag || tree_map_flag || o1_evap_flag ||
+        cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         return;
 
     long int i, j, h;
@@ -390,6 +402,11 @@ void place_ant(ant_struct *a, long int step)
     a->visited[rnd] = TRUE;
 }
 
+// double calculate_total_information(int i, int j)
+// {
+//     return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+// }
+
 void choose_best_next(ant_struct *a, long int phase)
 /*
       FUNCTION:      chooses for an ant as the next city the one with
@@ -412,10 +429,10 @@ void choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            if (edge_weight(current_city, city) > value_best)
+            if (calculate_total_information(current_city, city) > value_best)
             {
                 next_city = city;
-                value_best = edge_weight(current_city, city);
+                value_best = calculate_total_information(current_city, city);
             }
         }
     }
@@ -450,7 +467,7 @@ void neighbour_choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            help = edge_weight(current_city, help_city);
+            help = calculate_total_information(current_city, help_city);
             if (help > value_best)
             {
                 value_best = help;
@@ -542,7 +559,7 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
         else
         {
             DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
-            prob_ptr[i] = edge_weight(current_city, instance.nn_list[current_city][i]);
+            prob_ptr[i] = calculate_total_information(current_city, instance.nn_list[current_city][i]);
             sum_prob += prob_ptr[i];
         }
     }
@@ -583,6 +600,174 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
     }
 }
 
+void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, long int phase)
+/*
+      FUNCTION:      Choose for an ant probabilistically a next city among all
+                     unvisited cities in the current city's candidate list.
+             If this is not possible, choose the closest next
+      INPUT:         pointer to ant the construction step "phase"
+      OUTPUT:        none
+      (SIDE)EFFECT:  ant moves to the chosen city
+*/
+{
+    long int i, help;
+    long int current_city;
+    double rnd, partial_sum = 0., sum_prob = 0.0;
+    /*  double   *prob_of_selection; */ /* stores the selection probabilities
+    of the nearest neighbor cities */
+    double *prob_ptr;
+
+    long int ordered_city[nn_ants + 1];
+
+    // Both q_0 and dGreedyEpsilon will run these codes.
+    rnd = new_rand01();
+    if (((q_0 > 0.0) && (rnd < q_0)) || (iGreedyLevyFlag && (dGreedyEpsilon > 0.0) && (rnd < dGreedyEpsilon)))
+    {
+        /* with a probability q_0 make the best possible choice
+           according to pheromone trails and heuristic information */
+        /* we first check whether q_0 > 0.0, to avoid the very common case
+           of q_0 = 0.0 to have to compute a random number, which is
+           expensive computationally */
+        neighbour_choose_best_next(a, phase);
+        return;
+    }
+
+    prob_ptr = prob_of_selection;
+    ordered_city[nn_ants] = nn_ants;
+
+    current_city = a->tour[phase - 1]; /* current_city city of ant k */
+    DEBUG(assert(current_city >= 0 && current_city < instance.n);)
+    for (i = 0; i < nn_ants; i++)
+    {
+        if (a->visited[instance.nn_list[current_city][i]])
+            prob_ptr[i] = 0.0; /* city already visited */
+        else
+        {
+            DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
+            prob_ptr[i] = total[current_city][instance.nn_list[current_city][i]];
+            sum_prob += prob_ptr[i];
+        }
+        ordered_city[i] = i; // define original value;
+    }
+
+    /*
+    printf("Pheromone before sort!\n");
+    for( i=0; i<nn_ants; i++ )
+    {
+        printf("Pheromone [%ld] is [%ld] [%lf].\n", i, ordered_city[i], prob_ptr[ ordered_city[i] ] );
+    }
+    */
+
+    if (iLevyFlag || iGreedyLevyFlag)
+    {
+        // Sort City by total value.
+        int iStopFlag = 0;
+        while (!iStopFlag)
+        {
+            iStopFlag = 1;
+            for (i = 0; i < nn_ants - 1; i++)
+            {
+                if (prob_ptr[ordered_city[i]] < prob_ptr[ordered_city[i + 1]])
+                {
+                    long int j = ordered_city[i];
+                    ordered_city[i] = ordered_city[i + 1];
+                    ordered_city[i + 1] = j;
+                    iStopFlag = 0;
+                }
+            }
+        }
+        /*
+        printf("Pheromone after sort!\n");
+        for( i=0; i<nn_ants; i++ )
+        {
+            printf("Pheromone [%ld] is [%ld] [%lf].\n", i, ordered_city[i], prob_ptr[ ordered_city[i] ] );
+        }
+        */
+    }
+
+    if (sum_prob <= 0.0)
+    {
+        /* All cities from the candidate set are tabu */
+        choose_best_next(a, phase);
+    }
+    else
+    {
+        /* at least one neighbor is eligible, chose one according to the
+           selection probabilities */
+
+        // amplify the random number from dGreedyEpsilon--1 to 0--1 for next Levy flight process.
+        if (iGreedyLevyFlag && rnd >= dGreedyEpsilon)
+        {
+            rnd = (rnd - dGreedyEpsilon) / (1 - dGreedyEpsilon);
+        }
+        else
+        {
+            rnd = new_rand01();
+        }
+
+        if (iLevyFlag)
+        {
+            double rndLevy = new_rand01();
+            if (rndLevy > dLevyThreshold)
+            {
+                rnd = 1 - 1 / dLevyRatio * (1 - rnd) * (1 - rndLevy) / (1 - dLevyThreshold);
+            }
+        }
+
+        if (iGreedyLevyFlag)
+        {
+            double rndLevy = new_rand01();
+            if (rndLevy > dGreedyLevyThreshold)
+            {
+                rnd = 1 - 1 / dGreedyLevyRatio * (1 - rnd) * (1 - rndLevy) / (1 - dGreedyLevyThreshold);
+            }
+        }
+
+        rnd *= sum_prob;
+        i = 0;
+
+        if (iLevyFlag || iGreedyLevyFlag)
+            partial_sum = prob_ptr[ordered_city[i]];
+        else
+            partial_sum = prob_ptr[i];
+        /* This loop always stops because prob_ptr[nn_ants] == HUGE_VAL  */
+        while (partial_sum <= rnd)
+        {
+            i++;
+            if (iLevyFlag || iGreedyLevyFlag)
+            {
+                partial_sum += prob_ptr[ordered_city[i]];
+            }
+            else
+            {
+                partial_sum += prob_ptr[i];
+            }
+        }
+        /* This may very rarely happen because of rounding if rnd is
+           close to 1.  */
+        if (i == nn_ants)
+        {
+            neighbour_choose_best_next(a, phase);
+            return;
+        }
+        DEBUG(assert(0 <= i && i < nn_ants););
+        if (iLevyFlag || iGreedyLevyFlag)
+        {
+            DEBUG(assert(prob_ptr[ordered_city[i]] >= 0.0););
+            help = instance.nn_list[current_city][ordered_city[i]];
+        }
+        else
+        {
+            DEBUG(assert(prob_ptr[i] >= 0.0););
+            help = instance.nn_list[current_city][i];
+        }
+        DEBUG(assert(help >= 0 && help < instance.n);)
+        DEBUG(assert(a->visited[help] == FALSE);)
+        a->tour[phase] = help; /* instance.nn_list[current_city][i]; */
+        a->visited[help] = TRUE;
+    }
+}
+
 /**************************************************************************
  **************************************************************************
 Procedures specific to the ant's tour manipulation other than construction
@@ -602,7 +787,7 @@ long int find_best(void)
 
     min = ant[0].fitness;
     k_min = 0;
-    for (k = 1; k < n_ants; k++)
+    for (k = 1; k < ant.size(); k++)
     {
         if (ant[k].fitness < min)
         {
@@ -626,7 +811,7 @@ long int find_worst(void)
 
     max = ant[0].fitness;
     k_max = 0;
-    for (k = 1; k < n_ants; k++)
+    for (k = 1; k < ant.size(); k++)
     {
         if (ant[k].fitness > max)
         {
@@ -896,22 +1081,22 @@ void population_statistics(void)
     long int *l;
     double pop_mean, pop_stddev, avg_distance = 0.0;
 
-    l = (long int *)malloc(n_ants * sizeof(long int));
-    for (k = 0; k < n_ants; k++)
+    l = (long int *)malloc(ant.size() * sizeof(long int));
+    for (k = 0; k < ant.size(); k++)
     {
         l[k] = ant[k].fitness;
     }
 
-    pop_mean = mean(l, n_ants);
-    pop_stddev = std_deviation(l, n_ants, pop_mean);
+    pop_mean = mean(l, ant.size());
+    pop_stddev = std_deviation(l, ant.size(), pop_mean);
     // branching_factor = node_branching(lambda);
 
-    for (k = 0; k < n_ants - 1; k++)
-        for (j = k + 1; j < n_ants; j++)
+    for (k = 0; k < ant.size() - 1; k++)
+        for (j = k + 1; j < ant.size(); j++)
         {
             avg_distance += (double)distance_between_ants(&ant[k], &ant[j]);
         }
-    avg_distance /= ((double)n_ants * (double)(n_ants - 1) / 2.);
+    avg_distance /= ((double)ant.size() * (double)(ant.size() - 1) / 2.);
 
     free(l);
 }
@@ -1282,7 +1467,7 @@ void o1_evaporate()
     past_trail_min = trail_min;
 }
 
-double edge_weight(const std::size_t &i, const std::size_t &j)
+double calculate_total_information(const std::size_t &i, const std::size_t &j)
 {
     assert(!tree_map_flag);
     if (!es_ant_flag && !o1_evap_flag)

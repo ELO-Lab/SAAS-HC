@@ -6,6 +6,7 @@ from tqdm import tqdm
 import argparse
 from datetime import datetime
 import yaml
+from utils.utils import profit_table
 
 random_seeds = [
     269070,
@@ -147,6 +148,8 @@ def launcher(arg):
         instance_name,
         "--random_seed",
         _random_seed,
+        "--chain_flag",
+        f"{chain_flags}",
     ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
@@ -195,14 +198,16 @@ def get_argument():
     parser.add_argument("--debug_log", action="store_true")
     parser.add_argument("--exist_ok", action="store_true")
     parser.add_argument("--postfix", default="", type=str)
+    parser.add_argument("--chain_flags", default="", type=str)
     args = parser.parse_args()
 
-    global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix
+    global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix, chain_flags
     aaco_nc_flag = args.aaco_nc
     sol_dir = args.sol_dir
     debug_log = args.debug_log
     exist_ok = args.exist_ok
     postfix = args.postfix
+    chain_flags = args.chain_flags
 
 
 if __name__ == "__main__":
@@ -213,10 +218,10 @@ if __name__ == "__main__":
     assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
     tsp_base = [
-        "eil51",
-        "pr107",
+        # "eil51",
+        # "pr107",
         "a280",
-        "dsj1000",
+        # "dsj1000",
     ]
     number_of_items_per_city = [
         "01",
@@ -239,7 +244,7 @@ if __name__ == "__main__":
         "02",
         "03",
     ]
-    number_of_runs = 30
+    number_of_runs = 5
     if debug_log:
         number_of_runs = 3
 
@@ -281,3 +286,5 @@ if __name__ == "__main__":
             args.append((instance_name, repetition))
 
     imap_unordered_bar(launcher, args, total, n_processes)
+
+    profit_table(sol_dir, sol_dir, postfix)

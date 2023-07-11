@@ -71,6 +71,18 @@
 #include "tree_map.h"
 #include "algo_config.h"
 
+extern int iLevyFlag;				// 0 or 1
+extern double dLevyThreshold;		//0--1
+extern double dLevyRatio;			//0.1--5
+
+extern double dContribution;  		//0--10
+
+extern int iGreedyLevyFlag;			// 0 or 1
+extern double dGreedyEpsilon;		//0--1
+extern double dGreedyLevyThreshold;	//0--1
+extern double dGreedyLevyRatio;		//0.1--5
+
+
 long int *best_in_try;
 long int *best_found_at;
 double *time_best_found;
@@ -131,6 +143,8 @@ void init_program(long int argc, char *argv[])
     set_default_parameters();
     setbuf(stdout, NULL);
     parse_commandline(argc, argv);
+
+    rand_gen.seed(seed);
 
     assert(max_tries <= MAXIMUM_NO_TRIES);
 
@@ -766,30 +780,35 @@ void write_params(void)
     if (log_file)
     {
         fprintf(log_file, "Parameter-settings: \n\n");
-        fprintf(log_file, "--inputfile          %s\n", input_name_buf);
-        fprintf(log_file, "--outputfile         %s\n", output_name_buf);
-        fprintf(log_file, "--tries              %ld\n", max_tries);
-        fprintf(log_file, "--tours              %ld\n", max_tours);
-        fprintf(log_file, "--ptries             %ld\n", max_packing_tries);
-        fprintf(log_file, "--time               %.2f\n", max_time);
-        fprintf(log_file, "--seed               %ld\n", seed);
-        fprintf(log_file, "--optimum            %ld\n", optimal);
-        fprintf(log_file, "--ants               %ld\n", n_ants);
-        fprintf(log_file, "--nnants             %ld\n", nn_ants);
-        fprintf(log_file, "--alpha              %.2f\n", alpha);
-        fprintf(log_file, "--beta               %.2f\n", beta);
-        fprintf(log_file, "--rho                %.2f\n", rho);
-        fprintf(log_file, "--q0                 %.2f\n", q_0);
-        fprintf(log_file, "--elitistants        %ld\n", elitist_ants);
-        fprintf(log_file, "--rasranks           %ld\n", ras_ranks);
-        fprintf(log_file, "--localsearch        %ld\n", ls_flag);
-        fprintf(log_file, "--nnls               %ld\n", nn_ls);
-        fprintf(log_file, "--dlb                %ld\n", dlb_flag);
-        fprintf(log_file, "--as                 %ld\n", as_flag);
-        fprintf(log_file, "--eas                %ld\n", eas_flag);
-        fprintf(log_file, "--ras                %ld\n", ras_flag);
-        fprintf(log_file, "--mmas               %ld\n", mmas_flag);
-        fprintf(log_file, "--bwas               %ld\n", bwas_flag);
-        fprintf(log_file, "--acs                %ld\n\n", acs_flag);
+        fprintf(log_file, "--inputfile               %s\n", input_name_buf);
+        fprintf(log_file, "--outputfile              %s\n", output_name_buf);
+        fprintf(log_file, "--tries                   %ld\n", max_tries);
+        fprintf(log_file, "--tours                   %ld\n", max_tours);
+        fprintf(log_file, "--ptries                  %ld\n", max_packing_tries);
+        fprintf(log_file, "--time                    %.2f\n", max_time);
+        fprintf(log_file, "--seed                    %ld\n", seed);
+        fprintf(log_file, "--optimum                 %ld\n", optimal);
+        fprintf(log_file, "--ants                    %ld\n", n_ants);
+        fprintf(log_file, "--nnants                  %ld\n", nn_ants);
+        fprintf(log_file, "--alpha                   %.2f\n", alpha);
+        fprintf(log_file, "--beta                    %.2f\n", beta);
+        fprintf(log_file, "--rho                     %.2f\n", rho);
+        fprintf(log_file, "--q0                      %.2f\n", q_0);
+        fprintf(log_file, "--elitistants             %ld\n", elitist_ants);
+        fprintf(log_file, "--rasranks                %ld\n", ras_ranks);
+        fprintf(log_file, "--localsearch             %ld\n", ls_flag);
+        fprintf(log_file, "--nnls                    %ld\n", nn_ls);
+        fprintf(log_file, "--dlb                     %ld\n", dlb_flag);
+        fprintf(log_file, "--as                      %ld\n", as_flag);
+        fprintf(log_file, "--eas                     %ld\n", eas_flag);
+        fprintf(log_file, "--ras                     %ld\n", ras_flag);
+        fprintf(log_file, "--mmas                    %ld\n", mmas_flag);
+        fprintf(log_file, "--bwas                    %ld\n", bwas_flag);
+        fprintf(log_file, "--acs                     %ld\n", acs_flag);
+        fprintf(log_file, "--contribution_ratio      %ld\n", dContribution);
+        fprintf(log_file, "--greedy_levy_flag        %ld\n", iGreedyLevyFlag);
+        fprintf(log_file, "--greedy_epsilon          %lf\n", dGreedyEpsilon);
+        fprintf(log_file, "--greedy_levy_threadhold  %lf\n", dGreedyLevyThreshold);
+        fprintf(log_file, "--greedy_levy_ratio       %lf\n\n", dGreedyLevyRatio);
     }
 }

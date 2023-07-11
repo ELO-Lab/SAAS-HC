@@ -63,6 +63,8 @@
 #define LINE_BUF_LEN 255
 #endif
 
+extern double par_a, par_b, par_c;
+
 struct point
 {
     double x;
