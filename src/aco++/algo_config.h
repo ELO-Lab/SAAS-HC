@@ -3,9 +3,9 @@
 
 #include "stdint.h"
 
-// #define TREE_MAP_MACRO
-// #define ES_ANT_MACRO
-// #define O1_EVAP_MACRO
+#define TREE_MAP_MACRO false
+#define ES_ANT_MACRO false
+#define O1_EVAP_MACRO true
 
 extern int_fast8_t verbose;
 extern bool node_clustering_flag;      // AACO-NC - Clustering cities

@@ -205,11 +205,11 @@ void init_program(long int argc, char *argv[])
 
     allocate_ants();
 
-#ifdef ES_ANT_MACRO
+#if ES_ANT_MACRO
     if (es_ant_flag)
         es_ant_init();
 #endif
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map_init();
 #endif

@@ -1,5 +1,5 @@
 #include "algo_config.h"
-#ifdef ES_ANT_MACRO
+#if ES_ANT_MACRO
 
 #include <cstddef>
 #include <assert.h>
@@ -27,11 +27,11 @@
 #define BETA_IDX 6
 #define SEED_IDX 7
 
-#ifndef TREE_MAP_MACRO
-#define ES_ANT_DIM 8
-#else
+#if TREE_MAP_MACRO
 #define NEIGHBOUR_PROB_IDX 8
 #define ES_ANT_DIM 9
+#else
+#define ES_ANT_DIM 8
 #endif
 
 // hyperparameters
@@ -173,7 +173,7 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
     alpha = parameters[ALPHA_IDX];
     beta = parameters[BETA_IDX];
     rho = parameters[RHO_IDX];
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     neighbour_prob = parameters[NEIGHBOUR_PROB_IDX];
 #endif
 
@@ -261,7 +261,7 @@ void init_optimizer(void)
     x0[RHO_IDX] = rho_mean;
     sigma[RHO_IDX] = rho_stepsize / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
 
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     lbounds[NEIGHBOUR_PROB_IDX] = 0.01;
     ubounds[NEIGHBOUR_PROB_IDX] = 0.99;
     x0[NEIGHBOUR_PROB_IDX] = neighbour_prob_mean;

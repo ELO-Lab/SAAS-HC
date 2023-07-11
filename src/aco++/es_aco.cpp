@@ -7,20 +7,23 @@
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
 
-#ifdef O1_EVAP_MACRO
+#if O1_EVAP_MACRO
 #define RHO_IDX 5
+#define ES_ACO_DIM 6
+
 #define EPSILON_IDX 6
 #define LEVY_THRESHOLD_IDX 7
 #define LEVY_RATIO_IDX 8
-#define ES_DIM 9
+
 #else
+#define ES_ACO_DIM 5
+
 #define EPSILON_IDX 5
 #define LEVY_THRESHOLD_IDX 6
 #define LEVY_RATIO_IDX 7
-#define ES_DIM 8
 #endif
 
-unsigned long int initial_nb_dims = 5;
+unsigned long int initial_nb_dims = ES_ACO_DIM;
 unsigned long int initial_lambda = 10;
 const double initial_std = 0.2;
 
@@ -30,7 +33,7 @@ double lowerBounds[] = {
     0.0f,  // par_a
     0.0f,  // par_b
     0.0f,  // par_c
-#ifdef O1_EVAP_MACRO
+#if O1_EVAP_MACRO
     0.01f, // rho
 #endif
     0.0f,  // epsilon
@@ -43,7 +46,7 @@ double upperBounds[] = {
     1.0f,  // par_a
     1.0f,  // par_b
     1.0f,  // par_c
-#ifdef O1_EVAP_MACRO
+#if O1_EVAP_MACRO
     0.99f, // rho
 #endif
     1.0f,  // epsilon
@@ -185,7 +188,7 @@ double eval_function(int index, double const *x, unsigned long N)
     dGreedyEpsilon = x[EPSILON_IDX];
     dGreedyLevyThreshold = x[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = x[LEVY_RATIO_IDX];
-#ifdef O1_EVAP_MARCO
+#if O1_EVAP_MACRO
     rho = x[RHO_IDX];
 #endif
 
@@ -279,7 +282,7 @@ void es_aco_init()
     printf("Popsize=%d\n", (long int)initial_lambda);
     if (iGreedyLevyFlag)
     {
-        initial_nb_dims = ES_DIM;
+        initial_nb_dims = ES_ACO_DIM + 3;
     }
     es_write_params();
     seed++;
@@ -374,7 +377,11 @@ void es_aco_set_best_params()
     dGreedyEpsilon = xbestever[EPSILON_IDX];
     dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
-#ifdef O1_EVAP_MARCO
+#if O1_EVAP_MACRO
     rho = xbestever[RHO_IDX];
 #endif
+    if (verbose > 0)
+    {
+        printf("rho: %.4f\n", rho);
+    }
 }

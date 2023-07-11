@@ -469,7 +469,7 @@ void pheromone_trail_update(void)
 
 /* Simulate the pheromone evaporation of all pheromones; this is not necessary
    for ACS (see also ACO Book) */
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map->evaporate(trail_min);
     else
@@ -563,6 +563,11 @@ int main(int argc, char *argv[])
 
     init_program(argc, argv);
 
+    if (verbose > 0)
+    {
+        printf("seed: %ld\n", seed);
+    }
+
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/
 
@@ -619,11 +624,11 @@ int main(int argc, char *argv[])
     exit_program();
     if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         es_aco_exit();
-#ifdef ES_ANT_MACRO
+#if ES_ANT_MACRO
     if (es_ant_flag)
         es_ant_deallocate();
 #endif
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map_deallocate();
 #endif
