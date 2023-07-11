@@ -1,3 +1,6 @@
+#include "algo_config.h"
+#ifdef TREE_MAP_MACRO
+
 #ifndef _TREES_H_
 #define _TREES_H_
 
@@ -139,4 +142,5 @@ protected:
     void _build_childs(Building_Node *parent_ptr, const std::vector<std::size_t> &city_indexes, const arma::mat &city_features);
 };
 
+#endif
 #endif

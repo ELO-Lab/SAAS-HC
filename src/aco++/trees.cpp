@@ -1,3 +1,6 @@
+#include "algo_config.h"
+#ifdef TREE_MAP_MACRO
+
 #include <assert.h>
 
 #include <mlpack.hpp>
@@ -550,3 +553,5 @@ void Building_Tree::_cluster_cities(const std::vector<std::size_t> &indexes, con
         clusters[1 - index].features.shed_col(len - 1);
     }
 }
+
+#endif

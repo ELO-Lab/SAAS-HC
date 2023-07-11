@@ -80,7 +80,6 @@ double dLevyRatio = 1;     // 0.1--5
 
 double dContribution = 0; // 0--10
 
-int iGreedyLevyFlag = 0;         // 0 or 1
 double dGreedyEpsilon = 0.9;     // 0--1
 double dGreedyLevyThreshold = 1; // 0--1
 double dGreedyLevyRatio = 1;     // 0.1--5
@@ -128,7 +127,9 @@ std::vector<std::vector<std::size_t>> local_evap_times;    // evaporation times 
 std::vector<std::vector<std::size_t>> local_restart_times; // times restarting pheromone of edges since last restart
 double past_trail_restart;                                 // pheromone trail during th last restart
 double past_trail_min;                                     // minimum pheromone trail in MMAS during the last evaporation
-void pay_evaporation_debt(const std::size_t &i, const std::size_t &j);
+void o1_local_restart_if_needed(const std::size_t &i, const std::size_t &j);
+double o1_get_pheromone(const std::size_t &i, const std::size_t &j);
+void o1_pay_evaporation_debt(const std::size_t &i, const std::size_t &j);
 
 /************************************************************
  ************************************************************
@@ -145,16 +146,16 @@ void init_pheromone_trails(double initial_trail)
  */
 {
     restart_best_ant->fitness = INFTY;
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->restart_pheromone(initial_trail);
         return;
     }
+#endif
     if (o1_evap_flag)
     {
-        past_trail_restart = initial_trail;
-        global_restart_times += 1;
-        global_evap_times = 0;
+        o1_global_restart(initial_trail);
         return;
     }
 
@@ -187,11 +188,13 @@ void evaporation(void)
       (SIDE)EFFECTS: pheromones are reduced by factor rho
  */
 {
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->evaporate(trail_min);
         return;
     }
+#endif
 
     long int i, j;
 
@@ -218,11 +221,13 @@ void evaporation_nn_list(void)
              of its candidate list
  */
 {
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->evaporate(trail_min);
         return;
     }
+#endif
 
     long int i, j, help_city;
 
@@ -246,24 +251,13 @@ void global_update_pheromone(ant_struct *a)
       (SIDE)EFFECTS: pheromones of arcs in ant k's tour are increased
  */
 {
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->reinforce(*a, rho, trail_max);
         return;
     }
-
-    if (o1_evap_flag)
-    {
-
-        std::size_t i, j, h;
-
-        for (i = 0; i <= a->tour_size - 3; i++)
-        {
-            j = a->tour[i];
-            h = a->tour[i + 1];
-            pay_evaporation_debt(i, h);
-        }
-    }
+#endif
 
     long int i, j, h;
     double d_tau;
@@ -276,7 +270,16 @@ void global_update_pheromone(ant_struct *a)
     {
         j = a->tour[i];
         h = a->tour[i + 1];
+        if (o1_evap_flag)
+        {
+            o1_pay_evaporation_debt(j, h);
+            o1_pay_evaporation_debt(h, j);
+        }
         pheromone[j][h] += d_tau;
+        if (mmas_flag)
+            if (pheromone[j][h] > trail_max)
+                pheromone[j][h] = trail_max;
+
         pheromone[h][j] = pheromone[j][h];
     }
 }
@@ -468,6 +471,12 @@ void neighbour_choose_best_next(ant_struct *a, long int phase)
         else
         {
             help = calculate_total_information(current_city, help_city);
+
+            if (verbose > 0)
+            {
+                // printf("help: %.4f\n", help);
+            }
+
             if (help > value_best)
             {
                 value_best = help;
@@ -644,7 +653,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
         else
         {
             DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
-            prob_ptr[i] = total[current_city][instance.nn_list[current_city][i]];
+            prob_ptr[i] = calculate_total_information(current_city, instance.nn_list[current_city][i]);
             sum_prob += prob_ptr[i];
         }
         ordered_city[i] = i; // define original value;
@@ -1111,8 +1120,10 @@ double node_branching(double l)
                       lambda-branching factor
  */
 {
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
         return tree_map->node_branching(l);
+#endif
 
     long int i, m;
     double min, max, cutoff;
@@ -1167,11 +1178,13 @@ void mmas_evaporation_nn_list(void)
                      only considers links between a city and those cities of its candidate list
  */
 {
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->evaporate(trail_min);
         return;
     }
+#endif
 
     long int i, j, help_city;
 
@@ -1444,7 +1457,7 @@ double compute_heuristic(const double &distance)
     return 1.0 / (distance + 0.1);
 }
 
-void pay_evaporation_debt(const std::size_t &i, const std::size_t &j)
+void o1_local_restart_if_needed(const std::size_t &i, const std::size_t &j)
 {
     if (local_restart_times[i][j] < global_restart_times)
     {
@@ -1452,28 +1465,101 @@ void pay_evaporation_debt(const std::size_t &i, const std::size_t &j)
         local_restart_times[i][j] = global_restart_times;
         local_evap_times[i][j] = 0;
     }
-    else if (local_evap_times[i][j] < global_evap_times)
-    {
-        pheromone[i][j] *= pow(1 - rho, global_evap_times - local_evap_times[i][j]);
-        if (local_evap_times[i][j] < past_trail_min)
-            local_evap_times[i][j] = past_trail_min;
-        local_evap_times[i][j] = global_evap_times;
-    }
 }
 
-void o1_evaporate()
+double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
+{
+    double res;
+
+    o1_local_restart_if_needed(i, j);
+    assert(local_evap_times[i][j] <= global_evap_times);
+    if (mmas_flag)
+        assert(pheromone[i][j] >= past_trail_min);
+
+    res = pheromone[i][j];
+    if (verbose > 0)
+    {
+        // printf("res_before: %f\n", res);
+    }
+
+    if (local_evap_times[i][j] < global_evap_times)
+    {
+        res *= pow(1 - rho, global_evap_times - local_evap_times[i][j]);
+        if (mmas_flag)
+            if (res < past_trail_min)
+                res = past_trail_min;
+    }
+
+    if (verbose > 0)
+    {
+        // printf("res_after: %f\n", res);
+    }
+
+    return res;
+}
+
+void o1_pay_evaporation_debt(const std::size_t &i, const std::size_t &j)
+{
+    pheromone[i][j] = o1_get_pheromone(i, j);
+    local_evap_times[i][j] = global_evap_times;
+}
+
+void o1_global_evaporate()
 {
     global_evap_times += 1;
     past_trail_min = trail_min;
 }
 
+void o1_global_restart(const double &trail_restart)
+{
+    past_trail_restart = trail_restart;
+    global_restart_times += 1;
+    global_evap_times = 0;
+}
+
+void o1_init_try()
+{
+    for (auto &vec : local_evap_times)
+        for (auto &value : vec)
+            value = 0;
+    for (auto &vec : local_restart_times)
+        for (auto &value : vec)
+            value = 0;
+    global_evap_times = 0;
+    global_restart_times = 0;
+}
+
+void o1_init_program()
+{
+    local_evap_times.resize(instance.n);
+    for (auto &vec : local_evap_times)
+        vec.resize(instance.n);
+
+    local_restart_times.resize(instance.n);
+    for (auto &vec : local_restart_times)
+        vec.resize(instance.n);
+}
+
 double calculate_total_information(const std::size_t &i, const std::size_t &j)
 {
+    double _pheromone;
+
     assert(!tree_map_flag);
-    if (!es_ant_flag && !o1_evap_flag)
+    if (!es_ant_flag && !o1_evap_flag &&
+        !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
         return total[i][j];
 
     if (o1_evap_flag)
-        pay_evaporation_debt(i, j);
-    return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+        _pheromone = o1_get_pheromone(i, j);
+    else
+        _pheromone = pheromone[i][j];
+
+    if (verbose > 0)
+    {
+        // printf("_pheromone: %.4f\n", _pheromone);
+        // printf("pow(_pheromone, alpha): %.4f\n", pow(_pheromone, alpha));
+        // printf("pow(HEURISTIC(i, j), beta): %.4f\n", pow(HEURISTIC(i, j), beta));
+    }
+
+    return pow(_pheromone, alpha) * pow(HEURISTIC(i, j), beta);
 }

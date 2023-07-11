@@ -69,3 +69,8 @@ solutions
 acothop_*
 temp*
 *.ter.log
+
+cmaes_data
+actparcmaes.par
+cmaes_initials.par
+cmaes_initials.par

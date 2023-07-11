@@ -1,3 +1,6 @@
+#include "algo_config.h"
+#ifdef TREE_MAP_MACRO
+
 #ifndef _TREE_MAP_H_
 #define _TREE_MAP_H_
 
@@ -54,4 +57,5 @@ void tree_map_construct_solutions();
 extern Tree_Map *tree_map;
 extern double neighbour_prob;
 
+#endif
 #endif

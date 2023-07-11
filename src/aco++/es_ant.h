@@ -1,3 +1,6 @@
+#include "algo_config.h"
+#ifdef ES_ANT_MACRO
+
 #ifndef _ES_ANT_H_
 #define _ES_ANT_H_
 
@@ -12,12 +15,11 @@ extern double par_a_mean, par_b_mean, par_c_mean,
     neighbour_prob_mean, neighbour_prob_stepsize;
 extern size_t min_n_ants;
 
-extern double par_a, par_b, par_c;
-
 void es_ant_force_set_parameters(void);
 void es_ant_init(void);
 void es_ant_construct_and_local_search(void);
 void repair_candidates(dMat &);
 void es_ant_deallocate();
 
+#endif
 #endif

@@ -71,17 +71,16 @@
 #include "tree_map.h"
 #include "algo_config.h"
 
-extern int iLevyFlag;				// 0 or 1
-extern double dLevyThreshold;		//0--1
-extern double dLevyRatio;			//0.1--5
+extern int iLevyFlag;         // 0 or 1
+extern double dLevyThreshold; // 0--1
+extern double dLevyRatio;     // 0.1--5
 
-extern double dContribution;  		//0--10
+extern double dContribution; // 0--10
 
-extern int iGreedyLevyFlag;			// 0 or 1
-extern double dGreedyEpsilon;		//0--1
-extern double dGreedyLevyThreshold;	//0--1
-extern double dGreedyLevyRatio;		//0.1--5
-
+extern int iGreedyLevyFlag;         // 0 or 1
+extern double dGreedyEpsilon;       // 0--1
+extern double dGreedyLevyThreshold; // 0--1
+extern double dGreedyLevyRatio;     // 0.1--5
 
 long int *best_in_try;
 long int *best_found_at;
@@ -206,10 +205,14 @@ void init_program(long int argc, char *argv[])
 
     allocate_ants();
 
+#ifdef ES_ANT_MACRO
     if (es_ant_flag)
         es_ant_init();
+#endif
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map_init();
+#endif
 
     instance.nn_list = compute_nn_lists();
     if (!tree_map_flag)
@@ -217,7 +220,8 @@ void init_program(long int argc, char *argv[])
         pheromone = generate_double_matrix(instance.n, instance.n);
     }
 
-    if (!es_ant_flag && !tree_map_flag && !o1_evap_flag)
+    if (!es_ant_flag && !tree_map_flag && !o1_evap_flag &&
+        !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
     {
         total = generate_double_matrix(instance.n, instance.n);
     }
@@ -226,15 +230,7 @@ void init_program(long int argc, char *argv[])
         create_cluster();
 
     if (o1_evap_flag)
-    {
-        local_evap_times.resize(instance.n - 1);
-        for (auto &vec : local_evap_times)
-            vec.resize(instance.n - 1);
-
-        local_restart_times.resize(instance.n - 1);
-        for (auto &vec : local_restart_times)
-            vec.resize(instance.n - 1);
-    }
+        o1_init_program();
 }
 
 void exit_program(void)
@@ -283,14 +279,7 @@ void init_try(long int ntry)
     time_passed = time_used;
 
     if (o1_evap_flag)
-    {
-        for (auto &vec : local_evap_times)
-            for (auto &value : vec)
-                value = 0;
-        for (auto &vec : local_restart_times)
-            for (auto &value : vec)
-                value = 0;
-    }
+        o1_init_try(); // must before init trail
 
     /* Initialize variables concerning statistics etc. */
 
@@ -337,6 +326,12 @@ void init_try(long int ntry)
         fprintf(log_file, "\nbegin try %li \n", ntry);
     if (log_tries_file)
         fprintf(log_tries_file, "begin try %li \n", ntry);
+
+    if (verbose > 1)
+    {
+        printf("global_evap_times: %.4f", global_evap_times);
+        printf("global_restart_times: %.4f", global_restart_times);
+    }
 }
 
 void exit_try(long int ntry)
