@@ -10,7 +10,7 @@
 #define LEVY_RATIO_IDX 7
 
 unsigned long int initial_nb_dims = 5;
-unsigned long int initial_lambda = 20;
+unsigned long int initial_lambda = 10;
 const double initial_std = 0.2;
 
 //                      alpha   beta  par_a  par_b  par_c epsilon threshold  ratio
@@ -195,19 +195,25 @@ void es_write_params(){
     fptr = fopen("cmaes_initials.par","w");
 
     fprintf(fptr,"N %d\n", initial_nb_dims);
-    fprintf(fptr,"xstart %d:\n\t", initial_nb_dims);
+    
+    fprintf(fptr,"initialX %d:\n\t", initial_nb_dims);
     for (int i = 0; i < initial_nb_dims; i++){
         fprintf(fptr,"%f ", lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
     }fprintf(fptr,"\n");
+
+    fprintf(fptr,"typicalX %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++){
+        fprintf(fptr,"%f ", lowerBounds[i] + (0.5 * (upperBounds[i] - lowerBounds[i])));
+    }fprintf(fptr,"\n");
+    
     fprintf(fptr,"lambda %d\n", initial_lambda);
     fprintf(fptr,"seed  %d\n", seed);
 
-    fprintf(fptr,"initialX 1: \n\t%f\n",0.0);
-    fprintf(fptr,"typicalX 1: \n\t%f\n",0.0);
+    // fprintf(fptr,"initialX 1: \n\t%f\n",0.0);
+    // fprintf(fptr,"typicalX 1: \n\t%f\n",0.0);
 
     fprintf(fptr,"weights log \n");
 
-    // fprintf(fptr,"initialStandardDeviations  1: \n\t%f\n", initial_std);
     fprintf(fptr,"initialStandardDeviations %d:\n\t", initial_nb_dims);
     for (int i = 0; i < initial_nb_dims; i++){
         fprintf(fptr,"%f ", (upperBounds[i] - lowerBounds[i]) / 5);
@@ -220,11 +226,13 @@ void es_write_params(){
     fprintf(fptr,"stopTolUpXFactor %f\n", 1e2);
     fprintf(fptr,"maxTimeFractionForEigendecompostion %f\n",0.2);
 
+    // fprintf(fptr,"fac*damp %d\n", 1);
+
     fclose(fptr);
 }
 
 void es_aco_init(){
-    printf("Popsize: %d\n", (long int)initial_lambda);
+    printf("Popsize=%d\n", (long int)initial_lambda);
     if (iGreedyLevyFlag){
         initial_nb_dims = 8;
     }
@@ -240,8 +248,8 @@ void es_aco_construct_solutions(){
     es_aco_set_best_params();
     
     if (es_aco_termination_condition()) {
-        // cmaes_flag = 0;
-        // return;
+        printf("restart cames, ");
+        // cmaes_flag = 0; return;
         es_aco_init();
     }
 }
@@ -251,6 +259,7 @@ void ipop_cmaes_aco_construct_solutions(){
     es_aco_set_best_params();
 
     if (es_aco_termination_condition()) {
+        printf("IPOP restart, ");
         initial_lambda *= inc_popsize;
         es_aco_init();
     }
@@ -261,6 +270,7 @@ void bipop_cmaes_aco_construct_solutions(){
     es_aco_set_best_params();
     
     if (es_aco_termination_condition()) {
+        printf("BIPOP restart, ");
         long int n_eval = optimizer.get("lambda") * optimizer.get("generation");
         if (poptype == 0)
             small_n_eval += n_eval;

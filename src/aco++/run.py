@@ -396,7 +396,7 @@ parameter_configurations = {
 
 
 def read_arguments():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
+    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log, chain_flags
 
     parser = argparse.ArgumentParser()
 
@@ -438,6 +438,9 @@ def read_arguments():
     parser.add_argument("--save_ter_log", type=str)
     parser.add_argument("--no_log", action="store_true")
 
+    # chain flags
+    parser.add_argument("--chain_flags", type=str)
+
     args = parser.parse_args()
 
     instance_name = args.instance_name
@@ -470,7 +473,7 @@ def read_arguments():
     log_iter = args.log_iter
     save_ter_log = args.save_ter_log
     no_log = args.no_log
-
+    chain_flags = args.chain_flags
 
 def preprocess_arguments():
     global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
@@ -683,6 +686,9 @@ def format_aco_command():
         ]
     if log_iter:
         command += ["--logiter"]
+    if chain_flags:
+        command += chain_flags.split()
+
     command = list(map(str, command))
 
     return command
@@ -735,7 +741,7 @@ if __name__ == "__main__":
     end = datetime.now()
 
     stdout_log = result.stdout.decode()
-    best_profit = str(stdout_log).split(": ")[1]
+    best_profit = str(stdout_log).split(": ")[-1]
 
     if silent <= -1:
         print("stdout:")

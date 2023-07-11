@@ -110,6 +110,97 @@ random_seeds = [
     335928,
 ]
 
+def profit_table(solution_folder, save_folder, postfix=""):
+    from pathlib import Path
+    import pandas as pd
+    import itertools
+    import os
+    from tqdm import tqdm
+    import pickle
+
+    solution_folder = Path(solution_folder)
+    save_folder = Path(save_folder)
+
+    tsp_base = [
+        "eil51",
+        "pr107",
+        "a280",
+        "dsj1000",
+    ]
+    number_of_items_per_city = [
+        "01",
+        "03",
+        "05",
+        "10",
+    ]
+    knapsack_type = [
+        "bsc",
+        "unc",
+        "usw",
+    ]
+    knapsack_size = [
+        "01",
+        "05",
+        "10",
+    ]
+    maximum_travel_time = [
+        "01",
+        "02",
+        "03",
+    ]
+    number_of_runs = 30
+
+    pbar = tqdm(
+        total=len(tsp_base)
+        * len(number_of_items_per_city)
+        * len(knapsack_type)
+        * len(knapsack_size)
+        * len(maximum_travel_time)
+        * number_of_runs
+    )
+    res_table = {}
+
+    for _product in itertools.product(
+        tsp_base,
+        number_of_items_per_city,
+        knapsack_type,
+        knapsack_size,
+        maximum_travel_time,
+    ):
+        col_name = "_".join(map(str, _product))
+        col_values = []
+        _tsp_base = _product[0]
+
+        for repeat_time in range(1, number_of_runs + 1):
+            pbar.update(1)
+            repeat_time = str(repeat_time) if repeat_time >= 10 else f"0{repeat_time}"
+
+            file_path = (
+                solution_folder
+                / f"{_tsp_base}-thop"
+                / f"{col_name}_{repeat_time}_{postfix}.thop.sol.log"
+            )
+            if not os.path.isfile(file_path):
+                continue
+
+            with open(file_path, "r") as f:
+                best_profit = f.readlines()[-1].split(",")[1]
+                best_profit = best_profit.split(" ")[-1]
+                col_values.append(int(best_profit))
+
+        if len(col_values) == 0:
+            continue
+        res_table[col_name] = col_values
+
+    pbar.close()
+    res_table = pd.DataFrame(res_table)
+    with open(save_folder / f"profit_table_{postfix}.pkl", "wb") as f:
+        pickle.dump(res_table, f)
+    with open(save_folder / f"profit_table_{postfix}.md", "w") as f:
+        f.write(res_table.describe().T.to_markdown())
+
+    return res_table
+
 
 def run_command(command):
     result = subprocess.run(command, capture_output=True)
@@ -147,6 +238,8 @@ def launcher(arg):
         instance_name,
         "--random_seed",
         _random_seed,
+        "--chain_flag",
+        f'{chain_flags}',
     ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
@@ -195,14 +288,16 @@ def get_argument():
     parser.add_argument("--debug_log", action="store_true")
     parser.add_argument("--exist_ok", action="store_true")
     parser.add_argument("--postfix", default="", type=str)
+    parser.add_argument("--chain_flags", default="", type=str)
     args = parser.parse_args()
 
-    global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix
+    global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix, chain_flags
     aaco_nc_flag = args.aaco_nc
     sol_dir = args.sol_dir
     debug_log = args.debug_log
     exist_ok = args.exist_ok
     postfix = args.postfix
+    chain_flags = args.chain_flags
 
 
 if __name__ == "__main__":
@@ -213,10 +308,10 @@ if __name__ == "__main__":
     assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
     tsp_base = [
-        "eil51",
-        "pr107",
+        # "eil51",
+        # "pr107",
         "a280",
-        "dsj1000",
+        # "dsj1000",
     ]
     number_of_items_per_city = [
         "01",
@@ -239,7 +334,7 @@ if __name__ == "__main__":
         "02",
         "03",
     ]
-    number_of_runs = 30
+    number_of_runs = 5
     if debug_log:
         number_of_runs = 3
 
@@ -281,3 +376,5 @@ if __name__ == "__main__":
             args.append((instance_name, repetition))
 
     imap_unordered_bar(launcher, args, total, n_processes)
+
+    profit_table(sol_dir, sol_dir, postfix)
