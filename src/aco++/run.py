@@ -421,7 +421,7 @@ def read_arguments():
     parser.add_argument("--ptries", type=int)
     parser.add_argument("--localsearch", type=int)
     parser.add_argument("--time", type=float)
-    parser.add_argument("--random_seed", default=269070, type=float)
+    parser.add_argument("--random_seed", default=0, type=float)
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
 

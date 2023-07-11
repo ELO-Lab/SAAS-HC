@@ -1,3 +1,6 @@
+#include "algo_config.h"
+#ifdef ES_ANT_MACRO
+
 #ifndef _CUSTOM_STRATEGY_H_
 #define _CUSTOM_STRATEGY_H_
 
@@ -177,4 +180,5 @@ void libcmaes::Custom_Strategy<TCovarianceUpdate, TGenoPheno>::generation_run(vo
 
 extern OPTIMIZER *optim_ptr;
 
+#endif
 #endif

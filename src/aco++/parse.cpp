@@ -1518,7 +1518,9 @@ int parse_commandline(int argc, char *argv[])
 
     if (options.opt_seed)
     {
-        seed = atol(options.arg_seed);
+        const auto &temp = atol(options.arg_seed);
+        if (temp != 0)
+            seed = atol(options.arg_seed);
         /*
         fputs ("      --seed ", stdout);
         if (options.arg_seed != NULL)
@@ -1952,10 +1954,14 @@ int parse_commandline(int argc, char *argv[])
         exit(1);
     }
 
+#ifdef ES_ANT_MACRO
     if (es_ant_flag)
         es_ant_force_set_parameters();
+#endif
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map_force_set_parameters();
+#endif
     rand_gen.seed(seed);
 
     return 0;

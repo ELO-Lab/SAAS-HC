@@ -1,3 +1,6 @@
+#include "algo_config.h"
+#ifdef TREE_MAP_MACRO
+
 #include <math.h>
 #include <assert.h>
 
@@ -222,3 +225,5 @@ std::size_t Building_Node::get_n_child_leaf()
 {
     return _n_child_leaf;
 }
+
+#endif

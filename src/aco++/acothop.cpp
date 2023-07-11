@@ -467,14 +467,17 @@ void pheromone_trail_update(void)
     if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag))
         update_rho();
 
-    /* Simulate the pheromone evaporation of all pheromones; this is not necessary
-       for ACS (see also ACO Book) */
+/* Simulate the pheromone evaporation of all pheromones; this is not necessary
+   for ACS (see also ACO Book) */
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map->evaporate(trail_min);
-    else if (!acs_flag)
+    else
+#endif
+        if (!acs_flag)
     {
         if (o1_evap_flag)
-            o1_evaporate();
+            o1_global_evaporate();
         else if (node_clustering_flag)
             evaporation_nc_list();
         else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
@@ -499,7 +502,7 @@ void pheromone_trail_update(void)
     }
 
     /* Next, apply the pheromone deposit for the various ACO algorithms */
-    if (tree_map_flag || o1_evap_flag)
+    if (tree_map_flag || mmas_flag)
         mmas_update();
     else if (as_flag)
         as_update();
@@ -507,8 +510,6 @@ void pheromone_trail_update(void)
         eas_update();
     else if (ras_flag)
         ras_update();
-    else if (mmas_flag)
-        mmas_update();
     else if (bwas_flag)
         bwas_update();
     else if (acs_flag)
@@ -517,7 +518,10 @@ void pheromone_trail_update(void)
     /* check pheromone trail limits for MMAS; not necessary if local
      search is used, because in the local search case lower pheromone trail
      limits are checked in procedure mmas_evaporation_nn_list */
-    if (mmas_flag && !ls_flag && !adaptive_evaporation_flag && !tree_map_flag)
+    if (
+        mmas_flag && !ls_flag &&
+        !adaptive_evaporation_flag &&
+        !tree_map_flag && !o1_evap_flag)
         check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
@@ -615,11 +619,14 @@ int main(int argc, char *argv[])
     exit_program();
     if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         es_aco_exit();
-
+#ifdef ES_ANT_MACRO
     if (es_ant_flag)
         es_ant_deallocate();
+#endif
+#ifdef TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map_deallocate();
+#endif
 
     free(instance.distance);
     free(instance.nn_list);
@@ -647,6 +654,7 @@ int main(int argc, char *argv[])
     if (verbose > 0)
     {
         printf("iteration: %ld\n", iteration);
+        printf("seed: %ld\n", seed);
     }
     return 0;
 }

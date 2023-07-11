@@ -1,3 +1,6 @@
+#include "algo_config.h"
+#ifdef TREE_MAP_MACRO
+
 #define TOP_DOWN true
 // #define TOP_DOWN false
 
@@ -87,6 +90,7 @@ void Tree_Map::restart_pheromone(const double &past_trail_restart)
 {
     _global_restart_times += 1;
     _past_trail_restart = past_trail_restart;
+    _global_evap_times = 0;
 }
 
 void Tree_Map::choose_route(
@@ -216,3 +220,5 @@ void tree_map_construct_solutions()
                                nn_ants,
                                instance.nn_list, q_0);
 }
+
+#endif
