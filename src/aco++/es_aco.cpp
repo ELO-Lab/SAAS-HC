@@ -1,7 +1,7 @@
 #include "es_aco.h"
 
 #define ALPHA_IDX 0
-#define BETA_IDX  1
+#define BETA_IDX 1
 #define PAR_A_IDX 2
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
@@ -14,8 +14,8 @@ unsigned long int initial_lambda = 10;
 const double initial_std = 0.2;
 
 //                      alpha   beta  par_a  par_b  par_c epsilon threshold  ratio
-double lowerBounds[] = { 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,   0.0f,     0.0f,  0.0f}; 
-double upperBounds[] = {50.0f, 50.0f,  1.0f,  1.0f,  1.0f,   1.0f,     1.0f,  5.0f};
+double lowerBounds[] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+double upperBounds[] = {50.0f, 50.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 5.0f};
 
 // number of ants per individual
 unsigned int indv_ants = 10;
@@ -28,7 +28,7 @@ boundary_cmaes optimizer;
 
 // variables for ipop and bipop
 
-unsigned int n_restarts = 0  ;
+unsigned int n_restarts = 0;
 unsigned long int small_n_eval = 0, large_n_eval = 0;
 unsigned long int popsize0 = initial_lambda;
 unsigned int inc_popsize = 2;
@@ -50,13 +50,13 @@ void _es_construct_solutions(int index)
     TRACE(printf("construct solutions for all ants\n"););
 
     /* Mark all cities as unvisited */
-    for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
     {
         ant_empty_memory(&ant[k]);
     }
 
     /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
     {
         ant[k].tour_size = 1;
         ant[k].tour[0] = 0;
@@ -68,16 +68,19 @@ void _es_construct_solutions(int index)
     while (step < instance.n - 2)
     {
         step++;
-        for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
         {
             if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
             { /* previous city is the last one */
                 continue;
             }
-            
-            if (iLevyFlag || iGreedyLevyFlag){
+
+            if (iLevyFlag || iGreedyLevyFlag)
+            {
                 neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
-            }else{ 
+            }
+            else
+            {
                 neighbour_choose_and_move_to_next(&ant[k], step);
             }
 
@@ -87,13 +90,13 @@ void _es_construct_solutions(int index)
         }
     }
 
-    for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
     {
         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
         for (i = ant[k].tour_size; i < instance.n; i++)
             ant[k].tour[i] = 0;
-        ant[k].fitness = compute_fitness_es(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
+        ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
         if (acs_flag)
             local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
     }
@@ -119,7 +122,7 @@ void _es_local_search(int index)
 
     TRACE(printf("apply local search to all ants\n"););
 
-    for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
     {
         switch (ls_flag)
         {
@@ -136,16 +139,17 @@ void _es_local_search(int index)
             fprintf(stderr, "type of local search procedure not correctly specified\n");
             exit(1);
         }
-        ant[k].fitness = compute_fitness_es(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
+        ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
         // if (termination_condition())
         //     return;
     }
 }
 
 //   index of current offspring         genotype   number of dims
-double eval_function (int index, double const *x, unsigned long N){
+double eval_function(int index, double const *x, unsigned long N)
+{
     alpha = x[ALPHA_IDX];
-    beta  = x[BETA_IDX];
+    beta = x[BETA_IDX];
     par_a = x[PAR_A_IDX];
     par_b = x[PAR_B_IDX];
     par_c = x[PAR_C_IDX];
@@ -156,12 +160,12 @@ double eval_function (int index, double const *x, unsigned long N){
     _es_construct_solutions(index);
     if (ls_flag > 0)
     {
-        for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
         {
             copy_from_to(&ant[k], &prev_ls_ant[k]);
         }
         _es_local_search(index);
-        for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
         {
             if (ant[k].fitness > prev_ls_ant[k].fitness)
             {
@@ -170,14 +174,14 @@ double eval_function (int index, double const *x, unsigned long N){
         }
     }
 
-    double min_fitness =  INFINITY;
+    double min_fitness = INFINITY;
     double max_fitness = -INFINITY;
-    
+
     double mean_fitness;
     double std_fitness;
 
     std::vector<double> fitnesses;
-    for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
+    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
     {
         fitnesses.push_back(double(ant[k].fitness));
         min_fitness = std::min(min_fitness, double(ant[k].fitness));
@@ -189,51 +193,60 @@ double eval_function (int index, double const *x, unsigned long N){
     return min_fitness;
 }
 
-void es_write_params(){
+void es_write_params()
+{
     FILE *fptr;
     // inspect cmaes_initials_default file to be more specific about each parameter
-    fptr = fopen("cmaes_initials.par","w");
+    fptr = fopen("cmaes_initials.par", "w");
 
-    fprintf(fptr,"N %d\n", initial_nb_dims);
-    
-    fprintf(fptr,"initialX %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++){
-        fprintf(fptr,"%f ", lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
-    }fprintf(fptr,"\n");
+    fprintf(fptr, "N %d\n", initial_nb_dims);
 
-    fprintf(fptr,"typicalX %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++){
-        fprintf(fptr,"%f ", lowerBounds[i] + (0.5 * (upperBounds[i] - lowerBounds[i])));
-    }fprintf(fptr,"\n");
-    
-    fprintf(fptr,"lambda %d\n", initial_lambda);
-    fprintf(fptr,"seed  %d\n", seed);
+    fprintf(fptr, "initialX %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        fprintf(fptr, "%f ", lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
+    }
+    fprintf(fptr, "\n");
+
+    fprintf(fptr, "typicalX %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        fprintf(fptr, "%f ", lowerBounds[i] + (0.5 * (upperBounds[i] - lowerBounds[i])));
+    }
+    fprintf(fptr, "\n");
+
+    fprintf(fptr, "lambda %d\n", initial_lambda);
+    fprintf(fptr, "seed  %d\n", seed);
 
     // fprintf(fptr,"initialX 1: \n\t%f\n",0.0);
     // fprintf(fptr,"typicalX 1: \n\t%f\n",0.0);
 
-    fprintf(fptr,"weights log \n");
+    fprintf(fptr, "weights log \n");
 
-    fprintf(fptr,"initialStandardDeviations %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++){
-        fprintf(fptr,"%f ", (upperBounds[i] - lowerBounds[i]) / 5);
-    }fprintf(fptr,"\n");
-    
-    fprintf(fptr,"stopMaxFunEvals %f\n", 1e299);
-    fprintf(fptr,"stopTolFun %f\n", 1e-12);
-    fprintf(fptr,"stopTolFunHist%f\n", 1e-13);
-    fprintf(fptr,"stopTolX %f\n", 1e-11);
-    fprintf(fptr,"stopTolUpXFactor %f\n", 1e2);
-    fprintf(fptr,"maxTimeFractionForEigendecompostion %f\n",0.2);
+    fprintf(fptr, "initialStandardDeviations %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        fprintf(fptr, "%f ", (upperBounds[i] - lowerBounds[i]) / 5);
+    }
+    fprintf(fptr, "\n");
+
+    fprintf(fptr, "stopMaxFunEvals %f\n", 1e299);
+    fprintf(fptr, "stopTolFun %f\n", 1e-12);
+    fprintf(fptr, "stopTolFunHist%f\n", 1e-13);
+    fprintf(fptr, "stopTolX %f\n", 1e-11);
+    fprintf(fptr, "stopTolUpXFactor %f\n", 1e2);
+    fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 0.2);
 
     // fprintf(fptr,"fac*damp %d\n", 1);
 
     fclose(fptr);
 }
 
-void es_aco_init(){
+void es_aco_init()
+{
     printf("Popsize=%d\n", (long int)initial_lambda);
-    if (iGreedyLevyFlag){
+    if (iGreedyLevyFlag)
+    {
         initial_nb_dims = 8;
     }
     es_write_params();
@@ -241,49 +254,58 @@ void es_aco_init(){
     optimizer.init(eval_function, lowerBounds, upperBounds);
     ant.resize(indv_ants * optimizer.get("lambda"));
     prev_ls_ant.resize(indv_ants * optimizer.get("lambda"));
+    max_packing_tries = 1;
 }
 
-void es_aco_construct_solutions(){
+void es_aco_construct_solutions()
+{
     optimizer.run_a_generation();
     es_aco_set_best_params();
-    
-    if (es_aco_termination_condition()) {
+
+    if (es_aco_termination_condition())
+    {
         printf("restart cames, ");
         // cmaes_flag = 0; return;
         es_aco_init();
     }
 }
 
-void ipop_cmaes_aco_construct_solutions(){
+void ipop_cmaes_aco_construct_solutions()
+{
     optimizer.run_a_generation();
     es_aco_set_best_params();
 
-    if (es_aco_termination_condition()) {
+    if (es_aco_termination_condition())
+    {
         printf("IPOP restart, ");
         initial_lambda *= inc_popsize;
         es_aco_init();
     }
 }
 
-void bipop_cmaes_aco_construct_solutions(){
+void bipop_cmaes_aco_construct_solutions()
+{
     optimizer.run_a_generation();
     es_aco_set_best_params();
-    
-    if (es_aco_termination_condition()) {
+
+    if (es_aco_termination_condition())
+    {
         printf("BIPOP restart, ");
         long int n_eval = optimizer.get("lambda") * optimizer.get("generation");
         if (poptype == 0)
             small_n_eval += n_eval;
         else
             large_n_eval += n_eval;
-        
-        if (small_n_eval < large_n_eval){
+
+        if (small_n_eval < large_n_eval)
+        {
             poptype = 0;
             double popsize_multiplier = pow(inc_popsize, n_restarts);
             initial_lambda = floor(
-                pow(popsize0 * popsize_multiplier, pow(new_rand01(),2))
-            );
-        }else{
+                pow(popsize0 * popsize_multiplier, pow(new_rand01(), 2)));
+        }
+        else
+        {
             poptype = 1;
             n_restarts += 1;
             initial_lambda = popsize0 * pow(inc_popsize, n_restarts);
@@ -292,24 +314,28 @@ void bipop_cmaes_aco_construct_solutions(){
     }
 }
 
-void es_aco_export_result(){
+void es_aco_export_result()
+{
     optimizer.end();
 }
 
-void es_aco_exit(){
+void es_aco_exit()
+{
     optimizer.boundary_cmaes_exit();
 }
 
-bool es_aco_termination_condition(){
+bool es_aco_termination_condition()
+{
     return optimizer.termination_condition();
 }
 
-void es_aco_set_best_params(){
+void es_aco_set_best_params()
+{
     double *xbestever = NULL;
     xbestever = optimizer.getInto("xbestever", xbestever);
 
     alpha = xbestever[ALPHA_IDX];
-    beta  = xbestever[BETA_IDX];
+    beta = xbestever[BETA_IDX];
     par_a = xbestever[PAR_A_IDX];
     par_b = xbestever[PAR_B_IDX];
     par_c = xbestever[PAR_C_IDX];

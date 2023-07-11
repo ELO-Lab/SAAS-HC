@@ -40,7 +40,6 @@ double par_a_mean, par_b_mean, par_c_mean,
 	neighbour_prob_mean, neighbour_prob_stepsize;
 size_t min_n_ants;
 
-double par_a, par_b, par_c;
 size_t current_ant_idx = 0;
 std::array<double, ES_ANT_DIM> lbounds, ubounds;
 OPTIMIZER *optim_ptr;

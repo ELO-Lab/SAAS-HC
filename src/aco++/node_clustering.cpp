@@ -254,7 +254,7 @@ void node_clustering_move(ant_struct *a, long int phase)
     lp = 0;
     for (int i = 0; i < candidates.size(); i++)
     {
-        lp = lp + edge_weight(current_city, candidates[i]);
+        lp = lp + calculate_total_information(current_city, candidates[i]);
         total_candidates.push_back(lp);
     }
 
