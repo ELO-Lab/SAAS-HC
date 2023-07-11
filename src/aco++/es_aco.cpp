@@ -5,17 +5,22 @@
 #define PAR_A_IDX 2
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
+#define Q0_IDX 5
+
 #define EPSILON_IDX 5
 #define LEVY_THRESHOLD_IDX 6
 #define LEVY_RATIO_IDX 7
 
 unsigned long int initial_nb_dims = 5;
 unsigned long int initial_lambda = 10;
-const double initial_std = 0.2;
 
 //                      alpha   beta  par_a  par_b  par_c epsilon threshold  ratio
 double lowerBounds[] = { 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,   0.0f,     0.0f,  0.0f}; 
-double upperBounds[] = {50.0f, 50.0f,  1.0f,  1.0f,  1.0f,   1.0f,     1.0f,  5.0f};
+double upperBounds[] = {10.0f, 10.0f,  1.0f,  1.0f,  1.0f,   1.0f,     1.0f,  5.0f};
+
+std::vector<double> initialX;
+std::vector<double> typicalX;
+std::vector<double> initialStd;
 
 // number of ants per individual
 unsigned int indv_ants = 10;
@@ -34,6 +39,44 @@ unsigned long int popsize0 = initial_lambda;
 unsigned int inc_popsize = 2;
 
 char poptype = 0; // 0 == small , 1 == large
+
+
+void es_write_params(){
+    FILE *fptr;
+    // inspect cmaes_initials_default file to be more specific about each parameter
+    fptr = fopen("cmaes_initials.par","w");
+
+    fprintf(fptr,"N %d\n", initial_nb_dims);
+    
+    fprintf(fptr,"initialX %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++){
+        fprintf(fptr,"%f ", initialX[i]);
+    }fprintf(fptr,"\n");
+
+    fprintf(fptr,"typicalX %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++){
+        fprintf(fptr,"%f ", typicalX[i]);
+    }fprintf(fptr,"\n");
+    
+    fprintf(fptr,"lambda %d\n", initial_lambda);
+    fprintf(fptr,"seed  %d\n", seed);
+
+    fprintf(fptr,"weights log \n");
+
+    fprintf(fptr,"initialStandardDeviations %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++){
+        fprintf(fptr,"%f ", initialStd[i]);
+    }fprintf(fptr,"\n");
+    
+    // fprintf(fptr,"stopTolFunHist %f\n", 0.0f);
+    fprintf(fptr,"stopTolX %f\n", 1e-11);
+    fprintf(fptr,"stopTolUpXFactor %f\n", 1e2);
+    fprintf(fptr,"maxTimeFractionForEigendecompostion %f\n",1);
+
+    // fprintf(fptr,"fac*damp %d\n", 1);
+
+    fclose(fptr);
+}
 
 void _es_construct_solutions(int index)
 /*
@@ -149,11 +192,13 @@ double eval_function (int index, double const *x, unsigned long N){
     par_a = x[PAR_A_IDX];
     par_b = x[PAR_B_IDX];
     par_c = x[PAR_C_IDX];
-    dGreedyEpsilon = x[EPSILON_IDX];
-    dGreedyLevyThreshold = x[LEVY_THRESHOLD_IDX];
-    dGreedyLevyRatio = x[LEVY_RATIO_IDX];
+    // q_0 = x[Q0_IDX];
+    // dGreedyEpsilon = x[EPSILON_IDX];
+    // dGreedyLevyThreshold = x[LEVY_THRESHOLD_IDX];
+    // dGreedyLevyRatio = x[LEVY_RATIO_IDX];
 
     _es_construct_solutions(index);
+    
     if (ls_flag > 0)
     {
         for (int k = index * indv_ants; k < (index+1) * indv_ants; k++)
@@ -189,49 +234,19 @@ double eval_function (int index, double const *x, unsigned long N){
     return min_fitness;
 }
 
-void es_write_params(){
-    FILE *fptr;
-    // inspect cmaes_initials_default file to be more specific about each parameter
-    fptr = fopen("cmaes_initials.par","w");
-
-    fprintf(fptr,"N %d\n", initial_nb_dims);
-    
-    fprintf(fptr,"initialX %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++){
-        fprintf(fptr,"%f ", lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
-    }fprintf(fptr,"\n");
-
-    fprintf(fptr,"typicalX %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++){
-        fprintf(fptr,"%f ", lowerBounds[i] + (0.5 * (upperBounds[i] - lowerBounds[i])));
-    }fprintf(fptr,"\n");
-    
-    fprintf(fptr,"lambda %d\n", initial_lambda);
-    fprintf(fptr,"seed  %d\n", seed);
-
-    // fprintf(fptr,"initialX 1: \n\t%f\n",0.0);
-    // fprintf(fptr,"typicalX 1: \n\t%f\n",0.0);
-
-    fprintf(fptr,"weights log \n");
-
-    fprintf(fptr,"initialStandardDeviations %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++){
-        fprintf(fptr,"%f ", (upperBounds[i] - lowerBounds[i]) / 5);
-    }fprintf(fptr,"\n");
-    
-    fprintf(fptr,"stopMaxFunEvals %f\n", 1e299);
-    fprintf(fptr,"stopTolFun %f\n", 1e-12);
-    fprintf(fptr,"stopTolFunHist%f\n", 1e-13);
-    fprintf(fptr,"stopTolX %f\n", 1e-11);
-    fprintf(fptr,"stopTolUpXFactor %f\n", 1e2);
-    fprintf(fptr,"maxTimeFractionForEigendecompostion %f\n",0.2);
-
-    // fprintf(fptr,"fac*damp %d\n", 1);
-
-    fclose(fptr);
-}
-
 void es_aco_init(){
+    for (int i = 0; i < initial_nb_dims; i++){
+        initialX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
+        typicalX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
+        initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
+    }
+
+    initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = 0.8075;
+    initialX[BETA_IDX] = typicalX[BETA_IDX] = 5.6683;
+
+    initialStd[ALPHA_IDX] = 0.125;
+    initialStd[BETA_IDX] = 1.608;
+
     printf("Popsize=%d\n", (long int)initial_lambda);
     if (iGreedyLevyFlag){
         initial_nb_dims = 8;
@@ -247,8 +262,9 @@ void es_aco_construct_solutions(){
     optimizer.run_a_generation();
     es_aco_set_best_params();
     
-    if (es_aco_termination_condition()) {
-        printf("restart cames, ");
+    const char *termination_reason = es_aco_termination_condition();
+    if (termination_reason) {
+        printf("\n%s, restart cames, ", termination_reason);
         // cmaes_flag = 0; return;
         es_aco_init();
     }
@@ -300,20 +316,26 @@ void es_aco_exit(){
     optimizer.boundary_cmaes_exit();
 }
 
-bool es_aco_termination_condition(){
+const char* es_aco_termination_condition(){
     return optimizer.termination_condition();
 }
 
 void es_aco_set_best_params(){
     double *xbestever = NULL;
     xbestever = optimizer.getInto("xbestever", xbestever);
+    xbestever = optimizer.boundary_transformation(xbestever);
+
+    // for (int i = 0; i < initial_nb_dims; i++){
+    //     printf("%.3f\t", xbestever[i]);
+    // }printf("\n");
 
     alpha = xbestever[ALPHA_IDX];
     beta  = xbestever[BETA_IDX];
     par_a = xbestever[PAR_A_IDX];
     par_b = xbestever[PAR_B_IDX];
     par_c = xbestever[PAR_C_IDX];
-    dGreedyEpsilon = xbestever[EPSILON_IDX];
-    dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
-    dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
+    // q_0 = xbestever[Q0_IDX];
+    // dGreedyEpsilon = xbestever[EPSILON_IDX];
+    // dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
+    // dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
 }

@@ -44,7 +44,7 @@ void es_aco_export_result();
 
 void es_aco_exit();
 
-bool es_aco_termination_condition();
+const char* es_aco_termination_condition();
 
 void es_aco_set_best_params();
 

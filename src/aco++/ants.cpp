@@ -70,6 +70,7 @@
 #include "ls.h"
 #include "utilities.h"
 #include "timer.h"
+#include "es_aco.h"
 
 int iLevyFlag = 0;				// 0 or 1, default 0;
 double dLevyThreshold=1;		// 0--1
@@ -249,7 +250,7 @@ void compute_total_information(void)
       OUTPUT:   none
  */
 {
-    return;
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) return;
     long int i, j;
 
     TRACE(printf("compute total information\n"););
@@ -271,7 +272,7 @@ void compute_nn_list_total_information(void)
       OUTPUT:   none
  */
 {
-    return;
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) return;
     long int i, j, h;
 
     TRACE(printf("compute total information nn_list\n"););
@@ -332,7 +333,9 @@ void place_ant(ant_struct *a, long int step)
 }
 
 double calculate_total_information(int i, int j){
-    return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+    
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+    else return total[i][j];
 }
 
 void choose_best_next(ant_struct *a, long int phase)
@@ -572,7 +575,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
         else
         {
             DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
-            prob_ptr[i] = total[current_city][instance.nn_list[current_city][i]];
+            prob_ptr[i] = calculate_total_information(current_city, instance.nn_list[current_city][i]);
             sum_prob += prob_ptr[i];
         }
         ordered_city[i] = i; // define original value;

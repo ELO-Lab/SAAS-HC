@@ -65,6 +65,7 @@
 #include "timer.h"
 #include "ls.h"
 #include "es_aco.h"
+#include "adaptive_evaporation.hpp"
 
 
 long int termination_condition(void)
@@ -453,6 +454,9 @@ void pheromone_trail_update(void)
 {
     /* Simulate the pheromone evaporation of all pheromones; this is not necessary
        for ACS (see also ACO Book) */
+    
+    update_rho();
+    
     if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
     {
         if (ls_flag)
@@ -549,7 +553,7 @@ int main(int argc, char *argv[])
             }else if(bipopcmaes_flag){
                 bipop_cmaes_aco_construct_solutions();
             }
-            else{
+            // else{
                 construct_solutions();
                 if (ls_flag > 0)
                 {
@@ -566,7 +570,7 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
-            }
+            // }
 
             update_statistics();
             pheromone_trail_update();
