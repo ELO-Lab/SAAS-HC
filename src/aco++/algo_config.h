@@ -3,6 +3,8 @@
 
 #include "stdint.h"
 
+// #define TREE_MAP
+
 extern int_fast8_t verbose;
 extern bool node_clustering_flag;      // AACO-NC - Clustering cities
 extern bool adaptive_evaporation_flag; // AACO-NC - Dynamic rho based on entropy

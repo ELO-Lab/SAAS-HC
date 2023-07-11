@@ -15,16 +15,21 @@
 #include "tree_map.h"
 #include "algo_config.h"
 
-#define NEIGHBOUR_PROB_IDX 0
+#define RHO_IDX 0
 #define PAR_A_IDX 1
 #define PAR_B_IDX 2
 #define PAR_C_IDX 3
 #define Q_0_IDX 4
 #define ALPHA_IDX 5
 #define BETA_IDX 6
-#define RHO_IDX 7
-#define SEED_IDX 8
+#define SEED_IDX 7
+
+#ifndef TREE_MAP
+#define ES_ANT_DIM 8
+#else
+#define NEIGHBOUR_PROB_IDX 8
 #define ES_ANT_DIM 9
+#endif
 
 // hyperparameters
 double par_a_mean, par_b_mean, par_c_mean,
@@ -166,7 +171,9 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 	alpha = parameters[ALPHA_IDX];
 	beta = parameters[BETA_IDX];
 	rho = parameters[RHO_IDX];
+#ifdef TREE_MAP
 	neighbour_prob = parameters[NEIGHBOUR_PROB_IDX];
+#endif
 
 	if (tree_map_flag)
 		tree_map->choose_route(
@@ -208,7 +215,7 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 
 void init_optimizer(void)
 {
-	const long int ALGO_CODE = aBIPOP_CMAES, NRESTARTS = INT_MAX;
+	constexpr long int ALGO_CODE = aBIPOP_CMAES, NRESTARTS = INT_MAX;
 	size_t i;
 	std::vector<double> x0(ES_ANT_DIM), sigma(ES_ANT_DIM);
 
@@ -252,10 +259,12 @@ void init_optimizer(void)
 	x0[RHO_IDX] = rho_mean;
 	sigma[RHO_IDX] = rho_stepsize / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
 
+#ifdef TREE_MAP
 	lbounds[NEIGHBOUR_PROB_IDX] = 0.01;
 	ubounds[NEIGHBOUR_PROB_IDX] = 0.99;
 	x0[NEIGHBOUR_PROB_IDX] = neighbour_prob_mean;
 	sigma[NEIGHBOUR_PROB_IDX] = neighbour_prob_stepsize / (ubounds[NEIGHBOUR_PROB_IDX] - lbounds[NEIGHBOUR_PROB_IDX]);
+#endif
 
 	for (i = 0; i < ES_ANT_DIM; i++)
 	{
@@ -310,7 +319,8 @@ void es_ant_force_set_parameters(void)
 	max_packing_tries = 1;
 
 	adaptive_evaporation_flag = false;
-	min_n_ants = n_ants;
+	min_n_ants = n_ants * 0.8;
+	// min_n_ants = n_ants;
 	// min_n_ants = 0;
 	rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
 

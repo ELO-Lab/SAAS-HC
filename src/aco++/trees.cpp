@@ -506,7 +506,7 @@ void Building_Tree::_cluster_cities(const std::vector<std::size_t> &indexes, con
         return;
     mlpack::Log::Info.ignoreInput = true;
 
-    const int n_clusters = 2;
+    constexpr int n_clusters = 2;
     const std::size_t n_cities = features.n_cols;
     const std::size_t n_features = features.n_rows;
     std::size_t i, cluster_index;
