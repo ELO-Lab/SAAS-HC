@@ -197,7 +197,10 @@ void evaporation(void)
     }
 #endif
     if (o1_evap_flag)
+    {
         o1_global_evaporate();
+        return;
+    }
 
     long int i, j;
 
@@ -232,7 +235,10 @@ void evaporation_nn_list(void)
     }
 #endif
     if (o1_evap_flag)
+    {
         o1_global_evaporate();
+        return;
+    }
 
     long int i, j, help_city;
 
@@ -1191,7 +1197,10 @@ void mmas_evaporation_nn_list(void)
     }
 #endif
     if (o1_evap_flag)
+    {
         o1_global_evaporate();
+        return;
+    }
 
     long int i, j, help_city;
 
