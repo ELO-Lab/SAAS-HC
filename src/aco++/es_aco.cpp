@@ -5,14 +5,14 @@
 #define PAR_A_IDX 2
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
-#define Q0_IDX 5
+// #define Q0_IDX 5
 
 #define EPSILON_IDX 5
 #define LEVY_THRESHOLD_IDX 6
 #define LEVY_RATIO_IDX 7
 
 unsigned long int initial_nb_dims = 5;
-unsigned long int initial_lambda = 10;
+unsigned long int initial_lambda = 5;
 
 //                      alpha   beta  par_a  par_b  par_c epsilon threshold  ratio
 double lowerBounds[] = { 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,   0.0f,     0.0f,  0.0f}; 
@@ -23,7 +23,7 @@ std::vector<double> typicalX;
 std::vector<double> initialStd;
 
 // number of ants per individual
-unsigned int indv_ants = 10;
+unsigned int indv_ants = 4;
 
 int cmaes_flag = 0;
 int ipopcmaes_flag = 0;
@@ -241,11 +241,11 @@ void es_aco_init(){
         initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
     }
 
-    initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = 0.8075;
-    initialX[BETA_IDX] = typicalX[BETA_IDX] = 5.6683;
+    initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = 1.5;
+    initialX[BETA_IDX] = typicalX[BETA_IDX] = 5.0;
 
-    initialStd[ALPHA_IDX] = 0.125;
-    initialStd[BETA_IDX] = 1.608;
+    initialStd[ALPHA_IDX] =1.5;
+    initialStd[BETA_IDX] = 2.0;
 
     printf("Popsize=%d\n", (long int)initial_lambda);
     if (iGreedyLevyFlag){
@@ -335,7 +335,7 @@ void es_aco_set_best_params(){
     par_b = xbestever[PAR_B_IDX];
     par_c = xbestever[PAR_C_IDX];
     // q_0 = xbestever[Q0_IDX];
-    // dGreedyEpsilon = xbestever[EPSILON_IDX];
-    // dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
-    // dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
+    dGreedyEpsilon = xbestever[EPSILON_IDX];
+    dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
+    dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
 }

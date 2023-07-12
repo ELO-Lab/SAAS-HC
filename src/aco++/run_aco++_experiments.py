@@ -238,8 +238,6 @@ def launcher(arg):
         instance_name,
         "--random_seed",
         _random_seed,
-        "--chain_flag",
-        f'{chain_flags}',
     ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
@@ -308,9 +306,9 @@ if __name__ == "__main__":
     assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
     tsp_base = [
-        "eil51",
+        # "eil51",
         # "pr107",
-        # "a280",
+        "a280",
         # "dsj1000",
     ]
     number_of_items_per_city = [
@@ -334,7 +332,7 @@ if __name__ == "__main__":
         "02",
         "03",
     ]
-    number_of_runs = 5
+    number_of_runs = 2
     if debug_log:
         number_of_runs = 3
 
@@ -350,7 +348,7 @@ if __name__ == "__main__":
 
     build()
 
-    n_processes = max(1, multiprocessing.cpu_count() // 2)
+    n_processes = 2 #max(1, multiprocessing.cpu_count() // 2)
     # if debug_log:
     #     n_processes = 1
 
