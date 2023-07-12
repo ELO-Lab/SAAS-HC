@@ -4,12 +4,15 @@
 #include "adaptive_evaporation.h"
 #include "thop.h"
 #include "ants.h"
+#include "es_aco.h"
 
 // Hyperparameters
 float min_rho = 0.01;
 float max_rho = 0.99;
 
-const float rho_diff = max_rho - min_rho;
+float min_indv_ants = 2;
+float max_indv_ants = 50;
+
 
 void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence, long int &total_edge_count)
 {
@@ -51,6 +54,10 @@ void calculate_entropy(float &entropy, const std::map<std::pair<long int, long i
 
 void update_rho(void)
 {
+    
+    float rho_diff = max_rho - min_rho;
+    float indv_ants_diff = max_indv_ants - min_indv_ants;
+
     std::map<std::pair<long int, long int>, long int> occurence;
     long int total_edge_count;
     float entropy, min_entropy, max_entropy;
@@ -61,6 +68,10 @@ void update_rho(void)
     min_entropy = -log2(n_ants * 1.0 / total_edge_count);
     max_entropy = -log2(1.0 / total_edge_count);
 
-    // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-    rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    // rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    indv_ants =  (unsigned int)(min_indv_ants + indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
+    // indv_ants =  (unsigned int)(max_indv_ants - indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
+    
+    resize_ant_colonies();
 }
