@@ -7,7 +7,8 @@
 
 // Hyperparameters
 float min_rho = 0.01;
-float max_rho = 0.5;
+// float max_rho = 0.5;
+float max_rho = 0.99;
 
 const float rho_diff = max_rho - min_rho;
 
@@ -61,6 +62,6 @@ void update_rho(void)
     min_entropy = -log2(n_ants * 1.0 / total_edge_count);
     max_entropy = -log2(1.0 / total_edge_count);
 
-    // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-    rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    // rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
 }

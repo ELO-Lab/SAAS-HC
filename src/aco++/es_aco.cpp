@@ -80,6 +80,7 @@ double upperBounds[] = {
 
 // number of ants per individual
 unsigned int indv_ants = 10;
+// unsigned int indv_ants = 2;
 
 boundary_cmaes optimizer;
 

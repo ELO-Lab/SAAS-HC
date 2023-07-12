@@ -3,7 +3,12 @@
 int_fast8_t verbose = 1;
 
 bool node_clustering_flag = false;
+
+#if ADAPT_RHO_MACRO
+bool adaptive_evaporation_flag = true;
+#else
 bool adaptive_evaporation_flag = false;
+#endif
 
 #if LS_N2_MACRO
 bool ls_n_square_flag = true;
