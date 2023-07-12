@@ -70,6 +70,7 @@
 #include "ls.h"
 #include "utilities.h"
 #include "timer.h"
+#include "es_aco.h"
 
 #include "es_ant.h"
 #include "tree_map.h"

@@ -78,9 +78,11 @@ double upperBounds[] = {
     1.0f,  // threshold
     5.0f}; // ratio
 
+std::vector<double> initialX;
+std::vector<double> typicalX;
+std::vector<double> initialStd;
 // number of ants per individual
-unsigned int indv_ants = 10;
-// unsigned int indv_ants = 2;
+unsigned int indv_ants = 4;
 
 boundary_cmaes optimizer;
 
@@ -92,6 +94,50 @@ unsigned long int popsize0 = initial_lambda;
 unsigned int inc_popsize = 2;
 
 char poptype = 0; // 0 == small , 1 == large
+
+void es_write_params()
+{
+    FILE *fptr;
+    // inspect cmaes_initials_default file to be more specific about each parameter
+    fptr = fopen("cmaes_initials.par", "w");
+
+    fprintf(fptr, "N %d\n", initial_nb_dims);
+
+    fprintf(fptr, "initialX %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        fprintf(fptr, "%f ", initialX[i]);
+    }
+    fprintf(fptr, "\n");
+
+    fprintf(fptr, "typicalX %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        fprintf(fptr, "%f ", typicalX[i]);
+    }
+    fprintf(fptr, "\n");
+
+    fprintf(fptr, "lambda %d\n", initial_lambda);
+    fprintf(fptr, "seed  %d\n", seed);
+
+    fprintf(fptr, "weights equal \n");
+
+    fprintf(fptr, "initialStandardDeviations %d:\n\t", initial_nb_dims);
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        fprintf(fptr, "%f ", initialStd[i]);
+    }
+    fprintf(fptr, "\n");
+
+    // fprintf(fptr,"stopTolFunHist %f\n", 0.0f);
+    fprintf(fptr, "stopTolX %f\n", 1e-11);
+    fprintf(fptr, "stopTolUpXFactor %f\n", 1e3);
+    fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 1.5);
+
+    // fprintf(fptr,"fac*damp %d\n", 1);
+
+    fclose(fptr);
+}
 
 void _es_construct_solutions(int index)
 /*
@@ -286,60 +332,24 @@ double eval_function(int index, double const *x, unsigned long N)
     }
     // mean_and_std(fitnesses, mean_fitness, std_fitness);
 
-    return min_fitness;
-}
-
-void es_write_params()
-{
-    FILE *fptr;
-    // inspect cmaes_initials_default file to be more specific about each parameter
-    fptr = fopen("cmaes_initials.par", "w");
-
-    fprintf(fptr, "N %d\n", initial_nb_dims);
-
-    fprintf(fptr, "initialX %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++)
-    {
-        fprintf(fptr, "%f ", lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
-    }
-    fprintf(fptr, "\n");
-
-    fprintf(fptr, "typicalX %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++)
-    {
-        fprintf(fptr, "%f ", lowerBounds[i] + (0.5 * (upperBounds[i] - lowerBounds[i])));
-    }
-    fprintf(fptr, "\n");
-
-    fprintf(fptr, "lambda %d\n", initial_lambda);
-    fprintf(fptr, "seed  %d\n", seed);
-
-    // fprintf(fptr,"initialX 1: \n\t%f\n",0.0);
-    // fprintf(fptr,"typicalX 1: \n\t%f\n",0.0);
-
-    fprintf(fptr, "weights log \n");
-
-    fprintf(fptr, "initialStandardDeviations %d:\n\t", initial_nb_dims);
-    for (int i = 0; i < initial_nb_dims; i++)
-    {
-        fprintf(fptr, "%f ", (upperBounds[i] - lowerBounds[i]) / 5);
-    }
-    fprintf(fptr, "\n");
-
-    fprintf(fptr, "stopMaxFunEvals %f\n", 1e299);
-    fprintf(fptr, "stopTolFun %f\n", 1e-12);
-    fprintf(fptr, "stopTolFunHist%f\n", 1e-13);
-    fprintf(fptr, "stopTolX %f\n", 1e-11);
-    fprintf(fptr, "stopTolUpXFactor %f\n", 1e2);
-    fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 0.2);
-
-    // fprintf(fptr,"fac*damp %d\n", 1);
-
-    fclose(fptr);
+    return mean_fitness;
 }
 
 void es_aco_init()
 {
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        initialX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
+        typicalX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
+        initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
+    }
+
+    initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = 0.8075;
+    initialX[BETA_IDX] = typicalX[BETA_IDX] = 5.668333333333333;
+
+    initialStd[ALPHA_IDX] = 0.12524143350611514;
+    initialStd[BETA_IDX] = 1.6084922201310836;
+
     printf("Popsize=%d\n", (long int)initial_lambda);
     if (iGreedyLevyFlag)
     {
@@ -348,10 +358,40 @@ void es_aco_init()
     es_write_params();
     seed++;
     optimizer.init(eval_function, lowerBounds, upperBounds);
-    ant.resize(indv_ants * optimizer.get("lambda"));
-    prev_ls_ant.resize(indv_ants * optimizer.get("lambda"));
+    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     max_packing_tries = 1;
     ls_flag = 1;
+}
+
+void es_aco_restart()
+{
+    for (int i = 0; i < initial_nb_dims; i++)
+    {
+        initialX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
+        typicalX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
+        initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
+    }
+
+    printf("Popsize=%d\n", (long int)initial_lambda);
+    if (iGreedyLevyFlag)
+    {
+        initial_nb_dims = ES_ACO_DIM + 3;
+    }
+    es_write_params();
+    seed++;
+    optimizer.init(eval_function, lowerBounds, upperBounds);
+    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    max_packing_tries = 1;
+}
+
+void resize_ant_colonies()
+{
+    // if (ant.size() != indv_ants * (int)(optimizer.get("lambda")))
+    //     printf("Change ant size to %d\n", indv_ants * (int)(optimizer.get("lambda")));
+    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
 }
 
 void es_aco_construct_solutions()
@@ -361,11 +401,12 @@ void es_aco_construct_solutions()
         return;
     es_aco_set_best_params();
 
-    if (es_aco_termination_condition())
+    const char *termination_reason = es_aco_termination_condition();
+    if (termination_reason)
     {
-        printf("restart cames, ");
+        printf("\n%s, restart cames, ", termination_reason);
         // cmaes_flag = 0; return;
-        es_aco_init();
+        es_aco_restart();
     }
 }
 
@@ -380,7 +421,7 @@ void ipop_cmaes_aco_construct_solutions()
     {
         printf("IPOP restart, ");
         initial_lambda *= inc_popsize;
-        es_aco_init();
+        es_aco_restart();
     }
 }
 
@@ -394,7 +435,7 @@ void bipop_cmaes_aco_construct_solutions()
     if (es_aco_termination_condition())
     {
         printf("BIPOP restart, ");
-        long int n_eval = optimizer.get("lambda") * optimizer.get("generation");
+        long int n_eval = (int)(optimizer.get("lambda")) * optimizer.get("generation");
         if (poptype == 0)
             small_n_eval += n_eval;
         else
@@ -413,7 +454,7 @@ void bipop_cmaes_aco_construct_solutions()
             n_restarts += 1;
             initial_lambda = popsize0 * pow(inc_popsize, n_restarts);
         }
-        es_aco_init();
+        es_aco_restart();
     }
 }
 
@@ -427,7 +468,7 @@ void es_aco_exit()
     optimizer.boundary_cmaes_exit();
 }
 
-bool es_aco_termination_condition()
+const char *es_aco_termination_condition()
 {
     return optimizer.termination_condition();
 }
@@ -443,6 +484,7 @@ void es_aco_set_best_params()
     par_a = xbestever[PAR_A_IDX];
     par_b = xbestever[PAR_B_IDX];
     par_c = xbestever[PAR_C_IDX];
+    // q_0 = xbestever[Q0_IDX];
     dGreedyEpsilon = xbestever[EPSILON_IDX];
     dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];

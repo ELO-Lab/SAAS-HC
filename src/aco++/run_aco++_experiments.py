@@ -244,7 +244,7 @@ if __name__ == "__main__":
         "02",
         "03",
     ]
-    number_of_runs = 5
+    number_of_runs = 2
     if debug_log:
         number_of_runs = 3
 
@@ -260,7 +260,7 @@ if __name__ == "__main__":
 
     build()
 
-    n_processes = max(1, multiprocessing.cpu_count() // 2)
+    n_processes = 2 #max(1, multiprocessing.cpu_count() // 2)
     # if debug_log:
     #     n_processes = 1
 

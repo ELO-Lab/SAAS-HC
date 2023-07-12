@@ -30,7 +30,7 @@
 ##     seconds value will take place. 
 ##   For more info see write data below. 
 
-#  print gen+fitness    5
+#  print few+gen+fitness    5
 ## "few" prints Fevals Fval Sigma Max&MinCoorDev AxisRatio MinOfD
   print fewinfo     200 # print every 200 seconds
   print few+clock     2 # clock: used processor time since start

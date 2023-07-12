@@ -570,7 +570,7 @@ int main(int argc, char *argv[])
 
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/
-
+    if(adaptive_evaporation_flag) rho = 0.386;
     for (n_try = 0; n_try < max_tries; n_try++)
     {
         init_try(n_try);
@@ -627,12 +627,13 @@ int main(int argc, char *argv[])
         if (verbose > 0)
         {
             printf("iteration: %ld\n", iteration);
-            printf("seed: %ld\n", seed);
+            // printf("seed: %ld\n", seed);
         }
 
         exit_try(n_try);
         // if (cmaes_flag) es_aco_export_result();
     }
+
     exit_program();
     if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         es_aco_exit();
@@ -667,6 +668,5 @@ int main(int argc, char *argv[])
     free(global_best_ant->packing_plan);
 
     free(prob_of_selection);
-
     return 0;
 }
