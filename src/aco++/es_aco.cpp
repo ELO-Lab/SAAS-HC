@@ -419,7 +419,7 @@ void es_aco_set_best_params()
     if (verbose > 0)
     {
         // printf("rho: %.4f\n", rho);
-        printf("q_0: %.4f\n", q_0);
+        // printf("q_0: %.4f\n", q_0);
 #if TREE_MAP_MACRO
         printf("neighbour_prob: %.4f\n", neighbour_prob);
 #endif
