@@ -146,7 +146,7 @@ void init_pheromone_trails(double initial_trail)
  */
 {
     restart_best_ant->fitness = INFTY;
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->restart_pheromone(initial_trail);
@@ -171,7 +171,8 @@ void init_pheromone_trails(double initial_trail)
             pheromone[i][j] = initial_trail;
             pheromone[j][i] = initial_trail;
 
-            if (!es_ant_flag)
+            if (!es_ant_flag &&
+                !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
             {
                 total[i][j] = initial_trail;
                 total[j][i] = initial_trail;
@@ -188,13 +189,15 @@ void evaporation(void)
       (SIDE)EFFECTS: pheromones are reduced by factor rho
  */
 {
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->evaporate(trail_min);
         return;
     }
 #endif
+    if (o1_evap_flag)
+        o1_global_evaporate();
 
     long int i, j;
 
@@ -221,13 +224,15 @@ void evaporation_nn_list(void)
              of its candidate list
  */
 {
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->evaporate(trail_min);
         return;
     }
 #endif
+    if (o1_evap_flag)
+        o1_global_evaporate();
 
     long int i, j, help_city;
 
@@ -251,7 +256,7 @@ void global_update_pheromone(ant_struct *a)
       (SIDE)EFFECTS: pheromones of arcs in ant k's tour are increased
  */
 {
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->reinforce(*a, rho, trail_max);
@@ -350,7 +355,7 @@ void compute_nn_list_total_information(void)
 
     TRACE(printf("compute total information nn_list\n"););
 
-    for (i = 0; i < instance.n; i++)
+    for (i = 0; i <= instance.n - 3; i++)
     {
         for (j = 0; j < nn_ants; j++)
         {
@@ -1120,7 +1125,7 @@ double node_branching(double l)
                       lambda-branching factor
  */
 {
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
         return tree_map->node_branching(l);
 #endif
@@ -1178,13 +1183,15 @@ void mmas_evaporation_nn_list(void)
                      only considers links between a city and those cities of its candidate list
  */
 {
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
     {
         tree_map->evaporate(trail_min);
         return;
     }
 #endif
+    if (o1_evap_flag)
+        o1_global_evaporate();
 
     long int i, j, help_city;
 
@@ -1459,6 +1466,7 @@ double compute_heuristic(const double &distance)
 
 void o1_local_restart_if_needed(const std::size_t &i, const std::size_t &j)
 {
+    assert(local_restart_times[i][j] <= global_restart_times);
     if (local_restart_times[i][j] < global_restart_times)
     {
         pheromone[i][j] = past_trail_restart;
@@ -1473,10 +1481,9 @@ double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
 
     o1_local_restart_if_needed(i, j);
     assert(local_evap_times[i][j] <= global_evap_times);
-    if (mmas_flag)
-        assert(pheromone[i][j] >= past_trail_min);
 
     res = pheromone[i][j];
+    assert(res > 0);
     if (verbose > 0)
     {
         // printf("res_before: %f\n", res);
@@ -1495,6 +1502,7 @@ double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
         // printf("res_after: %f\n", res);
     }
 
+    assert(res > 0);
     return res;
 }
 
@@ -1542,17 +1550,22 @@ void o1_init_program()
 
 double calculate_total_information(const std::size_t &i, const std::size_t &j)
 {
-    double _pheromone;
+    double _pheromone, res;
 
     assert(!tree_map_flag);
     if (!es_ant_flag && !o1_evap_flag &&
         !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
         return total[i][j];
 
-    if (o1_evap_flag)
+    if (o1_evap_flag &&
+        (es_ant_flag || cmaes_flag || ipopcmaes_flag || bipopcmaes_flag))
         _pheromone = o1_get_pheromone(i, j);
     else
+    {
+        if (o1_evap_flag)
+            o1_pay_evaporation_debt(i, j);
         _pheromone = pheromone[i][j];
+    }
 
     if (verbose > 0)
     {
@@ -1561,5 +1574,7 @@ double calculate_total_information(const std::size_t &i, const std::size_t &j)
         // printf("pow(HEURISTIC(i, j), beta): %.4f\n", pow(HEURISTIC(i, j), beta));
     }
 
-    return pow(_pheromone, alpha) * pow(HEURISTIC(i, j), beta);
+    res = pow(_pheromone, alpha) * pow(HEURISTIC(i, j), beta);
+    assert(res > 0);
+    return res;
 }

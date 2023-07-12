@@ -469,7 +469,7 @@ void pheromone_trail_update(void)
 
 /* Simulate the pheromone evaporation of all pheromones; this is not necessary
    for ACS (see also ACO Book) */
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map->evaporate(trail_min);
     else
@@ -563,6 +563,11 @@ int main(int argc, char *argv[])
 
     init_program(argc, argv);
 
+    if (verbose > 0)
+    {
+        printf("seed: %ld\n", seed);
+    }
+
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/
 
@@ -576,20 +581,27 @@ int main(int argc, char *argv[])
         while (!termination_condition())
         {
             if (cmaes_flag)
-            {
                 es_aco_construct_solutions();
-            }
             else if (ipopcmaes_flag)
-            {
                 ipop_cmaes_aco_construct_solutions();
-            }
             else if (bipopcmaes_flag)
-            {
                 bipop_cmaes_aco_construct_solutions();
-            }
+#if ES_ANT_MACRO
+            else if (es_ant_flag)
+                es_ant_construct_and_local_search();
+#endif
             else
             {
-                construct_solutions();
+#if TREE_MAP_MACRO
+                if (tree_map_flag)
+                    tree_map_construct_solutions();
+                else
+#endif
+                    if (node_clustering_flag)
+                    construct_node_clustering_solution();
+                else
+                    construct_solutions();
+
                 if (ls_flag > 0)
                 {
                     for (k = 0; k < ant.size(); k++)
@@ -619,11 +631,11 @@ int main(int argc, char *argv[])
     exit_program();
     if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         es_aco_exit();
-#ifdef ES_ANT_MACRO
+#if ES_ANT_MACRO
     if (es_ant_flag)
         es_ant_deallocate();
 #endif
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map_deallocate();
 #endif

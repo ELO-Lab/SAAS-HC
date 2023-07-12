@@ -1,5 +1,5 @@
 #include "algo_config.h"
-#ifdef ES_ANT_MACRO
+#if ES_ANT_MACRO
 
 #ifndef _CUSTOM_STRATEGY_H_
 #define _CUSTOM_STRATEGY_H_

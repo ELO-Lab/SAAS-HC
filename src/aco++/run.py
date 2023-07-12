@@ -560,7 +560,6 @@ def load_default_hyperparams():
         else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
     )
 
-
 def check_validation():
     global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
 

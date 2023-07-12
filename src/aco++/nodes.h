@@ -1,5 +1,5 @@
 #include "algo_config.h"
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
 
 #ifndef _NODES_H_
 #define _NODES_H_

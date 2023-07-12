@@ -1,5 +1,6 @@
 #include "es_aco.h"
 #include "algo_config.h"
+#include "tree_map.h"
 
 #define ALPHA_IDX 0
 #define BETA_IDX 1
@@ -7,20 +8,33 @@
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
 
-#ifdef O1_EVAP_MACRO
-#define RHO_IDX 5
-#define EPSILON_IDX 6
-#define LEVY_THRESHOLD_IDX 7
-#define LEVY_RATIO_IDX 8
-#define ES_DIM 9
+#if Q0_TUNING_MACRO
+#define Q0_IDX 5
+#define Q0_TEMP_DIM 6
 #else
-#define EPSILON_IDX 5
-#define LEVY_THRESHOLD_IDX 6
-#define LEVY_RATIO_IDX 7
-#define ES_DIM 8
+#define Q0_TEMP_DIM 5
 #endif
 
-unsigned long int initial_nb_dims = 5;
+#if RHO_TUNING_MACRO
+#define RHO_IDX Q0_TEMP_DIM
+#define RHO_TEMP_DIM (Q0_TEMP_DIM + 1)
+#else
+#define RHO_TEMP_DIM Q0_TEMP_DIM
+#endif
+
+#if TREE_MAP_MACRO
+#define NEIGHBOUR_PROB_IDX RHO_TEMP_DIM
+#define TEMP_DIM (RHO_TEMP_DIM + 1)
+#else
+#define TEMP_DIM RHO_TEMP_DIM
+#endif
+
+#define ES_ACO_DIM TEMP_DIM
+#define EPSILON_IDX ES_ACO_DIM
+#define LEVY_THRESHOLD_IDX (ES_ACO_DIM + 1)
+#define LEVY_RATIO_IDX (ES_ACO_DIM + 2)
+
+unsigned long int initial_nb_dims = ES_ACO_DIM;
 unsigned long int initial_lambda = 10;
 const double initial_std = 0.2;
 
@@ -30,8 +44,14 @@ double lowerBounds[] = {
     0.0f,  // par_a
     0.0f,  // par_b
     0.0f,  // par_c
-#ifdef O1_EVAP_MACRO
+#if Q0_TUNING_MACRO
+    0.01f, // q0
+#endif
+#if RHO_TUNING_MACRO
     0.01f, // rho
+#endif
+#if TREE_MAP_MACRO
+    0.01f, // neighbour_prob
 #endif
     0.0f,  // epsilon
     0.0f,  // threshold
@@ -43,8 +63,14 @@ double upperBounds[] = {
     1.0f,  // par_a
     1.0f,  // par_b
     1.0f,  // par_c
-#ifdef O1_EVAP_MACRO
+#if Q0_TUNING_MACRO
+    0.99f, // q0
+#endif
+#if RHO_TUNING_MACRO
     0.99f, // rho
+#endif
+#if TREE_MAP_MACRO
+    0.99f, // neighbour_prob
 #endif
     1.0f,  // epsilon
     1.0f,  // threshold
@@ -185,8 +211,14 @@ double eval_function(int index, double const *x, unsigned long N)
     dGreedyEpsilon = x[EPSILON_IDX];
     dGreedyLevyThreshold = x[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = x[LEVY_RATIO_IDX];
-#ifdef O1_EVAP_MARCO
+#if RHO_TUNING_MACRO
     rho = x[RHO_IDX];
+#endif
+#if Q0_TUNING_MACRO
+    q_0 = x[Q0_IDX];
+#endif
+#if TREE_MAP_MACRO
+    neighbour_prob = x[NEIGHBOUR_PROB_IDX];
 #endif
 
     _es_construct_solutions(index);
@@ -279,7 +311,7 @@ void es_aco_init()
     printf("Popsize=%d\n", (long int)initial_lambda);
     if (iGreedyLevyFlag)
     {
-        initial_nb_dims = ES_DIM;
+        initial_nb_dims = ES_ACO_DIM + 3;
     }
     es_write_params();
     seed++;
@@ -365,6 +397,7 @@ void es_aco_set_best_params()
 {
     double *xbestever = NULL;
     xbestever = optimizer.getInto("xbestever", xbestever);
+    xbestever = optimizer.boundary_transformation(xbestever);
 
     alpha = xbestever[ALPHA_IDX];
     beta = xbestever[BETA_IDX];
@@ -374,7 +407,21 @@ void es_aco_set_best_params()
     dGreedyEpsilon = xbestever[EPSILON_IDX];
     dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
-#ifdef O1_EVAP_MARCO
+#if RHO_TUNING_MACRO
     rho = xbestever[RHO_IDX];
 #endif
+#if Q0_TUNING_MACRO
+    q_0 = xbestever[Q0_IDX];
+#endif
+#if TREE_MAP_MACRO
+    neighbour_prob = xbestever[NEIGHBOUR_PROB_IDX];
+#endif
+    if (verbose > 0)
+    {
+        // printf("rho: %.4f\n", rho);
+        printf("q_0: %.4f\n", q_0);
+#if TREE_MAP_MACRO
+        printf("neighbour_prob: %.4f\n", neighbour_prob);
+#endif
+    }
 }

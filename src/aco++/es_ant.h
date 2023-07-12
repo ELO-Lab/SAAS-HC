@@ -1,5 +1,5 @@
 #include "algo_config.h"
-#ifdef ES_ANT_MACRO
+#if ES_ANT_MACRO
 
 #ifndef _ES_ANT_H_
 #define _ES_ANT_H_

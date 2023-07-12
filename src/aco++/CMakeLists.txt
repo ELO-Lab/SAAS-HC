@@ -5,6 +5,7 @@ project(ACO++)
 set(CMAKE_CXX_STANDARD 17)
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(OMP_NUM_THREADS 1)
 set(ENV{OMP_NUM_THREADS} 1)
 
 # add_compile_options(-O3)

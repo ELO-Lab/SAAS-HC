@@ -1,5 +1,5 @@
 #include "algo_config.h"
-#ifdef TREE_MAP_MACRO
+#if TREE_MAP_MACRO
 
 #define TOP_DOWN true
 // #define TOP_DOWN false
