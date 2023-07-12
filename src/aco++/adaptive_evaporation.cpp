@@ -5,13 +5,14 @@
 #include "thop.h"
 #include "ants.h"
 #include "es_aco.h"
+#include "es_ant.h"
 
 // Hyperparameters
-float min_rho = 0.01;
-float max_rho = 0.99;
+double min_rho = 0.01;
+double max_rho = 0.99;
 
-float min_indv_ants = 2;
-float max_indv_ants = 50;
+double min_indv_ants = 2;
+double max_indv_ants = 50;
 
 void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence, long int &total_edge_count)
 {
@@ -41,12 +42,12 @@ void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurenc
     }
 }
 
-void calculate_entropy(float &entropy, const std::map<std::pair<long int, long int>, long int> &occurence, const long int &total_edge_count)
+void calculate_entropy(double &entropy, const std::map<std::pair<long int, long int>, long int> &occurence, const long int &total_edge_count)
 {
     entropy = 0;
     for (const auto &item : occurence)
     {
-        const float p_ij = item.second * 1.0 / total_edge_count;
+        const double p_ij = item.second * 1.0 / total_edge_count;
         entropy -= p_ij * log2(p_ij);
     }
 }
@@ -54,12 +55,12 @@ void calculate_entropy(float &entropy, const std::map<std::pair<long int, long i
 void update_rho(void)
 {
 
-    float rho_diff = max_rho - min_rho;
-    float indv_ants_diff = max_indv_ants - min_indv_ants;
+    double rho_diff = max_rho - min_rho;
+    double indv_ants_diff = max_indv_ants - min_indv_ants;
 
     std::map<std::pair<long int, long int>, long int> occurence;
     long int total_edge_count;
-    float entropy, min_entropy, max_entropy;
+    double entropy, min_entropy, max_entropy;
 
     count_ant_edges(occurence, total_edge_count);
     calculate_entropy(entropy, occurence, total_edge_count);
@@ -69,8 +70,18 @@ void update_rho(void)
 
     rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
     // rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-    indv_ants = (unsigned int)(min_indv_ants + indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
-    // indv_ants =  (unsigned int)(max_indv_ants - indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
 
-    resize_ant_colonies();
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+    {
+        indv_ants = (unsigned int)(min_indv_ants + indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
+        // indv_ants =  (unsigned int)(max_indv_ants - indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
+
+        resize_ant_colonies();
+    }
+
+    if (es_ant_flag)
+    {
+        n_ant_per_ind = min_indv_ants + indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+        // n_ant_per_ind =  max_indv_ants - indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
+    }
 }

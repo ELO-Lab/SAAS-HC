@@ -61,9 +61,9 @@ double par_a_mean, par_b_mean, par_c_mean,
     alpha_stepsize, beta_stepsize, rho_stepsize,
     q_0_mean, q_0_stepsize, rand_seed_stepsize,
     neighbour_prob_mean, neighbour_prob_stepsize;
-size_t min_n_ants, n_ant_per_ind;
+std::size_t min_n_ants, n_ant_per_ind;
 
-size_t current_ant_idx = 0;
+std::size_t current_ant_idx = 0;
 std::array<double, ES_ANT_DIM> lbounds, ubounds;
 OPTIMIZER *optim_ptr;
 double best_iteration_alpha, best_iteration_beta, best_iteration_rho;
@@ -318,11 +318,9 @@ void es_ant_force_set_parameters(void)
 {
     ls_flag = 1;
     max_packing_tries = 1;
-    min_n_ants = n_ants * 0.8;
+    // min_n_ants = n_ants * 0.8;
     // min_n_ants = n_ants;
-    // min_n_ants = 0;
-    // n_ant_per_ind = 10;
-    // n_ant_per_ind = 2;
+    min_n_ants = 0;
     n_ant_per_ind = 5;
 
     rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
