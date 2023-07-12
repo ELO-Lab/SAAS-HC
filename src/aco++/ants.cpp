@@ -171,7 +171,8 @@ void init_pheromone_trails(double initial_trail)
             pheromone[i][j] = initial_trail;
             pheromone[j][i] = initial_trail;
 
-            if (!es_ant_flag)
+            if (!es_ant_flag &&
+                !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
             {
                 total[i][j] = initial_trail;
                 total[j][i] = initial_trail;
@@ -1465,6 +1466,7 @@ double compute_heuristic(const double &distance)
 
 void o1_local_restart_if_needed(const std::size_t &i, const std::size_t &j)
 {
+    assert(local_restart_times[i][j] <= global_restart_times);
     if (local_restart_times[i][j] < global_restart_times)
     {
         pheromone[i][j] = past_trail_restart;
@@ -1479,10 +1481,9 @@ double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
 
     o1_local_restart_if_needed(i, j);
     assert(local_evap_times[i][j] <= global_evap_times);
-    if (mmas_flag)
-        assert(pheromone[i][j] >= past_trail_min);
 
     res = pheromone[i][j];
+    assert(res > 0);
     if (verbose > 0)
     {
         // printf("res_before: %f\n", res);
@@ -1501,6 +1502,7 @@ double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
         // printf("res_after: %f\n", res);
     }
 
+    assert(res > 0);
     return res;
 }
 
@@ -1555,10 +1557,15 @@ double calculate_total_information(const std::size_t &i, const std::size_t &j)
         !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
         return total[i][j];
 
-    if (o1_evap_flag)
+    if (o1_evap_flag &&
+        (es_ant_flag || cmaes_flag || ipopcmaes_flag || bipopcmaes_flag))
         _pheromone = o1_get_pheromone(i, j);
     else
+    {
+        if (o1_evap_flag)
+            o1_pay_evaporation_debt(i, j);
         _pheromone = pheromone[i][j];
+    }
 
     if (verbose > 0)
     {

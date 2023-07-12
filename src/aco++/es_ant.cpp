@@ -177,6 +177,7 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
     neighbour_prob = parameters[NEIGHBOUR_PROB_IDX];
 #endif
 
+#if TREE_MAP_MACRO
     if (tree_map_flag)
         tree_map->choose_route(
             ant[current_ant_idx],
@@ -189,6 +190,7 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
             instance.nn_list,
             q_0);
     else
+#endif
         an_ant_run();
 
     if (ls_flag > 0)
@@ -306,7 +308,9 @@ void es_ant_construct_and_local_search(void)
     if (verbose > 0)
     {
         printf("n_ants: %ld\n", n_ants);
+#if TREE_MAP_MACRO
         printf("neighbour_prob: %.2f\n", neighbour_prob);
+#endif
         printf("\n");
     }
     ////
