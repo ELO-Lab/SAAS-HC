@@ -57,6 +57,7 @@
 #include <math.h>
 #include <limits.h>
 #include <time.h>
+
 #include "inout.h"
 #include "thop.h"
 #include "timer.h"
@@ -64,18 +65,22 @@
 #include "ants.h"
 #include "ls.h"
 #include "parse.h"
+#include "node_clustering.h"
+#include "adaptive_evaporation.h"
+#include "es_ant.h"
+#include "tree_map.h"
+#include "algo_config.h"
 
-extern int iLevyFlag;				// 0 or 1
-extern double dLevyThreshold;		//0--1
-extern double dLevyRatio;			//0.1--5
+extern int iLevyFlag;         // 0 or 1
+extern double dLevyThreshold; // 0--1
+extern double dLevyRatio;     // 0.1--5
 
-extern double dContribution;  		//0--10
+extern double dContribution; // 0--10
 
-extern int iGreedyLevyFlag;			// 0 or 1
-extern double dGreedyEpsilon;		//0--1
-extern double dGreedyLevyThreshold;	//0--1
-extern double dGreedyLevyRatio;		//0.1--5
-
+extern int iGreedyLevyFlag;         // 0 or 1
+extern double dGreedyEpsilon;       // 0--1
+extern double dGreedyLevyThreshold; // 0--1
+extern double dGreedyLevyRatio;     // 0.1--5
 
 long int *best_in_try;
 long int *best_found_at;
@@ -199,6 +204,33 @@ void init_program(long int argc, char *argv[])
     write_params();
 
     allocate_ants();
+
+#if ES_ANT_MACRO
+    if (es_ant_flag)
+        es_ant_init();
+#endif
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+        tree_map_init();
+#endif
+
+    instance.nn_list = compute_nn_lists();
+    if (!tree_map_flag)
+    {
+        pheromone = generate_double_matrix(instance.n, instance.n);
+    }
+
+    if (!es_ant_flag && !tree_map_flag && !o1_evap_flag &&
+        !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
+    {
+        total = generate_double_matrix(instance.n, instance.n);
+    }
+
+    if (node_clustering_flag == TRUE)
+        create_cluster();
+
+    if (o1_evap_flag)
+        o1_init_program();
 }
 
 void exit_program(void)
@@ -246,6 +278,9 @@ void init_try(long int ntry)
     time_used = elapsed_time(VIRTUAL);
     time_passed = time_used;
 
+    if (o1_evap_flag)
+        o1_init_try(); // must before init trail
+
     /* Initialize variables concerning statistics etc. */
 
     n_tours = 1;
@@ -291,6 +326,12 @@ void init_try(long int ntry)
         fprintf(log_file, "\nbegin try %li \n", ntry);
     if (log_tries_file)
         fprintf(log_tries_file, "begin try %li \n", ntry);
+
+    if (verbose > 1)
+    {
+        printf("global_evap_times: %.4f", global_evap_times);
+        printf("global_restart_times: %.4f", global_restart_times);
+    }
 }
 
 void exit_try(long int ntry)
@@ -350,13 +391,25 @@ void read_thop_instance(const char *input_file_name, struct point **nodeptr, str
     fscanf(input_file, "MAX SPEED: %lf\n", &instance.max_speed);
     fscanf(input_file, "EDGE_WEIGHT_TYPE: %s\n", buf);
     if (strcmp("EUC_2D", buf) == 0)
+    {
         distance = round_distance;
+        distance_with_coordinate = euclid_distance;
+    }
     else if (strcmp("CEIL_2D", buf) == 0)
+    {
         distance = ceil_distance;
+        distance_with_coordinate = ceil_distance;
+    }
     else if (strcmp("GEO", buf) == 0)
+    {
         distance = geo_distance;
+        distance_with_coordinate = geo_distance;
+    }
     else if (strcmp("ATT", buf) == 0)
+    {
         distance = att_distance;
+        distance_with_coordinate = att_distance;
+    }
     fgets(buf, LINE_BUF_LEN, input_file); /* NODE_COORD_SECTION  (INDEX, X, Y): */
 
     if ((*nodeptr = (point *)malloc(sizeof(struct point) * (instance.n))) == NULL)
@@ -453,6 +506,12 @@ void set_default_parameters(void)
     acs_flag = FALSE;
     ras_ranks = 0;
     elitist_ants = 0;
+
+    node_clustering_flag = FALSE;
+    n_sector = 24;
+    cluster_size = 32;
+
+    adaptive_evaporation_flag = false;
 }
 
 void set_default_as_parameters(void)
@@ -564,6 +623,15 @@ void set_default_ls_parameters(void)
     }
 }
 
+void set_default_node_clustering_parameters(void)
+{
+    n_cluster = 4;
+    cluster_size = 16;
+    n_sector = 8;
+
+    q_0 = 0.98f;
+}
+
 void save_best_thop_solution(void)
 {
 
@@ -593,10 +661,10 @@ void save_best_thop_solution(void)
             if (first_print == TRUE)
             {
                 first_print = FALSE;
-                fprintf(sol_file, "%d", global_best_ant->tour[i] + 1);
+                fprintf(sol_file, "%ld", global_best_ant->tour[i] + 1);
             }
             else
-                fprintf(sol_file, ",%d", global_best_ant->tour[i] + 1);
+                fprintf(sol_file, ",%ld", global_best_ant->tour[i] + 1);
         }
     }
     fprintf(sol_file, "]\n[");
@@ -657,7 +725,7 @@ void write_iterations_report(long int iteration_best_ant)
             }
         }
 
-        fprintf(log_tries_file, "%ld,%ld,%.2f\n", iteration, profit, iteration, elapsed_time(VIRTUAL));
+        fprintf(log_tries_file, "%ld,%ld,%ld,%.2f\n", iteration, profit, iteration, elapsed_time(VIRTUAL));
 
         first_print = TRUE;
         fprintf(log_tries_file, "[");
@@ -668,10 +736,10 @@ void write_iterations_report(long int iteration_best_ant)
                 if (first_print == TRUE)
                 {
                     first_print = FALSE;
-                    fprintf(log_tries_file, "%d", ant[iteration_best_ant].tour[i] + 1);
+                    fprintf(log_tries_file, "%ld", ant[iteration_best_ant].tour[i] + 1);
                 }
                 else
-                    fprintf(log_tries_file, ",%d", ant[iteration_best_ant].tour[i] + 1);
+                    fprintf(log_tries_file, ",%ld", ant[iteration_best_ant].tour[i] + 1);
             }
         }
         fprintf(log_tries_file, "]\n[");

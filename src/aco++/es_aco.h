@@ -1,5 +1,5 @@
-#ifndef ES_ACO_H /* only include ones */ 
-#define ES_ACO_H 
+#ifndef ES_ACO_H /* only include ones */
+#define ES_ACO_H
 
 #include <iostream>
 #include <cstdio>
@@ -12,16 +12,13 @@
 #include "thop.h"
 #include "timer.h"
 #include "ls.h"
+#include "algo_config.h"
 
 extern unsigned long int initial_nb_dims;
 extern unsigned long int initial_lambda;
 
 extern double lowerBounds[];
 extern double upperBounds[];
-
-extern int cmaes_flag;
-extern int ipopcmaes_flag;
-extern int bipopcmaes_flag;
 
 extern boundary_cmaes optimizer;
 
@@ -30,7 +27,7 @@ void _es_construct_solutions(int index);
 void _es_local_search(int index);
 
 //   index of current offspring         genotype   number of dims
-double eval_function (int index, double const *x, unsigned long N);
+double eval_function(int index, double const *x, unsigned long N);
 
 void es_aco_init();
 

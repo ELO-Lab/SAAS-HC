@@ -49,11 +49,13 @@
           Belgium
 
  ***************************************************************************/
-#ifndef UTILITIES_H /* only include ones */ 
-#define UTILITIES_H 
+#ifndef UTILITIES_H /* only include ones */
+#define UTILITIES_H
 
 #include <random>
 #include <climits>
+
+#include <random>
 
 #define INFTY LONG_MAX
 #define MAXIMUM_NO_TRIES 100
@@ -66,7 +68,7 @@
 #define MAX(x, y) ((x) >= (y) ? (x) : (y))
 #define MIN(x, y) ((x) <= (y) ? (x) : (y))
 
-#define DEBUG(x) 
+#define DEBUG(x) x
 
 #define TRACE(x)
 

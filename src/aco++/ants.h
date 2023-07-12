@@ -49,15 +49,17 @@
                   Belgium
 
  ***************************************************************************/
-#ifndef ANTS_H /* only include ones */ 
-#define ANTS_H 
+#ifndef _ANTS_H_
+#define _ANTS_H_
 
 #include <vector>
 #include <cstddef>
+#include "algo_config.h"
 
-#define HEURISTIC(m, n) (1.0 / ((double)instance.distance[m][n] + 0.1))
+// #define HEURISTIC(m, n) (1.0 / ((double)instance.distance[m][n] + 0.1))
 /* add a small constant to avoid division by zero if a distance is
 zero */
+#define HEURISTIC(m, n) compute_heuristic(instance.distance[m][n])
 
 #define EPSILON 0.00000000000000000000000000000001
 
@@ -83,7 +85,7 @@ public:
     Ant_Swarm();
     ~Ant_Swarm();
     size_t size();
-    void resize(const size_t &);
+    void resize(const std::size_t &);
     ant_struct &operator[](size_t pos);
 
 private:
@@ -94,16 +96,15 @@ private:
     void free_ant(ant_struct &);
 };
 
-extern int iLevyFlag;				// 0 or 1
-extern double dLevyThreshold;		//0--1
-extern double dLevyRatio;			//0.1--5
+extern int iLevyFlag;         // 0 or 1
+extern double dLevyThreshold; // 0--1
+extern double dLevyRatio;     // 0.1--5
 
-extern double dContribution;  		//0--10
+extern double dContribution; // 0--10
 
-extern int iGreedyLevyFlag;			// 0 or 1
-extern double dGreedyEpsilon;		//0--1
-extern double dGreedyLevyThreshold;	//0--1
-extern double dGreedyLevyRatio;		//0.1--5
+extern double dGreedyEpsilon;       // 0--1
+extern double dGreedyLevyThreshold; // 0--1
+extern double dGreedyLevyRatio;     // 0.1--5
 
 extern Ant_Swarm ant; /* this class will hold the colony */
 extern Ant_Swarm prev_ls_ant;
@@ -158,8 +159,6 @@ void global_update_pheromone_weighted(ant_struct *a, long int weight);
 void compute_total_information(void);
 
 void compute_nn_list_total_information(void);
-
-void compute_nc_list_total_information(void);
 
 void update_cluter_total(void);
 
@@ -217,5 +216,20 @@ void local_acs_pheromone_update(ant_struct *a, long int phase);
 void bwas_worst_ant_update(ant_struct *a1, ant_struct *a2);
 
 void bwas_pheromone_mutation(void);
+
+double compute_heuristic(const double &distance);
+
+// o1_evap_flag
+extern std::size_t global_evap_times;                             // evaporation times since last restart
+extern std::size_t global_restart_times;                          // times restarting pheromone trial so far
+extern std::vector<std::vector<std::size_t>> local_evap_times;    // evaporation times of edges since last restart
+extern std::vector<std::vector<std::size_t>> local_restart_times; // times restarting pheromone of edges since last restart
+void o1_global_evaporate();
+void o1_global_restart(const double &trail_restart);
+void o1_init_try();
+void o1_init_program();
+
+// es_ant_flag || o1_evap_flag
+double calculate_total_information(const std::size_t &i, const std::size_t &j);
 
 #endif

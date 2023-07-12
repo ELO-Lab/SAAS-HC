@@ -72,16 +72,18 @@
 #include "timer.h"
 #include "es_aco.h"
 
-int iLevyFlag = 0;				// 0 or 1, default 0;
-double dLevyThreshold=1;		// 0--1
-double dLevyRatio=1;			// 0.1--5
+#include "es_ant.h"
+#include "tree_map.h"
+#include "algo_config.h"
+int iLevyFlag = 0;         // 0 or 1, default 0;
+double dLevyThreshold = 1; // 0--1
+double dLevyRatio = 1;     // 0.1--5
 
-double dContribution=0;  		// 0--10
+double dContribution = 0; // 0--10
 
-int iGreedyLevyFlag = 0;		// 0 or 1
-double dGreedyEpsilon = 0.9;	// 0--1
-double dGreedyLevyThreshold = 1;// 0--1
-double dGreedyLevyRatio = 1;	// 0.1--5
+double dGreedyEpsilon = 0.9;     // 0--1
+double dGreedyLevyThreshold = 1; // 0--1
+double dGreedyLevyRatio = 1;     // 0.1--5
 
 ant_struct *best_so_far_ant;
 ant_struct *restart_best_ant;
@@ -119,6 +121,17 @@ long int u_gb;    /* every u_gb iterations update with best-so-far ant */
 
 double trail_0; /* initial pheromone level in ACS and BWAS */
 
+// o1_evap_flag
+std::size_t global_evap_times;                             // evaporation times since last restart
+std::size_t global_restart_times;                          // times restarting pheromone trial so far
+std::vector<std::vector<std::size_t>> local_evap_times;    // evaporation times of edges since last restart
+std::vector<std::vector<std::size_t>> local_restart_times; // times restarting pheromone of edges since last restart
+double past_trail_restart;                                 // pheromone trail during th last restart
+double past_trail_min;                                     // minimum pheromone trail in MMAS during the last evaporation
+void o1_local_restart_if_needed(const std::size_t &i, const std::size_t &j);
+double o1_get_pheromone(const std::size_t &i, const std::size_t &j);
+void o1_pay_evaporation_debt(const std::size_t &i, const std::size_t &j);
+
 /************************************************************
  ************************************************************
 Procedures for pheromone manipulation
@@ -133,6 +146,20 @@ void init_pheromone_trails(double initial_trail)
       (SIDE)EFFECTS: pheromone matrix is reinitialized
  */
 {
+    restart_best_ant->fitness = INFTY;
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+    {
+        tree_map->restart_pheromone(initial_trail);
+        return;
+    }
+#endif
+    if (o1_evap_flag)
+    {
+        o1_global_restart(initial_trail);
+        return;
+    }
+
     long int i, j;
 
     TRACE(printf(" init trails with %.15f\n", initial_trail););
@@ -144,8 +171,13 @@ void init_pheromone_trails(double initial_trail)
         {
             pheromone[i][j] = initial_trail;
             pheromone[j][i] = initial_trail;
-            total[i][j] = initial_trail;
-            total[j][i] = initial_trail;
+
+            if (!es_ant_flag &&
+                !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
+            {
+                total[i][j] = initial_trail;
+                total[j][i] = initial_trail;
+            }
         }
     }
 }
@@ -158,6 +190,19 @@ void evaporation(void)
       (SIDE)EFFECTS: pheromones are reduced by factor rho
  */
 {
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+    {
+        tree_map->evaporate(trail_min);
+        return;
+    }
+#endif
+    if (o1_evap_flag)
+    {
+        o1_global_evaporate();
+        return;
+    }
+
     long int i, j;
 
     TRACE(printf("pheromone evaporation\n"););
@@ -183,6 +228,19 @@ void evaporation_nn_list(void)
              of its candidate list
  */
 {
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+    {
+        tree_map->evaporate(trail_min);
+        return;
+    }
+#endif
+    if (o1_evap_flag)
+    {
+        o1_global_evaporate();
+        return;
+    }
+
     long int i, j, help_city;
 
     TRACE(printf("pheromone evaporation nn_list\n"););
@@ -205,17 +263,35 @@ void global_update_pheromone(ant_struct *a)
       (SIDE)EFFECTS: pheromones of arcs in ant k's tour are increased
  */
 {
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+    {
+        tree_map->reinforce(*a, rho, trail_max);
+        return;
+    }
+#endif
+
     long int i, j, h;
     double d_tau;
 
     TRACE(printf("global pheromone update\n"););
 
     d_tau = 1.0 / (double)a->fitness;
+
     for (i = 0; i < instance.n; i++)
     {
         j = a->tour[i];
         h = a->tour[i + 1];
+        if (o1_evap_flag)
+        {
+            o1_pay_evaporation_debt(j, h);
+            o1_pay_evaporation_debt(h, j);
+        }
         pheromone[j][h] += d_tau;
+        if (mmas_flag)
+            if (pheromone[j][h] > trail_max)
+                pheromone[j][h] = trail_max;
+
         pheromone[h][j] = pheromone[j][h];
     }
 }
@@ -228,6 +304,9 @@ void global_update_pheromone_weighted(ant_struct *a, long int weight)
       (SIDE)EFFECTS: pheromones of arcs in the ant's tour are increased
  */
 {
+    assert(!tree_map_flag);
+    assert(!o1_evap_flag);
+
     long int i, j, h;
     double d_tau;
 
@@ -250,7 +329,10 @@ void compute_total_information(void)
       OUTPUT:   none
  */
 {
-    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) return;
+    if (es_ant_flag || tree_map_flag || o1_evap_flag ||
+        cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+        return;
+
     long int i, j;
 
     TRACE(printf("compute total information\n"););
@@ -272,12 +354,15 @@ void compute_nn_list_total_information(void)
       OUTPUT:   none
  */
 {
-    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) return;
+    if (es_ant_flag || tree_map_flag || o1_evap_flag ||
+        cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+        return;
+
     long int i, j, h;
 
     TRACE(printf("compute total information nn_list\n"););
 
-    for (i = 0; i < instance.n; i++)
+    for (i = 0; i <= instance.n - 3; i++)
     {
         for (j = 0; j < nn_ants; j++)
         {
@@ -332,11 +417,10 @@ void place_ant(ant_struct *a, long int step)
     a->visited[rnd] = TRUE;
 }
 
-double calculate_total_information(int i, int j){
-    
-    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
-    else return total[i][j];
-}
+// double calculate_total_information(int i, int j)
+// {
+//     return pow(pheromone[i][j], alpha) * pow(HEURISTIC(i, j), beta);
+// }
 
 void choose_best_next(ant_struct *a, long int phase)
 /*
@@ -360,10 +444,10 @@ void choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            if (calculate_total_information(current_city,city) > value_best)
+            if (calculate_total_information(current_city, city) > value_best)
             {
                 next_city = city;
-                value_best = calculate_total_information(current_city,city);
+                value_best = calculate_total_information(current_city, city);
             }
         }
     }
@@ -398,7 +482,13 @@ void neighbour_choose_best_next(ant_struct *a, long int phase)
             ; /* city already visited, do nothing */
         else
         {
-            help = calculate_total_information(current_city,help_city);
+            help = calculate_total_information(current_city, help_city);
+
+            if (verbose > 0)
+            {
+                // printf("help: %.4f\n", help);
+            }
+
             if (help > value_best)
             {
                 value_best = help;
@@ -490,7 +580,7 @@ void neighbour_choose_and_move_to_next(ant_struct *a, long int phase)
         else
         {
             DEBUG(assert(instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < instance.n);)
-            prob_ptr[i] = calculate_total_information(current_city,instance.nn_list[current_city][i]);
+            prob_ptr[i] = calculate_total_information(current_city, instance.nn_list[current_city][i]);
             sum_prob += prob_ptr[i];
         }
     }
@@ -548,7 +638,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
     of the nearest neighbor cities */
     double *prob_ptr;
 
-    long int ordered_city[nn_ants+1];
+    long int ordered_city[nn_ants + 1];
 
     // Both q_0 and dGreedyEpsilon will run these codes.
     rnd = new_rand01();
@@ -666,7 +756,7 @@ void neighbour_choose_and_move_to_next_using_greedy_Levy_flight(ant_struct *a, l
         {
             i++;
             if (iLevyFlag || iGreedyLevyFlag)
-            {                 
+            {
                 partial_sum += prob_ptr[ordered_city[i]];
             }
             else
@@ -1020,7 +1110,7 @@ void population_statistics(void)
 
     pop_mean = mean(l, ant.size());
     pop_stddev = std_deviation(l, ant.size(), pop_mean);
-    branching_factor = node_branching(lambda);
+    // branching_factor = node_branching(lambda);
 
     for (k = 0; k < ant.size() - 1; k++)
         for (j = k + 1; j < ant.size(); j++)
@@ -1042,6 +1132,11 @@ double node_branching(double l)
                       lambda-branching factor
  */
 {
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+        return tree_map->node_branching(l);
+#endif
+
     long int i, m;
     double min, max, cutoff;
     double avg;
@@ -1095,11 +1190,24 @@ void mmas_evaporation_nn_list(void)
                      only considers links between a city and those cities of its candidate list
  */
 {
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+    {
+        tree_map->evaporate(trail_min);
+        return;
+    }
+#endif
+    if (o1_evap_flag)
+    {
+        o1_global_evaporate();
+        return;
+    }
+
     long int i, j, help_city;
 
     TRACE(printf("mmas specific evaporation on nn_lists\n"););
 
-    for (i = 0; i < instance.n; i++)
+    for (i = 0; i <= instance.n - 3; i++)
     {
         for (j = 0; j < nn_ants; j++)
         {
@@ -1123,6 +1231,11 @@ void check_nn_list_pheromone_trail_limits(void)
              is not done (see FGCS paper or ACO book for explanation
  */
 {
+    if (tree_map_flag)
+    {
+        return;
+    }
+
     long int i, j, help_city;
 
     TRACE(printf("mmas specific: check pheromone trail limits nn_list\n"););
@@ -1149,6 +1262,11 @@ void check_pheromone_trail_limits(void)
       (SIDE)EFFECTS: pheromones are forced to interval [trail_min,trail_max]
  */
 {
+    if (tree_map_flag)
+    {
+        return;
+    }
+
     long int i, j;
 
     TRACE(printf("mmas specific: check pheromone trail limits\n"););
@@ -1185,6 +1303,8 @@ void global_acs_pheromone_update(ant_struct *a)
       (SIDE)EFFECTS: pheromones of arcs in ant k's tour are increased
  */
 {
+    assert(!tree_map_flag);
+
     long int i, j, h;
     double d_tau;
 
@@ -1218,6 +1338,8 @@ void local_acs_pheromone_update(ant_struct *a, long int phase)
              commandline parameter
  */
 {
+    assert(!tree_map_flag);
+
     long int h, j;
 
     DEBUG(assert(phase > 0 && phase <= instance.n);)
@@ -1248,6 +1370,8 @@ void bwas_worst_ant_update(ant_struct *a1, ant_struct *a2)
       (SIDE)EFFECTS: pheromones on some arcs undergo additional evaporation
  */
 {
+    assert(!tree_map_flag);
+
     long int i, j, h, pos, pred;
     long int distance;
     long int *pos2; /* positions of cities in tour of ant a2 */
@@ -1290,6 +1414,8 @@ void bwas_pheromone_mutation(void)
       OUTPUT:   none
  */
 {
+    assert(!tree_map_flag);
+
     long int i, j, k;
     long int num_mutations;
     double avg_trail = 0.0, mutation_strength = 0.0, mutation_rate = 0.3;
@@ -1341,4 +1467,124 @@ void bwas_pheromone_mutation(void)
             pheromone[k][j] = pheromone[j][k];
         }
     }
+}
+
+double compute_heuristic(const double &distance)
+{
+    return 1.0 / (distance + 0.1);
+}
+
+void o1_local_restart_if_needed(const std::size_t &i, const std::size_t &j)
+{
+    assert(local_restart_times[i][j] <= global_restart_times);
+    if (local_restart_times[i][j] < global_restart_times)
+    {
+        pheromone[i][j] = past_trail_restart;
+        local_restart_times[i][j] = global_restart_times;
+        local_evap_times[i][j] = 0;
+    }
+}
+
+double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
+{
+    double res;
+
+    o1_local_restart_if_needed(i, j);
+    assert(local_evap_times[i][j] <= global_evap_times);
+
+    res = pheromone[i][j];
+    assert(res > 0);
+    if (verbose > 0)
+    {
+        // printf("res_before: %f\n", res);
+    }
+
+    if (local_evap_times[i][j] < global_evap_times)
+    {
+        res *= pow(1 - rho, global_evap_times - local_evap_times[i][j]);
+        if (mmas_flag)
+            if (res < past_trail_min)
+                res = past_trail_min;
+    }
+
+    if (verbose > 0)
+    {
+        // printf("res_after: %f\n", res);
+    }
+
+    assert(res > 0);
+    return res;
+}
+
+void o1_pay_evaporation_debt(const std::size_t &i, const std::size_t &j)
+{
+    pheromone[i][j] = o1_get_pheromone(i, j);
+    local_evap_times[i][j] = global_evap_times;
+}
+
+void o1_global_evaporate()
+{
+    global_evap_times += 1;
+    past_trail_min = trail_min;
+}
+
+void o1_global_restart(const double &trail_restart)
+{
+    past_trail_restart = trail_restart;
+    global_restart_times += 1;
+    global_evap_times = 0;
+}
+
+void o1_init_try()
+{
+    for (auto &vec : local_evap_times)
+        for (auto &value : vec)
+            value = 0;
+    for (auto &vec : local_restart_times)
+        for (auto &value : vec)
+            value = 0;
+    global_evap_times = 0;
+    global_restart_times = 0;
+}
+
+void o1_init_program()
+{
+    local_evap_times.resize(instance.n);
+    for (auto &vec : local_evap_times)
+        vec.resize(instance.n);
+
+    local_restart_times.resize(instance.n);
+    for (auto &vec : local_restart_times)
+        vec.resize(instance.n);
+}
+
+double calculate_total_information(const std::size_t &i, const std::size_t &j)
+{
+    double _pheromone, res;
+
+    assert(!tree_map_flag);
+    if (!es_ant_flag && !o1_evap_flag &&
+        !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
+        return total[i][j];
+
+    if (o1_evap_flag &&
+        (es_ant_flag || cmaes_flag || ipopcmaes_flag || bipopcmaes_flag))
+        _pheromone = o1_get_pheromone(i, j);
+    else
+    {
+        if (o1_evap_flag)
+            o1_pay_evaporation_debt(i, j);
+        _pheromone = pheromone[i][j];
+    }
+
+    if (verbose > 0)
+    {
+        // printf("_pheromone: %.4f\n", _pheromone);
+        // printf("pow(_pheromone, alpha): %.4f\n", pow(_pheromone, alpha));
+        // printf("pow(HEURISTIC(i, j), beta): %.4f\n", pow(HEURISTIC(i, j), beta));
+    }
+
+    res = pow(_pheromone, alpha) * pow(HEURISTIC(i, j), beta);
+    assert(res > 0);
+    return res;
 }

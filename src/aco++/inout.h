@@ -50,6 +50,8 @@
 
  ***************************************************************************/
 
+#include <cstdio>
+
 #define PROG_ID_STR "\nACO algorithms for the TSP, v1.03\n"
 #define CALL_SYNTAX_STR "call syntax:  acotsp <param-list>\n"
 
@@ -123,6 +125,8 @@ void set_default_bwas_parameters(void);
 void set_default_acs_parameters(void);
 
 void set_default_ls_parameters(void);
+
+void set_default_node_clustering_parameters(void);
 
 void save_best_thop_solution(void);
 

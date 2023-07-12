@@ -57,6 +57,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <iostream>
 
 #include "ants.h"
 #include "utilities.h"
@@ -64,9 +65,15 @@
 #include "thop.h"
 #include "timer.h"
 #include "ls.h"
+#include "node_clustering.h"
+#include "adaptive_evaporation.h"
+#include "es_ant.h"
+#include "acothop.h"
+#include "custom_strategy.h"
+#include "tree_map.h"
+#include "algo_config.h"
 #include "es_aco.h"
 #include "adaptive_evaporation.hpp"
-
 
 long int termination_condition(void)
 /*
@@ -119,9 +126,12 @@ void construct_solutions(void)
             { /* previous city is the last one */
                 continue;
             }
-            if (iLevyFlag || iGreedyLevyFlag){
+            if (iLevyFlag || iGreedyLevyFlag)
+            {
                 neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
-            }else{ 
+            }
+            else
+            {
                 neighbour_choose_and_move_to_next(&ant[k], step);
             }
             if (acs_flag)
@@ -211,8 +221,8 @@ void update_statistics(void)
 
         found_best = iteration;
         restart_found_best = iteration;
-        found_branching = node_branching(lambda);
-        branching_factor = found_branching;
+        // found_branching = node_branching(lambda);
+        // branching_factor = found_branching;
         if (mmas_flag)
         {
             if (!ls_flag)
@@ -256,19 +266,22 @@ void search_control_and_statistics(void)
     if (!(iteration % 100))
     {
         population_statistics();
-        branching_factor = node_branching(lambda);
         /*printf("\nbest so far %ld, iteration: %ld, time %.2f, b_fac %.5f\n",best_so_far_ant->fitness,iteration,elapsed_time( VIRTUAL),branching_factor);*/
-        if (mmas_flag && (branching_factor < branch_fac) && (iteration - restart_found_best > 250))
+        if (mmas_flag && (iteration - restart_found_best > 250))
         {
-            /* MAX-MIN Ant System was the first ACO algorithm to use
-               pheromone trail re-initialisation as implemented
-               here. Other ACO algorithms may also profit from this mechanism.
-             */
-            /*printf("INIT TRAILS!!!\n"); restart_best_ant->fitness = INFTY;*/
-            init_pheromone_trails(trail_max);
-            compute_total_information();
-            restart_iteration = iteration;
-            restart_time = elapsed_time(VIRTUAL);
+            branching_factor = node_branching(lambda);
+            if (branching_factor < branch_fac)
+            {
+                /* MAX-MIN Ant System was the first ACO algorithm to use
+                   pheromone trail re-initialisation as implemented
+                   here. Other ACO algorithms may also profit from this mechanism.
+                 */
+                /*printf("INIT TRAILS!!!\n"); restart_best_ant->fitness = INFTY;*/
+                init_pheromone_trails(trail_max);
+                compute_total_information();
+                restart_iteration = iteration;
+                restart_time = elapsed_time(VIRTUAL);
+            }
         }
         /*printf("try %li, iteration %li, b-fac %f \n\n", n_try,iteration,branching_factor);*/
     }
@@ -416,7 +429,7 @@ void bwas_update(void)
     /*    printf("distance_best_worst %ld, tour length worst %ld\n",distance_best_worst,ant[iteration_worst_ant].fitness); */
     if (distance_best_worst < (long int)(0.05 * (double)instance.n))
     {
-        restart_best_ant->fitness = INFTY;
+        // restart_best_ant->fitness = INFTY;
         init_pheromone_trails(trail_0);
         restart_iteration = iteration;
         restart_time = elapsed_time(VIRTUAL);
@@ -452,40 +465,52 @@ void pheromone_trail_update(void)
                       according to the rules defined by the various ACO algorithms.
  */
 {
-    /* Simulate the pheromone evaporation of all pheromones; this is not necessary
-       for ACS (see also ACO Book) */
-    
-    update_rho();
-    
-    if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
+    if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag))
+        update_rho();
+
+/* Simulate the pheromone evaporation of all pheromones; this is not necessary
+   for ACS (see also ACO Book) */
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+        tree_map->evaporate(trail_min);
+    else
+#endif
+        if (!acs_flag)
     {
-        if (ls_flag)
+        if (o1_evap_flag)
+            o1_global_evaporate();
+        else if (node_clustering_flag)
+            evaporation_nc_list();
+        else if (as_flag || eas_flag || ras_flag || bwas_flag || mmas_flag)
         {
-            if (mmas_flag)
-                mmas_evaporation_nn_list();
+            if (ls_flag)
+            {
+                if (mmas_flag)
+                    mmas_evaporation_nn_list();
+                else
+                    evaporation_nn_list();
+                /* evaporate only pheromones on arcs of candidate list to make the
+                pheromone evaporation faster for being able to tackle large TSP
+                instances. For MMAS additionally check lower pheromone trail limits.
+                */
+            }
             else
-                evaporation_nn_list();
-            /* evaporate only pheromones on arcs of candidate list to make the
-               pheromone evaporation faster for being able to tackle large TSP
-               instances. For MMAS additionally check lower pheromone trail limits.
-             */
-        }
-        else
-        {
-            /* if no local search is used, evaporate all pheromone trails */
-            evaporation();
+            {
+                /* if no local search is used, evaporate all pheromone trails */
+                evaporation();
+            }
         }
     }
 
     /* Next, apply the pheromone deposit for the various ACO algorithms */
-    if (as_flag)
+    if (tree_map_flag || mmas_flag)
+        mmas_update();
+    else if (as_flag)
         as_update();
     else if (eas_flag)
         eas_update();
     else if (ras_flag)
         ras_update();
-    else if (mmas_flag)
-        mmas_update();
     else if (bwas_flag)
         bwas_update();
     else if (acs_flag)
@@ -494,21 +519,29 @@ void pheromone_trail_update(void)
     /* check pheromone trail limits for MMAS; not necessary if local
      search is used, because in the local search case lower pheromone trail
      limits are checked in procedure mmas_evaporation_nn_list */
-    if (mmas_flag && !ls_flag)
+    if (
+        mmas_flag && !ls_flag &&
+        !adaptive_evaporation_flag &&
+        !tree_map_flag && !o1_evap_flag)
         check_pheromone_trail_limits();
 
     /* Compute combined information pheromone times heuristic info after
      the pheromone update for all ACO algorithms except ACS; in the ACS case
      this is already done in the pheromone update procedures of ACS */
-    if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
+    if (!acs_flag && !es_ant_flag && !tree_map_flag)
     {
-        if (ls_flag)
-        {
-            compute_nn_list_total_information();
-        }
-        else
-        {
+        if (node_clustering_flag)
             compute_total_information();
+        else if (as_flag || eas_flag || ras_flag || mmas_flag || bwas_flag)
+        {
+            if (ls_flag)
+            {
+                compute_nn_list_total_information();
+            }
+            else
+            {
+                compute_total_information();
+            }
         }
     }
 }
@@ -531,9 +564,10 @@ int main(int argc, char *argv[])
 
     init_program(argc, argv);
 
-    instance.nn_list = compute_nn_lists();
-    pheromone = generate_double_matrix(instance.n, instance.n);
-    total = generate_double_matrix(instance.n, instance.n);
+    if (verbose > 0)
+    {
+        printf("seed: %ld\n", seed);
+    }
 
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/
@@ -542,19 +576,33 @@ int main(int argc, char *argv[])
     {
         init_try(n_try);
 
-        if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) es_aco_init();
+        if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+            es_aco_init();
         // printf("%dth try \n", n_try + 1);
         while (!termination_condition())
         {
-            if (cmaes_flag){
+            if (cmaes_flag)
                 es_aco_construct_solutions();
-            }else if(ipopcmaes_flag){
+            else if (ipopcmaes_flag)
                 ipop_cmaes_aco_construct_solutions();
-            }else if(bipopcmaes_flag){
+            else if (bipopcmaes_flag)
                 bipop_cmaes_aco_construct_solutions();
-            }
-            // else{
-                construct_solutions();
+#if ES_ANT_MACRO
+            else if (es_ant_flag)
+                es_ant_construct_and_local_search();
+#endif
+            else
+            {
+#if TREE_MAP_MACRO
+                if (tree_map_flag)
+                    tree_map_construct_solutions();
+                else
+#endif
+                    if (node_clustering_flag)
+                    construct_node_clustering_solution();
+                else
+                    construct_solutions();
+
                 if (ls_flag > 0)
                 {
                     for (k = 0; k < ant.size(); k++)
@@ -576,14 +624,22 @@ int main(int argc, char *argv[])
             pheromone_trail_update();
             search_control_and_statistics();
 
-
             iteration++;
         }
         exit_try(n_try);
         // if (cmaes_flag) es_aco_export_result();
     }
     exit_program();
-    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag) es_aco_exit();
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+        es_aco_exit();
+#if ES_ANT_MACRO
+    if (es_ant_flag)
+        es_ant_deallocate();
+#endif
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+        tree_map_deallocate();
+#endif
 
     free(instance.distance);
     free(instance.nn_list);
@@ -608,5 +664,10 @@ int main(int argc, char *argv[])
 
     free(prob_of_selection);
 
+    if (verbose > 0)
+    {
+        printf("iteration: %ld\n", iteration);
+        printf("seed: %ld\n", seed);
+    }
     return 0;
 }

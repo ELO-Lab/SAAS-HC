@@ -9,19 +9,23 @@
 #include "utilities.h"
 #include "ants.h"
 #include "ls.h"
+#include "node_clustering.h"
+#include "adaptive_evaporation.h"
+#include "es_ant.h"
+#include "tree_map.h"
+#include "algo_config.h"
 #include "es_aco.h"
 
-extern int iLevyFlag;				// 0 or 1
-extern double dLevyThreshold;		//0--1
-extern double dLevyRatio;			//0.1--5
+extern int iLevyFlag;         // 0 or 1
+extern double dLevyThreshold; // 0--1
+extern double dLevyRatio;     // 0.1--5
 
-extern double dContribution;  		//0--10
+extern double dContribution; // 0--10
 
-extern int iGreedyLevyFlag;			// 0 or 1
-extern double dGreedyEpsilon;		//0--1
-extern double dGreedyLevyThreshold;	//0--1
-extern double dGreedyLevyRatio;		//0.1--5
-
+extern int iGreedyLevyFlag;         // 0 or 1
+extern double dGreedyEpsilon;       // 0--1
+extern double dGreedyLevyThreshold; // 0--1
+extern double dGreedyLevyRatio;     // 0.1--5
 
 #ifndef STR_ERR_UNKNOWN_LONG_OPT
 #define STR_ERR_UNKNOWN_LONG_OPT "%s: unrecognized option `--%s'\n"
@@ -128,6 +132,21 @@ extern double dGreedyLevyRatio;		//0.1--5
 #define STR_HELP_HELP \
     "  -h, --help            display this help text and exit\n"
 
+#define STR_HELP_NODECLUSTERING \
+    "      --nodeclustering  using node clustering\n"
+
+#define STR_HELP_SECTOR \
+    "      --sector          number of sector\n"
+
+#define STR_HELP_CLUSTER_SIZE \
+    "      --clustersize     number of nodes per cluster\n"
+
+#define STR_HELP_NUMBER_CLUSTER \
+    "      --n_cluster       number of nodes per cluster\n"
+
+#define STR_HELP_ADAPTIVE_EVAPORATION \
+    "      --adapt_evap      using adaptive evaporation mode\n"
+
 #define STR_HELP_LOGITER \
     "  --logiter             log each iteration\n"
 
@@ -141,14 +160,13 @@ extern double dGreedyLevyRatio;		//0.1--5
     "  --bipopcmaes          apply bipop-cmaes\n"
 
 #define STR_HELP_LEVYFLIGHT \
-  "  -L, --levyflight     # Levy Flight Parameters, Threshold;Ratio\n"
-  
+    "  -L, --levyflight     # Levy Flight Parameters, Threshold;Ratio\n"
+
 #define STR_HELP_CONTRIBUTION \
-  "  -C, --contribution   # Contribution based Pheromone Update Parameter of Altering Ratio. \n"
-  
+    "  -C, --contribution   # Contribution based Pheromone Update Parameter of Altering Ratio. \n"
+
 #define STR_HELP_GREEDYLEVY \
-  "  -G, --greedylevy     # Greedy Levy Flight Espsilon;Threadhold;Ratio.\n"
-  
+    "  -G, --greedylevy     # Greedy Levy Flight Espsilon;Threadhold;Ratio.\n"
 
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
@@ -178,13 +196,18 @@ static const char *const STR_HELP[] = {
     STR_HELP_SEED,
     STR_HELP_LOG,
     STR_HELP_HELP,
+    STR_HELP_NODECLUSTERING,
+    STR_HELP_SECTOR,
+    STR_HELP_CLUSTER_SIZE,
+    STR_HELP_NUMBER_CLUSTER,
+    STR_HELP_ADAPTIVE_EVAPORATION,
     STR_HELP_LOGITER,
     STR_HELP_CMAES,
     STR_HELP_IPOPCMAES,
-    STR_HELP_BIPOPCMAES,    
-    STR_HELP_LEVYFLIGHT ,
-    STR_HELP_CONTRIBUTION ,
-    STR_HELP_GREEDYLEVY ,
+    STR_HELP_BIPOPCMAES,
+    STR_HELP_LEVYFLIGHT,
+    STR_HELP_CONTRIBUTION,
+    STR_HELP_GREEDYLEVY,
     NULL};
 
 struct options
@@ -277,6 +300,20 @@ struct options
     /* Set to 1 if option --calibration mode has been specified.  */
     unsigned int opt_calibration : 1;
 
+    /* Set to 1 if option --nodeclustering has been specified.  */
+    unsigned int opt_nodeclustering : 1;
+
+    /* Set to 1 if option --sector has been specified.  */
+    unsigned int opt_sector : 1;
+
+    /* Set to 1 if option --clustersize mode has been specified.  */
+    unsigned int opt_clustersize : 1;
+
+    /* Set to 1 if option --n_cluster mode has been specified.  */
+    unsigned int opt_n_cluster : 1;
+
+    /* Set to 1 if option --adapt_evap mode has been specified.  */
+    unsigned int opt_adapt_evap : 1;
     /* Set to 1 if option --cmaes mode has been specified.  */
     unsigned int opt_cmaes : 1;
 
@@ -352,6 +389,20 @@ struct options
     /* Argument to option --dlb (-d).  */
     const char *arg_dlb;
 
+    /* Argument to option --nodeclustering.  */
+    const char *arg_nodeclustering;
+
+    /* Argument to option --sector.  */
+    const char *arg_sector;
+
+    /* Argument to option --clustersize.  */
+    const char *arg_clustersize;
+
+    /* Argument to option --n_cluster.  */
+    const char *arg_n_cluster;
+
+    /* Argument to option --adapt_evap.  */
+    const char *arg_adapt_evap;
     /* Argument to option --cmaes (-c).  */
     const char *arg_cmaes;
 
@@ -360,15 +411,15 @@ struct options
 
     /* Argument to option --bipopcmaes (-c).  */
     const char *arg_bipopcmaes;
-    
+
     /* Argument to option --levyflight (-L).  */
     const char *arg_levyflight;
 
     /* Argument to option --contribution (-C).  */
-    const char *arg_contribution;					
+    const char *arg_contribution;
 
     /* Argument to option --greedylevy (-G).  */
-    const char *arg_greedylevy;			
+    const char *arg_greedylevy;
 };
 
 /* Parse command line options.  Return index of first non-option argument,
@@ -406,6 +457,11 @@ parse_options(struct options *const options, const char *const program_name,
     static const char *const optstr__logiter = "logiter";
     static const char *const optstr__help = "help";
     static const char *const optstr__calibration = "calibration";
+    static const char *const optstr__nodeclustering = "nodeclustering";
+    static const char *const optstr__sector = "sector";
+    static const char *const optstr__clustersize = "clustersize";
+    static const char *const optstr__n_cluster = "n_cluster";
+    static const char *const optstr__adapt_evap = "adapt_evap";
     static const char *const optstr__cmaes = "cmaes";
     static const char *const optstr__ipopcmaes = "ipopcmaes";
     static const char *const optstr__bipopcmaes = "bipopcmaes";
@@ -442,6 +498,12 @@ parse_options(struct options *const options, const char *const program_name,
     options->opt_logiter = 0;
     options->opt_help = 0;
     options->opt_calibration = 0;
+    options->opt_nodeclustering = 0;
+    options->opt_sector = 0;
+    options->opt_clustersize = 0;
+    options->opt_n_cluster = 0;
+    options->opt_adapt_evap = 0;
+
     options->opt_cmaes = 0;
     options->opt_ipopcmaes = 0;
     options->opt_bipopcmaes = 0;
@@ -464,12 +526,17 @@ parse_options(struct options *const options, const char *const program_name,
     options->arg_nnls = 0;
     options->arg_localsearch = 0;
     options->arg_dlb = 0;
+    options->arg_nodeclustering = 0;
+    options->arg_sector = 0;
+    options->arg_clustersize = 0;
+    options->arg_n_cluster = 0;
+    options->arg_adapt_evap = 0;
     options->arg_cmaes = 0;
     options->arg_ipopcmaes = 0;
     options->arg_bipopcmaes = 0;
     options->opt_levyflight = 0;
-    options->opt_contribution = 0;					   
-    options->opt_greedylevy = 0;		
+    options->opt_contribution = 0;
+    options->opt_greedylevy = 0;
     while (++i < argc)
     {
         const char *option = argv[i];
@@ -549,6 +616,16 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_as = 1;
                     break;
                 }
+                else if (strncmp(option + 1, optstr__adapt_evap + 1, option_len - 1) == 0)
+                {
+                    if (argument != 0)
+                    {
+                        option = optstr__adapt_evap;
+                        goto error_unexpec_arg_long;
+                    }
+                    options->opt_adapt_evap = 1;
+                    break;
+                }
                 goto error_unknown_long_opt;
             case 'b':
                 if (strncmp(option + 1, optstr__beta + 1, option_len - 1) == 0)
@@ -600,18 +677,35 @@ parse_options(struct options *const options, const char *const program_name,
                     }
                     options->opt_calibration = 1;
                     break;
-                }else if (strncmp (option + 1, optstr__contribution + 1, option_len - 1) == 0)
+                }
+                else if (strncmp(option + 1, optstr__contribution + 1, option_len - 1) == 0)
                 {
                     if (argument != 0)
                         options->arg_contribution = argument;
                     else if (++i < argc)
-                        options->arg_contribution = argv [i];
+                        options->arg_contribution = argv[i];
                     else
                     {
                         option = optstr__contribution;
                         goto error_missing_arg_long;
                     }
                     options->opt_contribution = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__clustersize + 1, option_len - 1) == 0)
+                {
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_clustersize = argument;
+                    else if (++i < argc)
+                        options->arg_clustersize = argv[i];
+                    else
+                    {
+                        option = optstr__clustersize;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_clustersize = 1;
                     break;
                 }
                 else if (strncmp(option + 1, optstr__cmaes + 1, option_len - 1) == 0)
@@ -624,7 +718,7 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_cmaes = 1;
                     break;
                 }
-                goto error_unknown_long_opt;	   
+                goto error_unknown_long_opt;
                 goto error_unknown_long_opt;
             case 'd':
                 if (strncmp(option + 1, optstr__dlb + 1, option_len - 1) == 0)
@@ -747,12 +841,12 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_logiter = 1;
                     break;
                 }
-                else if (strncmp (option + 1, optstr__levyflight + 1, option_len - 1) == 0)
+                else if (strncmp(option + 1, optstr__levyflight + 1, option_len - 1) == 0)
                 {
                     if (argument != 0)
                         options->arg_levyflight = argument;
                     else if (++i < argc)
-                        options->arg_levyflight = argv [i];
+                        options->arg_levyflight = argv[i];
                     else
                     {
                         option = optstr__levyflight;
@@ -805,6 +899,32 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_missing_arg_long;
                     }
                     options->opt_nnls = 1;
+                    break;
+                }
+                if (strncmp(option + 1, optstr__nodeclustering + 1, option_len - 1) == 0)
+                {
+                    if (argument != 0)
+                    {
+                        option = optstr__nodeclustering;
+                        goto error_unexpec_arg_long;
+                    }
+                    options->opt_nodeclustering = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__n_cluster + 1, option_len - 1) == 0)
+                {
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_n_cluster = argument;
+                    else if (++i < argc)
+                        options->arg_n_cluster = argv[i];
+                    else
+                    {
+                        option = optstr__n_cluster;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_n_cluster = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -937,6 +1057,22 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_seed = 1;
                     break;
                 }
+                if (strncmp(option + 1, optstr__sector + 1, option_len - 1) == 0)
+                {
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_sector = argument;
+                    else if (++i < argc)
+                        options->arg_sector = argv[i];
+                    else
+                    {
+                        option = optstr__sector;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_sector = 1;
+                    break;
+                }
                 goto error_unknown_long_opt;
             case 't':
                 if (strncmp(option + 1, optstr__time + 1, option_len - 1) == 0)
@@ -988,15 +1124,15 @@ parse_options(struct options *const options, const char *const program_name,
                     break;
                 }
             case 'g':
-                if (strncmp (option + 1, optstr__greedylevy + 1, option_len - 1) == 0)
+                if (strncmp(option + 1, optstr__greedylevy + 1, option_len - 1) == 0)
                 {
-                if (argument != 0)
-                {
-                    option = optstr__greedylevy;
-                    goto error_unexpec_arg_long;
-                }
-                options->opt_greedylevy = 1;
-                return i + 1;
+                    if (argument != 0)
+                    {
+                        option = optstr__greedylevy;
+                        goto error_unexpec_arg_long;
+                    }
+                    options->opt_greedylevy = 1;
+                    return i + 1;
                 }
                 goto error_unknown_long_opt;
             default:
@@ -1222,30 +1358,30 @@ parse_options(struct options *const options, const char *const program_name,
                     break;
 
                 case 'C':
-                    if (option [1] != '\0')
+                    if (option[1] != '\0')
                         options->arg_contribution = option + 1;
                     else if (++i < argc)
-                        options->arg_contribution = argv [i];
+                        options->arg_contribution = argv[i];
                     else
                         goto error_missing_arg_short;
                     option = "\0";
                     options->opt_contribution = 1;
                     break;
                 case 'G':
-                    if (option [1] != '\0')
+                    if (option[1] != '\0')
                         options->arg_greedylevy = option + 1;
                     else if (++i < argc)
-                        options->arg_greedylevy = argv [i];
+                        options->arg_greedylevy = argv[i];
                     else
                         goto error_missing_arg_short;
                     option = "\0";
                     options->opt_greedylevy = 1;
                     break;
                 case 'L':
-                    if (option [1] != '\0')
+                    if (option[1] != '\0')
                         options->arg_levyflight = option + 1;
                     else if (++i < argc)
-                        options->arg_levyflight = argv [i];
+                        options->arg_levyflight = argv[i];
                     else
                         goto error_missing_arg_short;
                     option = "\0";
@@ -1262,9 +1398,12 @@ parse_options(struct options *const options, const char *const program_name,
     return i;
 }
 
-static void
-check_out_of_range(double value, double minval, double maxval,
-                   const char *optionName)
+// static void
+// check_out_of_range(double value, double minval, double maxval,
+//                    const char *optionName)
+template <class numericAT, class numericBT, class numericCT>
+void check_out_of_range(numericAT value, numericBT minval, numericCT maxval,
+                        const char *optionName)
 /*
       FUNCTION: check whether parameter values are within allowed range
       INPUT:    none
@@ -1275,7 +1414,7 @@ check_out_of_range(double value, double minval, double maxval,
     if (value < minval || value > maxval)
     {
         fprintf(stderr, "Error: Option `%s' out of range [%g, %g]\n",
-                optionName, minval, maxval);
+                optionName, double(minval), double(maxval));
         exit(1);
     }
 }
@@ -1319,9 +1458,12 @@ int parse_commandline(int argc, char *argv[])
     ipopcmaes_flag = options.opt_ipopcmaes;
     bipopcmaes_flag = options.opt_bipopcmaes;
 
-    if (cmaes_flag) printf("using cmaes\n");
-    if (ipopcmaes_flag) printf("using ipop cmaes\n");
-    if (bipopcmaes_flag) printf("using bipop cmaes\n");
+    if (cmaes_flag)
+        printf("using cmaes\n");
+    if (ipopcmaes_flag)
+        printf("using ipop cmaes\n");
+    if (bipopcmaes_flag)
+        printf("using bipop cmaes\n");
 
     log_flag = !options.opt_log;
     logiter_flag = !options.opt_logiter;
@@ -1376,7 +1518,9 @@ int parse_commandline(int argc, char *argv[])
 
     if (options.opt_seed)
     {
-        seed = atol(options.arg_seed);
+        const auto &temp = atol(options.arg_seed);
+        if (temp != 0)
+            seed = atol(options.arg_seed);
         /*
         fputs ("      --seed ", stdout);
         if (options.arg_seed != NULL)
@@ -1549,6 +1693,12 @@ int parse_commandline(int argc, char *argv[])
     if (ls_flag)
     {
         set_default_ls_parameters();
+    }
+
+    if (options.opt_nodeclustering)
+    {
+        node_clustering_flag = TRUE;
+        set_default_node_clustering_parameters();
     }
 
     if (options.opt_ants)
@@ -1740,36 +1890,58 @@ int parse_commandline(int argc, char *argv[])
     }
     */
 
+    if (options.opt_sector)
+    {
+        n_sector = atol(options.arg_sector);
+    }
+
+    if (options.opt_clustersize)
+    {
+        cluster_size = atol(options.arg_clustersize);
+    }
+
+    if (options.opt_n_cluster)
+    {
+        n_cluster = atol(options.arg_n_cluster);
+    }
+
+    if (options.opt_adapt_evap)
+    {
+        adaptive_evaporation_flag = TRUE;
+    }
+
     /*puts ("Non-option arguments:");*/
 
-    
-    if ( options.opt_levyflight ) {
-		iLevyFlag = 1;
+    if (options.opt_levyflight)
+    {
+        iLevyFlag = 1;
         sscanf(options.arg_levyflight, "%lf;%lf", &dLevyThreshold, &dLevyRatio);
-        fputs ("  -L  --levyflight ", stdout);
+        fputs("  -L  --levyflight ", stdout);
         if (options.arg_levyflight != NULL)
-            printf ("with argument \"%lf\" \"%lf\"\n", dLevyThreshold, dLevyRatio);
+            printf("with argument \"%lf\" \"%lf\"\n", dLevyThreshold, dLevyRatio);
         check_out_of_range(dLevyThreshold, 0, 1, "dLevyThreshold");
-		check_out_of_range(dLevyRatio, 0, 50, "dLevyRatio");
+        check_out_of_range(dLevyRatio, 0, 50, "dLevyRatio");
     }
-	
-    if ( options.opt_contribution ) {
+
+    if (options.opt_contribution)
+    {
         dContribution = atof(options.arg_contribution);
-        fputs ("  -C  --contribution ", stdout);
+        fputs("  -C  --contribution ", stdout);
         if (options.arg_contribution != NULL)
-            printf ("with argument \"%lf\"\n", dContribution);
+            printf("with argument \"%lf\"\n", dContribution);
         check_out_of_range(dContribution, 0, 10, "dContribution");
     }
-	
-    if ( options.opt_greedylevy ) {
-		iGreedyLevyFlag = 1;
+
+    if (options.opt_greedylevy)
+    {
+        iGreedyLevyFlag = 1;
         sscanf(options.arg_greedylevy, "%lf:%lf:%lf", &dGreedyEpsilon, &dGreedyLevyThreshold, &dGreedyLevyRatio);
-        fputs ("  -G  --greedylevy ", stdout);
+        fputs("  -G  --greedylevy ", stdout);
         if (options.arg_greedylevy != NULL)
-            printf ("with argument \"%lf\" \"%lf\" \"%lf\"\n", dGreedyEpsilon, dGreedyLevyThreshold, dGreedyLevyRatio);
+            printf("with argument \"%lf\" \"%lf\" \"%lf\"\n", dGreedyEpsilon, dGreedyLevyThreshold, dGreedyLevyRatio);
         check_out_of_range(dGreedyEpsilon, 0, 1, "dGreedyEpsilon");
         check_out_of_range(dGreedyLevyThreshold, 0, 1, "dGreedyLevyThreshold");
-		check_out_of_range(dGreedyLevyRatio, 0, 50, "dGreedyLevyRatio");
+        check_out_of_range(dGreedyLevyRatio, 0, 50, "dGreedyLevyRatio");
     }
 
     while (i < argc)
@@ -1781,6 +1953,16 @@ int parse_commandline(int argc, char *argv[])
         */
         exit(1);
     }
+
+#if ES_ANT_MACRO
+    if (es_ant_flag)
+        es_ant_force_set_parameters();
+#endif
+#if TREE_MAP_MACRO
+    if (tree_map_flag)
+        tree_map_force_set_parameters();
+#endif
+    rand_gen.seed(seed);
 
     return 0;
 }

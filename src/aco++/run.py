@@ -421,7 +421,7 @@ def read_arguments():
     parser.add_argument("--ptries", type=int)
     parser.add_argument("--localsearch", type=int)
     parser.add_argument("--time", type=float)
-    parser.add_argument("--random_seed", default=269070, type=float)
+    parser.add_argument("--random_seed", default=0, type=float)
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
 
@@ -474,6 +474,7 @@ def read_arguments():
     save_ter_log = args.save_ter_log
     no_log = args.no_log
     chain_flags = args.chain_flags
+
 
 def preprocess_arguments():
     global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
@@ -559,7 +560,6 @@ def load_default_hyperparams():
         else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
     )
 
-
 def check_validation():
     global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
 
@@ -609,7 +609,8 @@ def build():
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
         "-G",
-        f"{'Ninja' if not debug else 'Unix Makefiles'}",
+        "Unix Makefiles",
+        # f"{'Ninja' if not debug else 'Unix Makefiles'}",
         f"-S{acopp_dir}",
         f"-B{acopp_dir}/build",
         f"-DCMAKE_BUILD_TYPE:STRING={'Release' if not debug else 'Debug'}",
@@ -620,7 +621,7 @@ def build():
     if silent <= 0:
         print(result.stdout.decode())
 
-    command = ["cmake", "--build", f"{acopp_dir}/build"]
+    command = ["cmake", "--build", f"{acopp_dir}/build", "-j", "2"]
     if silent <= 0:
         print("$ " + " ".join(command))
     result = run_command(command)

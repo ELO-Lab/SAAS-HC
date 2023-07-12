@@ -53,7 +53,9 @@
 #ifndef _THOP_H_
 #define _THOP_H_
 
+// #define M_PI 3.14159265358979323846264
 #define RRR 6378.388
+
 #ifndef PI /* as in stroustrup */
 #define PI 3.14159265358979323846
 #endif
@@ -113,6 +115,14 @@ long int **compute_nn_lists(void);
 
 long int compute_fitness(long int *t, char *visited, long int t_size, char *p);
 
-long int compute_fitness_es(long int *t, char *visited, long int t_size, char *p);
+extern double (*distance_with_coordinate)(const std::size_t &city_index, const double &xx, const double &yy); /* function pointer */
+
+double euclid_distance(const std::size_t &city_index, const double &xx, const double &yy);
+
+double ceil_distance(const std::size_t &city_index, const double &xx, const double &yy);
+
+double geo_distance(const std::size_t &city_index, const double &xx, const double &yy);
+
+double att_distance(const std::size_t &city_index, const double &xx, const double &yy);
 
 #endif

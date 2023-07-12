@@ -1,17 +1,13 @@
 #include <cmath>
 #include <map>
 
-#include "adaptive_evaporation.hpp"
+#include "adaptive_evaporation.h"
 #include "thop.h"
 #include "ants.h"
 
 // Hyperparameters
 float min_rho = 0.01;
 float max_rho = 0.99;
-bool adaptive_evaporation_flag;
-// float min_q_0 = 0.52;
-// float max_q_0 = 1;
-// float q_0_diff = max_q_0 - min_q_0;
 
 const float rho_diff = max_rho - min_rho;
 
@@ -67,5 +63,4 @@ void update_rho(void)
 
     // rho = min_rho + rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
     rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-    // q_0 = min_q_0 + q_0_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
 }
