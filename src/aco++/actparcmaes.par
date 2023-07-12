@@ -114424,3 +114424,71 @@
  maxTimeFractionForEigendecompostion 0.2
  resume                                                        _no_
 
+
+# Read from cmaes_initials.par at Wed Jul 12 19:03:38 2023
+
+ N 6
+ typicalX 6
+      5       5     0.5     0.5     0.5
+    0.5 
+ initialX 6
+    3.5    9.82   0.474   0.258   0.716
+   0.84 
+ initialStandardDeviations 6
+      2       2     0.2     0.2     0.2
+  0.196 
+ seed 1689163418
+ stopMaxFunEvals 1e+299
+ stopMaxIter 1e+298
+ stopFitness
+ stopTolFun 0
+ stopTolFunHist 0
+ stopTolX 0
+ stopTolUpXFactor 100
+ lambda 10
+ mu 5
+ weights   log
+ cs 0.436156
+ damps 1.43616
+ ccumcov 0.4
+ mucov 3.41477
+ ccov 0.0718043
+ diagonalCovarianceMatrix 0
+ updatecov 0.232112
+ maxTimeFractionForEigendecompostion 0.2
+ resume                                                        _no_
+
+
+# Read from cmaes_initials.par at Wed Jul 12 19:04:05 2023
+
+ N 6
+ typicalX 6
+      5       5     0.5     0.5     0.5
+    0.5 
+ initialX 6
+   1.84    6.37   0.533    0.84   0.835
+ 0.0435 
+ initialStandardDeviations 6
+      2       2     0.2     0.2     0.2
+  0.196 
+ seed 1689163445
+ stopMaxFunEvals 1e+299
+ stopMaxIter 1e+298
+ stopFitness
+ stopTolFun 0
+ stopTolFunHist 0
+ stopTolX 0
+ stopTolUpXFactor 100
+ lambda 10
+ mu 5
+ weights   log
+ cs 0.436156
+ damps 1.43616
+ ccumcov 0.4
+ mucov 3.41477
+ ccov 0.0718043
+ diagonalCovarianceMatrix 0
+ updatecov 0.232112
+ maxTimeFractionForEigendecompostion 0.2
+ resume                                                        _no_
+

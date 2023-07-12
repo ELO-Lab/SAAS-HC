@@ -34,8 +34,13 @@ bool tree_map_flag = true;
 bool tree_map_flag = false;
 #endif
 
-// not config here
-int cmaes_flag;      // 0 or 1
-int ipopcmaes_flag;  // 0 or 1
-int bipopcmaes_flag; // 0 or 1
-int iGreedyLevyFlag; // 0 or 1
+#if CMAES_MACRO
+bool cmaes_flag = true;
+#else
+bool cmaes_flag = false;
+#endif
+
+// don't work
+bool ipopcmaes_flag = false;
+bool bipopcmaes_flag = false;
+bool iGreedyLevyFlag = false;
