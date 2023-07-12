@@ -625,6 +625,13 @@ int main(int argc, char *argv[])
 
             iteration++;
         }
+
+        if (verbose > 0)
+        {
+            printf("iteration: %ld\n", iteration);
+            printf("seed: %ld\n", seed);
+        }
+
         exit_try(n_try);
         // if (cmaes_flag) es_aco_export_result();
     }
