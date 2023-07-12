@@ -2025,27 +2025,14 @@ long int **new_compute_local_nn_lists(long int *tour, const long int &n)
     {
         m_nnear[node] = (long int *)(m_nnear + n) + node * nn;
         city_i = tour[node];
-        if (city_i == instance.n - 1)
+        j = 0;
+        for (i = 0; i < nn; i++)
         {
-            for (i = 0; i < nn; i++)
-                m_nnear[node][i] = 0;
-        }
-        else if (city_i == instance.n - 2)
-        {
-            for (i = 0; i < nn; i++)
-                m_nnear[node][i] = instance.n - 1;
-        }
-        else
-        {
-            j = 0;
-            for (i = 0; i < nn; i++)
-            {
-                while (!visited[instance.nn_list[city_i][j]])
-                    j++;
-
-                m_nnear[node][i] = instance.nn_list[city_i][j];
+            while (!visited[instance.nn_list[city_i][j]])
                 j++;
-            }
+
+            m_nnear[node][i] = instance.nn_list[city_i][j];
+            j++;
         }
     }
     TRACE(printf("\n    .. done\n");)

@@ -102,7 +102,7 @@ public:
         const double &past_trail_min,
         const std::size_t &global_restart_times,
         const std::size_t &global_evap_times);
-    void restart_if_needed(
+    void local_restart_if_needed(
         const std::size_t &global_restart_times,
         const double &past_trail_restart);
     double prob_weight_without_child_leaf(

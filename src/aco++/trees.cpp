@@ -205,8 +205,7 @@ std::size_t Tree_Edge::_choose_neighbour_leaf(
     for (i = 0; i < nn_ants; i++)
     {
         city_index = nn_list[i];
-        assert(0 < city_index && city_index < num_city);
-        if (city_index == num_city || wont_visit_tree_ptr->check_city_visited(city_index, global_wont_visit_restart_times))
+        if (city_index <= 0 || city_index >= num_city || wont_visit_tree_ptr->check_city_visited(city_index, global_wont_visit_restart_times))
             prob_weights[i] = 0.0;
         else
         {

@@ -232,4 +232,8 @@ void o1_init_program();
 // es_ant_flag || o1_evap_flag
 double calculate_total_information(const std::size_t &i, const std::size_t &j);
 
+// es_ant_flag || cmaes_flag || ipopcmaes_flag || bipopcmaes_flag
+void an_ant_run(const std::size_t &ant_idx);
+void an_ant_local_search(const std::size_t &ant_idx);
+
 #endif

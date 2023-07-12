@@ -95,65 +95,6 @@ void repair_candidates(dMat &candidates)
     round_seed_candidates(candidates);
 }
 
-void an_ant_run()
-{
-
-    size_t i;      /* counter variable */
-    long int step; /* counter of the number of construction steps */
-
-    ant_empty_memory(&ant[current_ant_idx]);
-
-    /* Place the ants at initial city 0 and set the final city as n-1 */
-    ant[current_ant_idx].tour_size = 1;
-    ant[current_ant_idx].tour[0] = 0;
-    ant[current_ant_idx].visited[0] = TRUE;
-    ant[current_ant_idx].visited[instance.n - 1] = TRUE;
-
-    step = 0;
-    while (step < instance.n - 2)
-    {
-        step++;
-        if (ant[current_ant_idx].tour[ant[current_ant_idx].tour_size - 1] == instance.n - 2)
-        { /* previous city is the last one */
-            continue;
-        }
-        neighbour_choose_and_move_to_next(&ant[current_ant_idx], step);
-        if (acs_flag)
-            local_acs_pheromone_update(&ant[current_ant_idx], step);
-        ant[current_ant_idx].tour_size++;
-    }
-
-    ant[current_ant_idx].tour[ant[current_ant_idx].tour_size++] = instance.n - 1;
-    ant[current_ant_idx].tour[ant[current_ant_idx].tour_size++] = ant[current_ant_idx].tour[0];
-    for (i = ant[current_ant_idx].tour_size; i < instance.n; i++)
-        ant[current_ant_idx].tour[i] = 0;
-    ant[current_ant_idx].fitness = compute_fitness(ant[current_ant_idx].tour, ant[current_ant_idx].visited, ant[current_ant_idx].tour_size, ant[current_ant_idx].packing_plan);
-    if (acs_flag)
-        local_acs_pheromone_update(&ant[current_ant_idx], ant[current_ant_idx].tour_size - 1);
-
-    n_tours += 1;
-}
-
-void an_ant_local_search()
-{
-    switch (ls_flag)
-    {
-    case 1:
-        two_opt_first(ant[current_ant_idx].tour, ant[current_ant_idx].tour_size); /* 2-opt local search */
-        break;
-    case 2:
-        two_h_opt_first(ant[current_ant_idx].tour, ant[current_ant_idx].tour_size); /* 2.5-opt local search */
-        break;
-    case 3:
-        three_opt_first(ant[current_ant_idx].tour, ant[current_ant_idx].tour_size); /* 3-opt local search */
-        break;
-    default:
-        fprintf(stderr, "type of local search procedure not correctly specified\n");
-        exit(1);
-    }
-    ant[current_ant_idx].fitness = compute_fitness(ant[current_ant_idx].tour, ant[current_ant_idx].visited, ant[current_ant_idx].tour_size, ant[current_ant_idx].packing_plan);
-}
-
 libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 {
     if (termination_condition())
@@ -191,12 +132,12 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
             q_0);
     else
 #endif
-        an_ant_run();
+        an_ant_run(current_ant_idx);
 
     if (ls_flag > 0)
     {
         copy_from_to(&ant[current_ant_idx], &prev_ls_ant[current_ant_idx]);
-        an_ant_local_search();
+        an_ant_local_search(current_ant_idx);
         {
             if (ant[current_ant_idx].fitness > prev_ls_ant[current_ant_idx].fitness)
             {

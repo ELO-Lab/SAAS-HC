@@ -80,16 +80,16 @@ void Tree_Map::_reset_wont_visit()
     _global_wont_visit_restart_times += 1;
 }
 
-void Tree_Map::evaporate(const double &past_trail_min)
+void Tree_Map::global_evaporate(const double &past_trail_min)
 {
-    _global_evap_times += 1;
     _past_trail_min = trail_min;
+    _global_evap_times += 1;
 }
 
-void Tree_Map::restart_pheromone(const double &past_trail_restart)
+void Tree_Map::global_restart(const double &past_trail_restart)
 {
-    _global_restart_times += 1;
     _past_trail_restart = past_trail_restart;
+    _global_restart_times += 1;
     _global_evap_times = 0;
 }
 

@@ -5,8 +5,11 @@ int_fast8_t verbose = 1;
 bool node_clustering_flag = false;
 bool adaptive_evaporation_flag = false;
 
-// bool ls_n_square_flag = true;
+#if LS_N2_MACRO
+bool ls_n_square_flag = true;
+#else
 bool ls_n_square_flag = false;
+#endif
 
 #if O1_EVAP_MACRO
 bool o1_evap_flag = true;
