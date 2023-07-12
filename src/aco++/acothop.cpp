@@ -73,7 +73,6 @@
 #include "tree_map.h"
 #include "algo_config.h"
 #include "es_aco.h"
-#include "adaptive_evaporation.hpp"
 
 long int termination_condition(void)
 /*
@@ -618,7 +617,7 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
-            // }
+            }
 
             update_statistics();
             pheromone_trail_update();
@@ -629,6 +628,13 @@ int main(int argc, char *argv[])
         exit_try(n_try);
         // if (cmaes_flag) es_aco_export_result();
     }
+    
+    if (verbose > 0)
+    {
+        printf("iteration: %ld\n", iteration);
+        printf("seed: %ld\n", seed);
+    }
+
     exit_program();
     if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         es_aco_exit();
@@ -663,11 +669,5 @@ int main(int argc, char *argv[])
     free(global_best_ant->packing_plan);
 
     free(prob_of_selection);
-
-    if (verbose > 0)
-    {
-        printf("iteration: %ld\n", iteration);
-        printf("seed: %ld\n", seed);
-    }
     return 0;
 }
