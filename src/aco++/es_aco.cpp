@@ -330,7 +330,7 @@ void setup_cmaes()
 
 void es_aco_init()
 {
-    sprintf(params_file_name, "%s.cmaes_initials.par", output_name_buf);
+    sprintf(params_file_name, "%s.%ld.cmaes_initials.par", output_name_buf, seed);
 
     cmaes_seed = seed;
     generating_random_vector();
@@ -498,19 +498,19 @@ void es_aco_set_best_params()
 
 void es_aco_init_program()
 {
-    lowerBounds[ALPHA_IDX] = 0.00;
+    lowerBounds[ALPHA_IDX] = 0.01;
     upperBounds[ALPHA_IDX] = 10;
 
-    lowerBounds[BETA_IDX] = 0.00;
+    lowerBounds[BETA_IDX] = 0.01;
     upperBounds[BETA_IDX] = 10;
 
-    lowerBounds[PAR_A_IDX] = 0.00;
+    lowerBounds[PAR_A_IDX] = 0.01;
     upperBounds[PAR_A_IDX] = 1;
 
-    lowerBounds[PAR_B_IDX] = 0.00;
+    lowerBounds[PAR_B_IDX] = 0.01;
     upperBounds[PAR_B_IDX] = 1;
 
-    lowerBounds[PAR_C_IDX] = 0.00;
+    lowerBounds[PAR_C_IDX] = 0.01;
     upperBounds[PAR_C_IDX] = 1;
 
 #if Q0_TUNING_MACRO
