@@ -396,8 +396,6 @@ parameter_configurations = {
 
 
 def read_arguments():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log, chain_flags
-
     parser = argparse.ArgumentParser()
 
     # run parameters
@@ -424,6 +422,7 @@ def read_arguments():
     parser.add_argument("--random_seed", default=0, type=float)
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
+    parser.add_argument("--no_default", action="store_true")
 
     # aaco_ncparameters
     parser.add_argument("--aaco_nc", action="store_true")
@@ -443,73 +442,139 @@ def read_arguments():
 
     args = parser.parse_args()
 
+    global instance_name
     instance_name = args.instance_name
+
+    global postfix
     postfix = args.postfix
+
+    global run_only
     run_only = args.run_only
+
+    global build_only
     build_only = args.build_only
+
+    global debug
     debug = args.debug
+
+    global experiment
     experiment = args.experiment
+
+    global silent
     silent = args.silent
+
+    global executable_path
     executable_path = args.exec
+
+    global sol_dir
     sol_dir = args.sol_dir
+
+    global acopp_dir
     acopp_dir = args.acopp_dir
+
+    global ants
     ants = args.ants
+
+    global alpha
     alpha = args.alpha
+
+    global beta
     beta = args.beta
+
+    global rho
     rho = args.rho
+
+    global q0
     q0 = args.q0
+
+    global ptries
     ptries = args.ptries
+
+    global localsearch
     localsearch = args.localsearch
+
+    global time
     time = args.time
+
+    global random_seed
     random_seed = args.random_seed
+
+    global not_mmas
     not_mmas = args.not_mmas
+
+    global tries
     tries = args.tries
+
+    global aaco_nc
     aaco_nc = args.aaco_nc
+
+    global adapt_evap
     adapt_evap = args.adapt_evap
+
+    global nodeclustering
     nodeclustering = args.nodeclustering
+
+    global n_cluster
     n_cluster = args.n_cluster
+
+    global cluster_size
     cluster_size = args.cluster_size
+
+    global sector
     sector = args.sector
+
+    global log_iter
     log_iter = args.log_iter
+
+    global save_ter_log
     save_ter_log = args.save_ter_log
+
+    global no_log
     no_log = args.no_log
+
+    global chain_flags
     chain_flags = args.chain_flags
+
+    global no_default
+    no_default = args.no_default
 
 
 def preprocess_arguments():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
-
+    global acopp_dir
     acopp_dir = Path(acopp_dir)
 
+    global instance_name
     if instance_name:
         if instance_name[-5:] == ".thop":
             instance_name = instance_name
         else:
             instance_name = instance_name + ".thop"
 
+    global postfix
     if postfix:
         if postfix[0] == "_":
             postfix = postfix
         else:
             postfix = "_" + postfix
 
+    global executable_path
     if experiment:
         executable_path = f"{acopp_dir}/acothop_experiment"
     if executable_path is None:
         executable_path = f"{acopp_dir}/acothop{postfix}"
 
+    global nodeclustering, adapt_evap, not_mmas
     if aaco_nc:
         nodeclustering = True
         adapt_evap = True
     if adapt_evap:
-        rho = 0.5
         not_mmas = False
 
+    global sol_dir
     sol_dir = sol_dir if sol_dir else Path(f"{acopp_dir}/../../solutions/temp/aco++")
 
 
 def load_default_hyperparams():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
     global tsp_base, number_of_items_per_city, knapsack_type, parameter_configuration_key
 
     tsp_base = instance_name.split("_")[0]
@@ -521,6 +586,7 @@ def load_default_hyperparams():
         knapsack_type,
     )
 
+    global time
     if time:
         time = time
     else:
@@ -529,41 +595,44 @@ def load_default_hyperparams():
             * number_of_items_per_city
             / 10.0
         )
-    ants = (
-        ants
-        if ants
-        else float(parameter_configurations[parameter_configuration_key]["--ants"])
-    )
-    alpha = (
-        alpha
-        if alpha
-        else float(parameter_configurations[parameter_configuration_key]["--alpha"])
-    )
-    beta = (
-        beta
-        if beta
-        else float(parameter_configurations[parameter_configuration_key]["--beta"])
-    )
-    rho = (
-        rho
-        if rho
-        else float(parameter_configurations[parameter_configuration_key]["--rho"])
-    )
-    ptries = (
-        ptries
-        if ptries
-        else int(parameter_configurations[parameter_configuration_key]["--ptries"])
-    )
-    localsearch = (
-        localsearch
-        if localsearch
-        else int(parameter_configurations[parameter_configuration_key]["--localsearch"])
-    )
+
+    if not no_default:
+        global ants, alpha, beta, rho, ptries, localsearch
+        ants = (
+            ants
+            if ants
+            else float(parameter_configurations[parameter_configuration_key]["--ants"])
+        )
+        alpha = (
+            alpha
+            if alpha
+            else float(parameter_configurations[parameter_configuration_key]["--alpha"])
+        )
+        beta = (
+            beta
+            if beta
+            else float(parameter_configurations[parameter_configuration_key]["--beta"])
+        )
+        rho = (
+            rho
+            if rho
+            else float(parameter_configurations[parameter_configuration_key]["--rho"])
+        )
+        ptries = (
+            ptries
+            if ptries
+            else int(parameter_configurations[parameter_configuration_key]["--ptries"])
+        )
+        localsearch = (
+            localsearch
+            if localsearch
+            else int(
+                parameter_configurations[parameter_configuration_key]["--localsearch"]
+            )
+        )
 
 
 def check_validation():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
-
     assert not (run_only and build_only)
     assert not (no_log and (log_iter or save_ter_log))
     assert not (experiment and debug)
@@ -573,9 +642,6 @@ def check_validation():
 
 
 def table_log():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
-    global tsp_base, number_of_items_per_city, knapsack_type, parameter_configuration_key
-
     configurations = [
         [
             "ants",
@@ -604,8 +670,6 @@ def table_log():
 
 
 def build():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
-
     command = [
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
@@ -633,7 +697,6 @@ def build():
 
 
 def format_aco_command():
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
     global input_path, output_path
 
     input_path = f"{acopp_dir}/../../instances/{tsp_base}-thop/{instance_name}"
@@ -651,19 +714,37 @@ def format_aco_command():
         time,
         "--inputfile",
         input_path,
-        "--ants",
-        ants,
-        "--alpha",
-        alpha,
-        "--beta",
-        beta,
-        "--rho",
-        rho,
-        "--ptries",
-        ptries,
-        "--localsearch",
-        localsearch,
     ]
+    if ants:
+        command += [
+            "--ants",
+            ants,
+        ]
+    if alpha:
+        command += [
+            "--alpha",
+            alpha,
+        ]
+    if beta:
+        command += [
+            "--beta",
+            beta,
+        ]
+    if rho:
+        command += [
+            "--rho",
+            rho,
+        ]
+    if ptries:
+        command += [
+            "--ptries",
+            ptries,
+        ]
+    if localsearch:
+        command += [
+            "--localsearch",
+            localsearch,
+        ]
     if not no_log:
         command += [
             "--outputfile",
@@ -713,10 +794,6 @@ stdout:
 
 
 if __name__ == "__main__":
-    global instance_name, postfix, run_only, build_only, debug, experiment, silent, executable_path, sol_dir, acopp_dir, ants, alpha, beta, rho, q0, ptries, localsearch, time, random_seed, not_mmas, tries, aaco_nc, adapt_evap, nodeclustering, n_cluster, cluster_size, sector, log_iter, save_ter_log, no_log
-    global tsp_base, number_of_items_per_city, knapsack_type, parameter_configuration_key
-    global input_path, output_path
-
     read_arguments()
 
     check_validation()

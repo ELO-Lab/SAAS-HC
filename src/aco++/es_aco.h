@@ -16,7 +16,6 @@
 
 extern unsigned long int initial_nb_dims;
 extern unsigned long int initial_lambda;
-extern unsigned int indv_ants;
 
 extern double lowerBounds[];
 extern double upperBounds[];
@@ -42,7 +41,7 @@ void es_aco_export_result();
 
 void es_aco_exit();
 
-const char* es_aco_termination_condition();
+const char *es_aco_termination_condition();
 
 void es_aco_set_best_params();
 

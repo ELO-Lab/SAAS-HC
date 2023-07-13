@@ -3,6 +3,7 @@
 #include "tree_map.h"
 #include "acothop.h"
 #include "ants.h"
+#include "inout.h"
 
 #define ALPHA_IDX 0
 #define BETA_IDX 1
@@ -81,8 +82,6 @@ double upperBounds[] = {
 std::vector<double> initialX;
 std::vector<double> typicalX;
 std::vector<double> initialStd;
-// number of ants per individual
-unsigned int indv_ants = 4;
 
 boundary_cmaes optimizer;
 
@@ -344,11 +343,11 @@ void es_aco_init()
         initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
     }
 
-    initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = 0.8075;
-    initialX[BETA_IDX] = typicalX[BETA_IDX] = 5.668333333333333;
+    initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = alpha_mean;
+    initialStd[ALPHA_IDX] = alpha_std;
 
-    initialStd[ALPHA_IDX] = 0.12524143350611514;
-    initialStd[BETA_IDX] = 1.6084922201310836;
+    initialX[BETA_IDX] = typicalX[BETA_IDX] = beta_mean;
+    initialStd[BETA_IDX] = beta_std;
 
     printf("Popsize=%d\n", (long int)initial_lambda);
     if (iGreedyLevyFlag)
@@ -360,8 +359,6 @@ void es_aco_init()
     optimizer.init(eval_function, lowerBounds, upperBounds);
     ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    max_packing_tries = 1;
-    ls_flag = 1;
 }
 
 void es_aco_restart()

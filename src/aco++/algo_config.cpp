@@ -40,7 +40,7 @@ bool cmaes_flag = true;
 bool cmaes_flag = false;
 #endif
 
-// don't work
+// config here don't work
 bool ipopcmaes_flag = false;
 bool bipopcmaes_flag = false;
 bool iGreedyLevyFlag = false;

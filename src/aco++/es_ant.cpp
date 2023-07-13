@@ -11,7 +11,6 @@
 #include "utilities.h"
 #include "thop.h"
 #include "ls.h"
-
 #include "es_ant.h"
 #include "acothop.h"
 #include "custom_strategy.h"
@@ -55,13 +54,8 @@
 #define ES_ANT_DIM SEED_TEMP_DIM
 
 // hyperparameters
-double par_a_mean, par_b_mean, par_c_mean,
-    par_a_stepsize, par_b_stepsize, par_c_stepsize,
-    alpha_mean, beta_mean, rho_mean,
-    alpha_stepsize, beta_stepsize, rho_stepsize,
-    q_0_mean, q_0_stepsize, rand_seed_stepsize,
-    neighbour_prob_mean, neighbour_prob_stepsize;
-std::size_t min_n_ants, n_ant_per_ind;
+double rand_seed_std;
+std::size_t min_n_ants;
 
 std::size_t current_ant_idx = 0;
 std::array<double, ES_ANT_DIM> lbounds, ubounds;
@@ -193,10 +187,10 @@ libcmaes::FitFunc es_evaluate = [](const double *x, const int &N)
 
     worst_fitness = -1;
     best_fitness = instance.UB + 1;
-    for (i = 0; i < n_ant_per_ind; i++)
+    for (i = 0; i < indv_ants; i++)
     {
         fitness = an_ant_evaluate(x, N);
-        mean_value = fitness / n_ant_per_ind;
+        mean_value = fitness / indv_ants;
         if (worst_fitness < fitness)
             worst_fitness = fitness;
         if (best_fitness > fitness)
@@ -219,53 +213,53 @@ void init_optimizer(void)
     lbounds[SEED_IDX] = rand_gen.min();
     ubounds[SEED_IDX] = rand_gen.max();
     x0[SEED_IDX] = (ubounds[SEED_IDX] - lbounds[SEED_IDX]) / 2.0;
-    sigma[SEED_IDX] = rand_seed_stepsize / (ubounds[SEED_IDX] - lbounds[SEED_IDX]);
+    sigma[SEED_IDX] = rand_seed_std / (ubounds[SEED_IDX] - lbounds[SEED_IDX]);
 #endif
 
     lbounds[PAR_A_IDX] = 0.01;
     ubounds[PAR_A_IDX] = 1;
     x0[PAR_A_IDX] = par_a_mean;
-    sigma[PAR_A_IDX] = par_a_stepsize / (ubounds[PAR_A_IDX] - lbounds[PAR_A_IDX]);
+    sigma[PAR_A_IDX] = par_a_std / (ubounds[PAR_A_IDX] - lbounds[PAR_A_IDX]);
 
     lbounds[PAR_B_IDX] = 0.01;
     ubounds[PAR_B_IDX] = 1;
     x0[PAR_B_IDX] = par_b_mean;
-    sigma[PAR_B_IDX] = par_b_stepsize / (ubounds[PAR_B_IDX] - lbounds[PAR_B_IDX]);
+    sigma[PAR_B_IDX] = par_b_std / (ubounds[PAR_B_IDX] - lbounds[PAR_B_IDX]);
 
     lbounds[PAR_C_IDX] = 0.01;
     ubounds[PAR_C_IDX] = 1;
     x0[PAR_C_IDX] = par_c_mean;
-    sigma[PAR_C_IDX] = par_c_stepsize / (ubounds[PAR_C_IDX] - lbounds[PAR_C_IDX]);
+    sigma[PAR_C_IDX] = par_c_std / (ubounds[PAR_C_IDX] - lbounds[PAR_C_IDX]);
 
 #if Q0_TUNING_MACRO
     lbounds[Q0_IDX] = 0;
     ubounds[Q0_IDX] = 0.99;
     x0[Q0_IDX] = q_0_mean;
-    sigma[Q0_IDX] = q_0_stepsize / (ubounds[Q0_IDX] - lbounds[Q0_IDX]);
+    sigma[Q0_IDX] = q_0_std / (ubounds[Q0_IDX] - lbounds[Q0_IDX]);
 #endif
 
     lbounds[ALPHA_IDX] = 0.01;
     ubounds[ALPHA_IDX] = 10;
     x0[ALPHA_IDX] = alpha_mean;
-    sigma[ALPHA_IDX] = alpha_stepsize / (ubounds[ALPHA_IDX] - lbounds[ALPHA_IDX]);
+    sigma[ALPHA_IDX] = alpha_std / (ubounds[ALPHA_IDX] - lbounds[ALPHA_IDX]);
 
     lbounds[BETA_IDX] = 0.01;
     ubounds[BETA_IDX] = 10;
     x0[BETA_IDX] = beta_mean;
-    sigma[BETA_IDX] = beta_stepsize / (ubounds[BETA_IDX] - lbounds[BETA_IDX]);
+    sigma[BETA_IDX] = beta_std / (ubounds[BETA_IDX] - lbounds[BETA_IDX]);
 
 #if RHO_TUNING_MACRO
     lbounds[RHO_IDX] = 0.01;
     ubounds[RHO_IDX] = 0.99;
     x0[RHO_IDX] = rho_mean;
-    sigma[RHO_IDX] = rho_stepsize / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
+    sigma[RHO_IDX] = rho_std / (ubounds[RHO_IDX] - lbounds[RHO_IDX]);
 #endif
 
 #if TREE_MAP_MACRO
     lbounds[NEIGHBOUR_PROB_IDX] = 0.01;
     ubounds[NEIGHBOUR_PROB_IDX] = 0.99;
     x0[NEIGHBOUR_PROB_IDX] = neighbour_prob_mean;
-    sigma[NEIGHBOUR_PROB_IDX] = neighbour_prob_stepsize / (ubounds[NEIGHBOUR_PROB_IDX] - lbounds[NEIGHBOUR_PROB_IDX]);
+    sigma[NEIGHBOUR_PROB_IDX] = neighbour_prob_std / (ubounds[NEIGHBOUR_PROB_IDX] - lbounds[NEIGHBOUR_PROB_IDX]);
 #endif
 
     for (i = 0; i < ES_ANT_DIM; i++)
@@ -289,7 +283,7 @@ void es_ant_construct_and_local_search(void)
 
     while (current_ant_idx < min_n_ants or current_ant_idx == 0)
     {
-        capacity_need = current_ant_idx + optim_ptr->get_lambda() * n_ant_per_ind;
+        capacity_need = current_ant_idx + optim_ptr->get_lambda() * indv_ants;
         ant.resize(capacity_need);
         prev_ls_ant.resize(capacity_need);
 
@@ -314,45 +308,19 @@ void es_ant_construct_and_local_search(void)
     }
 }
 
-void es_ant_force_set_parameters(void)
+void es_ant_set_default_hyperparameters(void)
 {
-    ls_flag = 1;
-    max_packing_tries = 1;
     // min_n_ants = n_ants * 0.8;
     // min_n_ants = n_ants;
     min_n_ants = 0;
-    n_ant_per_ind = 5;
+    indv_ants = 5;
 
-    rand_seed_stepsize = (rand_gen.max() - rand_gen.min()) / 20.0;
-
-    alpha_mean = 1.550208;
-    alpha_stepsize = 1.523180 / 2;
-
-    beta_mean = 4.893958;
-    beta_stepsize = 2.067786 / 2;
-
-    rho_mean = 0.468542;
-    rho_stepsize = 0.253226 / 2;
-
-    q_0_mean = 0;
-    q_0_stepsize = 0.05;
-
-    par_a_mean = 0.5;
-    par_a_stepsize = 0.05;
-
-    par_b_mean = 0.5;
-    par_b_stepsize = 0.05;
-
-    par_c_mean = 0.5;
-    par_c_stepsize = 0.05;
-
-    neighbour_prob_mean = 0.5;
-    neighbour_prob_stepsize = 0.05;
+    rand_seed_std = (rand_gen.max() - rand_gen.min()) / 20.0;
 }
 
 void es_ant_init(void)
 {
-    es_ant_force_set_parameters();
+    es_ant_set_default_hyperparameters();
     init_optimizer();
 }
 

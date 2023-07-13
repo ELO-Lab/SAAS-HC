@@ -10,8 +10,8 @@
 // #define Q0_TUNING_MACRO true
 // #define LS_N2_MACRO true // have bugs
 // #define SEED_TUNING_MACRO true
-// #define ADAPT_RHO_MACRO true
-// #define CMAES_MACRO true // don't work
+#define ADAPT_RHO_MACRO true
+#define CMAES_MACRO true
 
 extern int_fast8_t verbose;
 extern bool node_clustering_flag;      // AACO-NC - Clustering cities

@@ -76,14 +76,9 @@ void update_rho(void)
         indv_ants = (unsigned int)(min_indv_ants + indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
         // indv_ants =  (unsigned int)(max_indv_ants - indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
 
-        resize_ant_colonies();
-    }
-
 #if ES_ANT_MACRO
-    if (es_ant_flag)
-    {
-        n_ant_per_ind = min_indv_ants + indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-        // n_ant_per_ind =  max_indv_ants - indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
-    }
+#else
+        resize_ant_colonies();
 #endif
+    }
 }

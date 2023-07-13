@@ -1453,12 +1453,14 @@ int parse_commandline(int argc, char *argv[])
 
     calibration_mode = options.opt_calibration;
 
-    cmaes_flag = options.opt_cmaes;
     ipopcmaes_flag = options.opt_ipopcmaes;
     bipopcmaes_flag = options.opt_bipopcmaes;
 
-    if (cmaes_flag)
-        printf("using cmaes\n");
+    if (bool(options.opt_cmaes) || cmaes_flag)
+    {
+        cmaes_flag = true;
+        printf("using cmaes_flag\n");
+    }
     if (ipopcmaes_flag)
         printf("using ipop cmaes\n");
     if (bipopcmaes_flag)
@@ -1904,9 +1906,10 @@ int parse_commandline(int argc, char *argv[])
         n_cluster = atol(options.arg_n_cluster);
     }
 
-    if (options.opt_adapt_evap)
+    if (options.opt_adapt_evap || adaptive_evaporation_flag)
     {
-        adaptive_evaporation_flag = TRUE;
+        adaptive_evaporation_flag = true;
+        printf("using adaptive_evaporation_flag\n");
     }
 
     /*puts ("Non-option arguments:");*/
@@ -1955,7 +1958,7 @@ int parse_commandline(int argc, char *argv[])
 
 #if ES_ANT_MACRO
     if (es_ant_flag)
-        es_ant_force_set_parameters();
+        es_ant_set_default_hyperparameters();
 #endif
 #if TREE_MAP_MACRO
     if (tree_map_flag)

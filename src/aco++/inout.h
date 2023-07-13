@@ -135,3 +135,11 @@ void write_report(void);
 void write_iterations_report(long int iteration_best_ant);
 
 void write_params(void);
+
+extern double par_a_mean, par_b_mean, par_c_mean,
+    par_a_std, par_b_std, par_c_std,
+    alpha_mean, beta_mean, rho_mean,
+    alpha_std, beta_std, rho_std,
+    q_0_mean, q_0_std,
+    neighbour_prob_mean, neighbour_prob_std;
+extern unsigned int indv_ants; // number of ants per individual

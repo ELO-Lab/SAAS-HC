@@ -570,7 +570,6 @@ int main(int argc, char *argv[])
 
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/
-    if(adaptive_evaporation_flag) rho = 0.386;
     for (n_try = 0; n_try < max_tries; n_try++)
     {
         init_try(n_try);

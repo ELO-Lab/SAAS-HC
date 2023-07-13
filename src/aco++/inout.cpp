@@ -126,6 +126,16 @@ long int logiter_flag; /* --log was given in the command-line.  */
 long int output_flag;
 long int calibration_mode;
 
+// ---
+double par_a_mean, par_b_mean, par_c_mean,
+    par_a_std, par_b_std, par_c_std,
+    alpha_mean, beta_mean, rho_mean,
+    alpha_std, beta_std, rho_std,
+    q_0_mean, q_0_std,
+    neighbour_prob_mean, neighbour_prob_std;
+unsigned int indv_ants;
+// ---
+
 void init_program(long int argc, char *argv[])
 /*
       FUNCTION:       initialize the program,
@@ -231,6 +241,9 @@ void init_program(long int argc, char *argv[])
 
     if (o1_evap_flag)
         o1_init_program();
+
+    if (adaptive_evaporation_flag)
+        rho = 0.386;
 }
 
 void exit_program(void)
@@ -484,14 +497,14 @@ void set_default_parameters(void)
       COMMENTS: none
  */
 {
-    ls_flag = 3;     /* per default run 3-opt*/
+    ls_flag = 1;
     dlb_flag = TRUE; /* apply don't look bits in local search */
     nn_ls = 20;      /* use fixed radius search in the 20 nearest neighbours */
-    n_ants = 25;     /* number of ants */
+    n_ants = 303;    /* number of ants */
     nn_ants = 20;    /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.5;
+    alpha = 1.550208;
+    beta = 4.893958;
+    rho = 0.468542;
     q_0 = 0.0;
     max_tries = 1;
     max_tours = 0;
@@ -510,11 +523,37 @@ void set_default_parameters(void)
     ras_ranks = 0;
     elitist_ants = 0;
 
-    node_clustering_flag = FALSE;
-    n_sector = 24;
-    cluster_size = 32;
+    indv_ants = 4;
 
-    adaptive_evaporation_flag = false;
+    alpha_mean = 0.8075;
+    alpha_std = 0.12524143350611514;
+
+    beta_mean = 5.668333333333333;
+    beta_std = 1.6084922201310836;
+
+    // alpha_mean = 1.550208;
+    // alpha_std = 1.523180 / 2;
+
+    // beta_mean = 4.893958;
+    // beta_std = 2.067786 / 2;
+
+    rho_mean = 0.468542;
+    rho_std = 0.253226 / 2;
+
+    q_0_mean = 0;
+    q_0_std = 0.05;
+
+    par_a_mean = 0.5;
+    par_a_std = 0.05;
+
+    par_b_mean = 0.5;
+    par_b_std = 0.05;
+
+    par_c_mean = 0.5;
+    par_c_std = 0.05;
+
+    neighbour_prob_mean = 0.5;
+    neighbour_prob_std = 0.05;
 }
 
 void set_default_as_parameters(void)
