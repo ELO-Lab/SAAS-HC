@@ -522,6 +522,8 @@ void set_default_parameters(void)
     ras_ranks = 0;
     elitist_ants = 0;
 //
+    initial_lambda = 10;
+    
     indv_ants = 4;
     min_indv_ants = 2;
     max_indv_ants = 50;
