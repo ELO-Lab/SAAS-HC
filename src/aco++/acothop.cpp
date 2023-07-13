@@ -565,7 +565,7 @@ int main(int argc, char *argv[])
 
     if (verbose > 0)
     {
-        printf("seed: %ld\n", seed);
+        printf("Seed: %ld, Upper Bound %ld\n", seed, instance.UB);
     }
 
     time_used = elapsed_time(VIRTUAL);
@@ -625,7 +625,7 @@ int main(int argc, char *argv[])
 
         if (verbose > 0)
         {
-            printf("iteration: %ld\n", iteration);
+            printf("Number of iteration: %ld\n", iteration);
             // printf("seed: %ld\n", seed);
         }
 

@@ -13,6 +13,7 @@ double max_rho = 0.99;
 
 double min_indv_ants = 2;
 double max_indv_ants = 50;
+double entropy;
 
 void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence, long int &total_edge_count)
 {
@@ -60,7 +61,7 @@ void update_rho(void)
 
     std::map<std::pair<long int, long int>, long int> occurence;
     long int total_edge_count;
-    double entropy, min_entropy, max_entropy;
+    double min_entropy, max_entropy;
 
     count_ant_edges(occurence, total_edge_count);
     calculate_entropy(entropy, occurence, total_edge_count);

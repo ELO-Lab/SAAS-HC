@@ -39,7 +39,6 @@
 
 unsigned long int initial_nb_dims = ES_ACO_DIM;
 unsigned long int initial_lambda = 10;
-const double initial_std = 0.2;
 
 double lowerBounds[ES_ACO_DIM + 3], upperBounds[ES_ACO_DIM + 3];
 
@@ -58,11 +57,16 @@ unsigned int inc_popsize = 2;
 
 char poptype = 0; // 0 == small , 1 == large
 
+char params_file_name[LINE_BUF_LEN];
+
+long int cmaes_seed;
+
 void es_write_params()
 {
     FILE *fptr;
     // inspect cmaes_initials_default file to be more specific about each parameter
-    fptr = fopen("cmaes_initials.par", "w");
+    printf("CMA-ES's Initial parameters will be to %s.\n", params_file_name);
+    fptr = fopen(params_file_name, "w");
 
     fprintf(fptr, "N %d\n", initial_nb_dims);
 
@@ -81,7 +85,7 @@ void es_write_params()
     fprintf(fptr, "\n");
 
     fprintf(fptr, "lambda %d\n", initial_lambda);
-    fprintf(fptr, "seed  %d\n", seed);
+    fprintf(fptr, "seed  %d\n", cmaes_seed);
 
     fprintf(fptr, "weights equal \n");
 
@@ -92,10 +96,10 @@ void es_write_params()
     }
     fprintf(fptr, "\n");
 
-    // fprintf(fptr,"stopTolFunHist %f\n", 0.0f);
+    // fprintf(fptr,"stopTolFunHist %f\n", (instance.UB*0.00002));
     fprintf(fptr, "stopTolX %f\n", 1e-11);
     fprintf(fptr, "stopTolUpXFactor %f\n", 1e3);
-    fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 1.5);
+    fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 0.2);
 
     // fprintf(fptr,"fac*damp %d\n", 1);
 
@@ -295,17 +299,41 @@ double eval_function(int index, double const *x, unsigned long N)
     }
     // mean_and_std(fitnesses, mean_fitness, std_fitness);
 
-    return mean_fitness;
+    return min_fitness;
 }
 
-void es_aco_init()
+void generating_random_vector()
 {
+    initialX.clear();
+    typicalX.clear();
+    initialStd.clear();
     for (int i = 0; i < initial_nb_dims; i++)
     {
         initialX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
         typicalX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
         initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
     }
+}
+
+void setup_cmaes()
+{
+    printf("Popsize=%d\n", (long int)initial_lambda);
+    if (iGreedyLevyFlag)
+    {
+        initial_nb_dims = ES_ACO_DIM + 3;
+    }
+    es_write_params();
+    optimizer.init(eval_function, lowerBounds, upperBounds, params_file_name);
+    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+}
+
+void es_aco_init()
+{
+    sprintf(params_file_name, "%s.cmaes_initials.par", output_name_buf);
+
+    cmaes_seed = seed;
+    generating_random_vector();
 
     initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = alpha_mean;
     initialStd[ALPHA_IDX] = alpha_std;
@@ -313,44 +341,35 @@ void es_aco_init()
     initialX[BETA_IDX] = typicalX[BETA_IDX] = beta_mean;
     initialStd[BETA_IDX] = beta_std;
 
-    printf("Popsize=%d\n", (long int)initial_lambda);
-    if (iGreedyLevyFlag)
-    {
-        initial_nb_dims = ES_ACO_DIM + 3;
-    }
-    es_write_params();
-    seed++;
-    optimizer.init(eval_function, lowerBounds, upperBounds);
-    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    setup_cmaes();
 }
 
 void es_aco_restart()
 {
-    for (int i = 0; i < initial_nb_dims; i++)
-    {
-        initialX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
-        typicalX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
-        initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
-    }
+    cmaes_seed = optimizer.get("randomseed");
 
-    printf("Popsize=%d\n", (long int)initial_lambda);
-    if (iGreedyLevyFlag)
-    {
-        initial_nb_dims = ES_ACO_DIM + 3;
+    /*
+    double *xbestever = NULL;
+    xbestever = optimizer.getInto("xbestever", xbestever);
+    xbestever = optimizer.boundary_transformation(xbestever);
+
+    for (int i = 0; i < initial_nb_dims; i++){
+        typicalX[i] = xbestever[i];
+        initialX[i] = xbestever[i];
     }
-    es_write_params();
-    seed++;
-    optimizer.init(eval_function, lowerBounds, upperBounds);
-    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    max_packing_tries = 1;
+    */
+
+    generating_random_vector();
+
+    setup_cmaes();
 }
 
 void resize_ant_colonies()
 {
     // if (ant.size() != indv_ants * (int)(optimizer.get("lambda")))
-    //     printf("Change ant size to %d\n", indv_ants * (int)(optimizer.get("lambda")));
+    //     printf("number of ants %d, value of rho %f\n", indv_ants * (int)(optimizer.get("lambda")), rho);
+    // else
+    //     printf("\n");
     ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
 }
