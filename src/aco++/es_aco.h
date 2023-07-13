@@ -47,4 +47,6 @@ void es_aco_set_best_params();
 
 void resize_ant_colonies();
 
+void es_aco_init_program();
+
 #endif

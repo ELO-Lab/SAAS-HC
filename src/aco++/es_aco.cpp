@@ -41,43 +41,7 @@ unsigned long int initial_nb_dims = ES_ACO_DIM;
 unsigned long int initial_lambda = 10;
 const double initial_std = 0.2;
 
-double lowerBounds[] = {
-    0.01f, // alpha
-    0.01f, // beta
-    0.0f,  // par_a
-    0.0f,  // par_b
-    0.0f,  // par_c
-#if Q0_TUNING_MACRO
-    0.01f, // q0
-#endif
-#if RHO_TUNING_MACRO
-    0.01f, // rho
-#endif
-#if TREE_MAP_MACRO
-    0.01f, // neighbour_prob
-#endif
-    0.0f,  // epsilon
-    0.0f,  // threshold
-    0.0f}; // ratio
-
-double upperBounds[] = {
-    10.0f, // alpha
-    10.0f, // beta
-    1.0f,  // par_a
-    1.0f,  // par_b
-    1.0f,  // par_c
-#if Q0_TUNING_MACRO
-    0.99f, // q0
-#endif
-#if RHO_TUNING_MACRO
-    0.99f, // rho
-#endif
-#if TREE_MAP_MACRO
-    0.99f, // neighbour_prob
-#endif
-    1.0f,  // epsilon
-    1.0f,  // threshold
-    5.0f}; // ratio
+double lowerBounds[ES_ACO_DIM + 3], upperBounds[ES_ACO_DIM + 3];
 
 std::vector<double> initialX;
 std::vector<double> typicalX;
@@ -502,4 +466,46 @@ void es_aco_set_best_params()
         // printf("neighbour_prob: %.4f\n", neighbour_prob);
 #endif
     }
+}
+
+void es_aco_init_program()
+{
+    lowerBounds[ALPHA_IDX] = 0.01;
+    upperBounds[ALPHA_IDX] = 10;
+
+    lowerBounds[BETA_IDX] = 0.01;
+    upperBounds[BETA_IDX] = 10;
+
+    lowerBounds[PAR_A_IDX] = 0.01;
+    upperBounds[PAR_A_IDX] = 1;
+
+    lowerBounds[PAR_B_IDX] = 0.01;
+    upperBounds[PAR_B_IDX] = 1;
+
+    lowerBounds[PAR_C_IDX] = 0.01;
+    upperBounds[PAR_C_IDX] = 1;
+
+#if Q0_TUNING_MACRO
+    lowerBounds[Q0_IDX] = 0;
+    upperBounds[Q0_IDX] = 0.99;
+#endif
+
+#if RHO_TUNING_MACRO
+    lowerBounds[RHO_IDX] = 0.01;
+    upperBounds[RHO_IDX] = 0.99;
+#endif
+
+#if TREE_MAP_MACRO
+    lowerBounds[NEIGHBOUR_PROB_IDX] = 0.01;
+    upperBounds[NEIGHBOUR_PROB_IDX] = 0.99;
+#endif
+
+    lowerBounds[EPSILON_IDX] = 0.0;
+    upperBounds[EPSILON_IDX] = 1.0;
+
+    lowerBounds[LEVY_THRESHOLD_IDX] = 0.0;
+    upperBounds[LEVY_THRESHOLD_IDX] = 1.0;
+
+    lowerBounds[LEVY_RATIO_IDX] = 0.0;
+    upperBounds[LEVY_RATIO_IDX] = 5.0;
 }

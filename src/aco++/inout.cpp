@@ -244,6 +244,9 @@ void init_program(long int argc, char *argv[])
 
     if (adaptive_evaporation_flag)
         rho = 0.386;
+
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+        es_aco_init_program();
 }
 
 void exit_program(void)
