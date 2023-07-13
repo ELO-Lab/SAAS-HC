@@ -165,7 +165,19 @@ extern double dGreedyLevyRatio;     // 0.1--5
     "  -C, --contribution   # Contribution based Pheromone Update Parameter of Altering Ratio. \n"
 
 #define STR_HELP_GREEDYLEVY \
-    "  -G, --greedylevy     # Greedy Levy Flight Espsilon;Threadhold;Ratio.\n"
+    "  -G, --greedylevy     # Greedy Levy Flight Espsilon:Threadhold:Ratio.\n"
+
+#define STR_HELP_MEAN_ARY \
+    "  --mean_ary           # Array of mean values. alpha:beta:par_a:par_b:par_c\n"
+    
+#define STR_HELP_STD_ARY \
+    "  --std_ary            # Array of std values. alpha:beta:par_a:par_b:par_c\n"
+    
+#define STR_HELP_INDV_ANTS \
+    "  --indv_ants          # Parameters of adaptive individual ants. init:min:max\n"
+    
+#define STR_HELP_ADPT_RHO \
+    "  --adpt_rho           # Parameters of adaptive evaporation rate. init:min:max\n"
 
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
@@ -207,6 +219,10 @@ static const char *const STR_HELP[] = {
     STR_HELP_LEVYFLIGHT,
     STR_HELP_CONTRIBUTION,
     STR_HELP_GREEDYLEVY,
+    STR_HELP_MEAN_ARY,
+    STR_HELP_STD_ARY,
+    STR_HELP_INDV_ANTS,
+    STR_HELP_ADPT_RHO,
     NULL};
 
 struct options
@@ -331,6 +347,18 @@ struct options
     /* Set to 1 if option --greedylevy (-G) has been specified.  */
     unsigned int opt_greedylevy : 1;
 
+    /* Set to 1 if option --mean_ary has been specified.  */
+    unsigned int opt_mean_ary: 1;
+
+    /* Set to 1 if option --std_ary has been specified.  */
+    unsigned int opt_std_ary: 1;
+    
+    /* Set to 1 if option --indv_ants has been specified.  */
+    unsigned int opt_indv_ants: 1;
+    
+    /* Set to 1 if option --adpt_rho has been specified.  */
+    unsigned int opt_adpt_rho: 1;
+
     /* Argument to option --inputfile (-i).  */
     const char *arg_inputfile;
 
@@ -402,6 +430,7 @@ struct options
 
     /* Argument to option --adapt_evap.  */
     const char *arg_adapt_evap;
+
     /* Argument to option --cmaes (-c).  */
     const char *arg_cmaes;
 
@@ -419,6 +448,18 @@ struct options
 
     /* Argument to option --greedylevy (-G).  */
     const char *arg_greedylevy;
+
+    /* Argument to option --mean_ary.  */
+    const char *arg_mean_ary;
+
+    /* Argument to option --std_ary.  */
+    const char *arg_std_ary;
+
+    /* Argument to option --indv_ants.  */
+    const char *arg_indv_ants;
+
+    /* Argument to option --adpt_rho.  */
+    const char *arg_adpt_rho;
 };
 
 /* Parse command line options.  Return index of first non-option argument,
@@ -467,6 +508,10 @@ parse_options(struct options *const options, const char *const program_name,
     static const char *const optstr__levyflight = "levyflight";
     static const char *const optstr__contribution = "contribution";
     static const char *const optstr__greedylevy = "greedylevy";
+    static const char *const optstr__mean_ary = "mean_ary";
+    static const char *const optstr__std_ary = "std_ary";
+    static const char *const optstr__indv_ants = "indv_ants";
+    static const char *const optstr__adpt_rho = "adpt_rho";
     int i = 0;
     options->opt_inputfile = 0;
     options->opt_outputfile = 0;
@@ -502,10 +547,17 @@ parse_options(struct options *const options, const char *const program_name,
     options->opt_clustersize = 0;
     options->opt_n_cluster = 0;
     options->opt_adapt_evap = 0;
-
+    options->opt_levyflight = 0;
+    options->opt_contribution = 0;
+    options->opt_greedylevy = 0;
     options->opt_cmaes = 0;
     options->opt_ipopcmaes = 0;
     options->opt_bipopcmaes = 0;
+    options->opt_mean_ary = 0;
+    options->opt_std_ary = 0;
+    options->opt_indv_ants = 0;
+    options->opt_adpt_rho = 0;
+
     options->arg_inputfile = 0;
     options->arg_outputfile = 0;
     options->arg_tries = 0;
@@ -530,12 +582,17 @@ parse_options(struct options *const options, const char *const program_name,
     options->arg_clustersize = 0;
     options->arg_n_cluster = 0;
     options->arg_adapt_evap = 0;
+    options->arg_levyflight = 0;
+    options->arg_contribution = 0;
+    options->arg_greedylevy = 0;
     options->arg_cmaes = 0;
     options->arg_ipopcmaes = 0;
-    options->arg_bipopcmaes = 0;
-    options->opt_levyflight = 0;
-    options->opt_contribution = 0;
-    options->opt_greedylevy = 0;
+    options->arg_bipopcmaes = 0;    
+    options->arg_mean_ary = 0;
+    options->arg_std_ary = 0;
+    options->arg_indv_ants = 0;
+    options->arg_adpt_rho = 0;
+
     while (++i < argc)
     {
         const char *option = argv[i];
@@ -623,6 +680,23 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_unexpec_arg_long;
                     }
                     options->opt_adapt_evap = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__adpt_rho + 1, option_len - 1) == 0)
+                {
+                    
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_adpt_rho = argument;
+                    else if (++i < argc)
+                        options->arg_adpt_rho = argv[i];
+                    else
+                    {
+                        option = optstr__adpt_rho;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_adpt_rho = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -804,6 +878,22 @@ parse_options(struct options *const options, const char *const program_name,
                     options->opt_ipopcmaes = 1;
                     break;
                 }
+                else if (strncmp(option + 1, optstr__indv_ants + 1, option_len - 1) == 0)
+                {
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_indv_ants = argument;
+                    else if (++i < argc)
+                        options->arg_indv_ants = argv[i];
+                    else
+                    {
+                        option = optstr__indv_ants;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_indv_ants = 1;
+                    break;
+                }
                 goto error_unknown_long_opt;
             case 'l':
                 if (strncmp(option + 1, optstr__localsearch + 1, option_len - 1) == 0)
@@ -864,6 +954,22 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_unexpec_arg_long;
                     }
                     options->opt_mmas = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__mean_ary + 1, option_len - 1) == 0)
+                {
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_mean_ary = argument;
+                    else if (++i < argc)
+                        options->arg_mean_ary = argv[i];
+                    else
+                    {
+                        option = optstr__mean_ary;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_mean_ary = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -1070,6 +1176,22 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_missing_arg_long;
                     }
                     options->opt_sector = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__std_ary + 1, option_len - 1) == 0)
+                {
+                    if (option_len <= 1)
+                        goto error_long_opt_ambiguous;
+                    if (argument != 0)
+                        options->arg_std_ary = argument;
+                    else if (++i < argc)
+                        options->arg_std_ary = argv[i];
+                    else
+                    {
+                        option = optstr__std_ary;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_std_ary = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -1944,6 +2066,32 @@ int parse_commandline(int argc, char *argv[])
         check_out_of_range(dGreedyEpsilon, 0, 1, "dGreedyEpsilon");
         check_out_of_range(dGreedyLevyThreshold, 0, 1, "dGreedyLevyThreshold");
         check_out_of_range(dGreedyLevyRatio, 0, 50, "dGreedyLevyRatio");
+    }
+    if (options.opt_mean_ary)
+    {
+        sscanf(options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf", &alpha_mean, &beta_mean, &par_a_mean, &par_b_mean, &par_c_mean);
+        
+        // printf("alpha_mean: %lf, beta_mean: %lf, par_a_mean: %lf, par_b_mean: %lf, par_c_mean: %lf\n", alpha_mean, beta_mean, par_a_mean, par_b_mean, par_c_mean);
+    }
+
+    if (options.opt_std_ary)
+    {
+        sscanf(options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf", &alpha_std, &beta_std, &par_a_std, &par_b_std, &par_c_std);
+        
+        // printf("alpha_std: %lf, beta_std: %lf, par_a_std: %lf, par_b_std: %lf, par_c_std: %lf\n", alpha_std, beta_std, par_a_std, par_b_std, par_c_std);
+    }
+
+    if (options.opt_adpt_rho)
+    {
+        adaptive_evaporation_flag = 1;
+        sscanf(options.arg_adpt_rho, "%lf:%lf:%lf", &rho, &min_rho, &max_rho);
+        // printf("rho: %lf, min_rho: %lf, max_rho: %lf\n", rho, min_rho, max_rho);
+    }
+
+    if (options.opt_indv_ants)
+    {
+        sscanf(options.arg_indv_ants, "%ld:%lf:%lf", &indv_ants, &max_indv_ants, &min_indv_ants);
+        // printf("indv_ants: %ld, max_indv_ants: %lf, min_indv_ants: %lf\n", indv_ants, max_indv_ants, min_indv_ants);
     }
 
     while (i < argc)

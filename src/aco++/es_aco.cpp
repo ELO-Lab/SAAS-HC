@@ -341,6 +341,15 @@ void es_aco_init()
     initialX[BETA_IDX] = typicalX[BETA_IDX] = beta_mean;
     initialStd[BETA_IDX] = beta_std;
 
+    initialX[PAR_A_IDX] = typicalX[PAR_A_IDX] = par_a_mean;
+    initialStd[PAR_A_IDX] = par_a_std;
+
+    initialX[PAR_B_IDX] = typicalX[PAR_B_IDX] = par_b_mean;
+    initialStd[PAR_B_IDX] = par_b_std;
+
+    initialX[PAR_C_IDX] = typicalX[PAR_C_IDX] = par_c_mean;
+    initialStd[PAR_C_IDX] = par_c_std;
+
     setup_cmaes();
 }
 
