@@ -152,21 +152,25 @@ def launcher(arg):
         _random_seed,
         "--time",
         time_limit,
-        "--chain_flag",
+        "--chain_flags",
         chain_flags,
     ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
-
-    stdout_log = ""
+    if run_chain_flags:
+        command += run_chain_flags.split()
     if repetition != number_of_runs - 1:
         command += ["--silent", "2" if not debug_log else "-1"]
-        if debug_log:
-            print("$ " + " ".join(command))
-        run_command(command)
     else:
-        result = run_command(command)
-        stdout_log = result.stdout.decode()
+        command += ["--silent", "-1"]
+
+    result = run_command(command)
+
+    stdout_log = ""
+    if debug_log or repetition == number_of_runs - 1:
+        stdout_log += "$ " + " ".join(command) + "\n"
+    if repetition == number_of_runs - 1:
+        stdout_log += result.stdout.decode()
 
     return (instance_name, repetition, stdout_log)
 
@@ -204,6 +208,7 @@ def get_argument():
     parser.add_argument("--postfix", default="", type=str)
     parser.add_argument("--chain_flags", default="", type=str)
     parser.add_argument("--time_limit", type=str)
+    parser.add_argument("--run_chain_flags", type=str)
     args = parser.parse_args()
 
     global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix, chain_flags
@@ -216,6 +221,8 @@ def get_argument():
 
     global time_limit
     time_limit = args.time_limit
+    global run_chain_flags
+    run_chain_flags = args.run_chain_flags
 
 
 if __name__ == "__main__":

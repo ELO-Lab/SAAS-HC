@@ -6,6 +6,8 @@ from pathlib import Path
 from tabulate import tabulate
 import subprocess
 from datetime import datetime
+import multiprocessing
+
 
 parameter_configurations = {
     "eil51_01_bsc": {
@@ -670,6 +672,11 @@ def table_log():
 
 
 def build():
+    if not experiment:
+        build_dir = f"{acopp_dir}/build"
+    else:
+        build_dir = f"{acopp_dir}/temp_build_experiment"
+
     command = [
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
@@ -677,7 +684,7 @@ def build():
         "Unix Makefiles",
         # f"{'Ninja' if not debug else 'Unix Makefiles'}",
         f"-S{acopp_dir}",
-        f"-B{acopp_dir}/build",
+        f"-B{build_dir}",
         f"-DCMAKE_BUILD_TYPE:STRING={'Release' if not debug else 'Debug'}",
     ]
     if silent <= 0:
@@ -686,14 +693,15 @@ def build():
     if silent <= 0:
         print(result.stdout.decode())
 
-    command = ["cmake", "--build", f"{acopp_dir}/build", "-j", "2"]
+    n_processes = max(1, multiprocessing.cpu_count() // 2)
+    command = ["cmake", "--build", build_dir, "-j", str(n_processes)]
     if silent <= 0:
         print("$ " + " ".join(command))
     result = run_command(command)
     if silent <= 0:
         print(result.stdout.decode())
 
-    shutil.copy(f"{acopp_dir}/build/acothop", executable_path)
+    shutil.copy(f"{build_dir}/acothop", executable_path)
 
 
 def format_aco_command():
