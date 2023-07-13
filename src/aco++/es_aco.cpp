@@ -87,7 +87,7 @@ void es_write_params()
     fprintf(fptr, "lambda %d\n", initial_lambda);
     fprintf(fptr, "seed  %d\n", cmaes_seed);
 
-    fprintf(fptr, "weights equal \n");
+    fprintf(fptr, "weights log \n");
 
     fprintf(fptr, "initialStandardDeviations %d:\n\t", initial_nb_dims);
     for (int i = 0; i < initial_nb_dims; i++)
@@ -498,19 +498,19 @@ void es_aco_set_best_params()
 
 void es_aco_init_program()
 {
-    lowerBounds[ALPHA_IDX] = 0.01;
+    lowerBounds[ALPHA_IDX] = 0.00;
     upperBounds[ALPHA_IDX] = 10;
 
-    lowerBounds[BETA_IDX] = 0.01;
+    lowerBounds[BETA_IDX] = 0.00;
     upperBounds[BETA_IDX] = 10;
 
-    lowerBounds[PAR_A_IDX] = 0.01;
+    lowerBounds[PAR_A_IDX] = 0.00;
     upperBounds[PAR_A_IDX] = 1;
 
-    lowerBounds[PAR_B_IDX] = 0.01;
+    lowerBounds[PAR_B_IDX] = 0.00;
     upperBounds[PAR_B_IDX] = 1;
 
-    lowerBounds[PAR_C_IDX] = 0.01;
+    lowerBounds[PAR_C_IDX] = 0.00;
     upperBounds[PAR_C_IDX] = 1;
 
 #if Q0_TUNING_MACRO
