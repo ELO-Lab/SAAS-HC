@@ -753,7 +753,7 @@ def format_aco_command():
         ]
     if q0 != None:
         command += ["--q0", q0]
-    if not not_mmas:
+    if not not_mmas and not no_default:
         command += ["--mmas"]
     if adapt_evap:
         command += ["--adapt_evap"]

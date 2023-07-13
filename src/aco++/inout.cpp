@@ -507,7 +507,6 @@ void set_default_parameters(void)
     nn_ants = 20;    /* number of nearest neighbours in tour construction */
     alpha = 1.550208;
     beta = 4.893958;
-    rho = 0.468542;
     q_0 = 0.0;
     max_tries = 1;
     max_tours = 0;
@@ -526,6 +525,11 @@ void set_default_parameters(void)
     ras_ranks = 0;
     elitist_ants = 0;
 
+    rho = 0.468542;
+    min_rho = 0.01;
+    max_rho = 0.99;
+    min_indv_ants = 2;
+    max_indv_ants = 50;
     indv_ants = 4;
 
     alpha_mean = 0.8075;
@@ -540,12 +544,6 @@ void set_default_parameters(void)
     // beta_mean = 4.893958;
     // beta_std = 2.067786 / 2;
 
-    rho_mean = 0.468542;
-    rho_std = 0.253226 / 2;
-
-    q_0_mean = 0;
-    q_0_std = 0.05;
-
     par_a_mean = 0.5;
     par_a_std = 0.05;
 
@@ -554,6 +552,12 @@ void set_default_parameters(void)
 
     par_c_mean = 0.5;
     par_c_std = 0.05;
+
+    rho_mean = 0.468542;
+    rho_std = 0.253226 / 2;
+
+    q_0_mean = 0;
+    q_0_std = 0.05;
 
     neighbour_prob_mean = 0.5;
     neighbour_prob_std = 0.05;

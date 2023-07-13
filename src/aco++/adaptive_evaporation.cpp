@@ -8,11 +8,11 @@
 #include "es_ant.h"
 
 // Hyperparameters
-double min_rho = 0.01;
-double max_rho = 0.99;
+double min_rho;
+double max_rho;
+double min_indv_ants;
+double max_indv_ants;
 
-double min_indv_ants = 2;
-double max_indv_ants = 50;
 double entropy;
 
 void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence, long int &total_edge_count)
