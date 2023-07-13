@@ -521,7 +521,7 @@ void set_default_parameters(void)
     acs_flag = FALSE;
     ras_ranks = 0;
     elitist_ants = 0;
-
+//
     indv_ants = 4;
     min_indv_ants = 2;
     max_indv_ants = 50;
@@ -544,7 +544,7 @@ void set_default_parameters(void)
 
     par_c_mean = 0.5;
     par_c_std = 0.05;
-
+//
     rho_mean = 0.468542;
     rho_std = 0.253226 / 2;
 
