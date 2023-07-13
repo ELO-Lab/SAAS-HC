@@ -87,7 +87,7 @@ void es_write_params()
     fprintf(fptr, "lambda %d\n", initial_lambda);
     fprintf(fptr, "seed  %d\n", cmaes_seed);
 
-    fprintf(fptr, "weights equal \n");
+    fprintf(fptr, "weights log \n");
 
     fprintf(fptr, "initialStandardDeviations %d:\n\t", initial_nb_dims);
     for (int i = 0; i < initial_nb_dims; i++)
@@ -330,7 +330,7 @@ void setup_cmaes()
 
 void es_aco_init()
 {
-    sprintf(params_file_name, "%s.cmaes_initials.par", output_name_buf);
+    sprintf(params_file_name, "%s.%ld.cmaes_initials.par", output_name_buf, seed);
 
     cmaes_seed = seed;
     generating_random_vector();
