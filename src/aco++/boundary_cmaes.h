@@ -26,10 +26,10 @@ public:
     boundary_cmaes(){}
 
     void init(std::function<double(int , double const * , unsigned long)> eval_function, 
-                const double *lowerBounds, const double *upperBounds){
+                const double *lowerBounds, const double *upperBounds, char * params_file){
         this->eval_function = eval_function;
 
-        arFunvals = cmaes_init(&evo, 0, NULL, NULL, seed, 0, "cmaes_initials.par");
+        arFunvals = cmaes_init(&evo, 0, NULL, NULL, seed, 0, params_file);
         dimension = (unsigned long)cmaes_Get(&evo, "dimension");
         
         const int nb_bounds = dimension;

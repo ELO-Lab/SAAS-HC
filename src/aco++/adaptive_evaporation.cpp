@@ -7,12 +7,13 @@
 #include "es_aco.h"
 
 // Hyperparameters
-float min_rho = 0.01;
-float max_rho = 0.99;
+float min_rho = 0.24;
+float max_rho = 0.74;
 
 float min_indv_ants = 2;
 float max_indv_ants = 50;
 
+float entropy;
 
 void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence, long int &total_edge_count)
 {
@@ -60,7 +61,7 @@ void update_rho(void)
 
     std::map<std::pair<long int, long int>, long int> occurence;
     long int total_edge_count;
-    float entropy, min_entropy, max_entropy;
+    float min_entropy, max_entropy;
 
     count_ant_edges(occurence, total_edge_count);
     calculate_entropy(entropy, occurence, total_edge_count);
@@ -72,6 +73,6 @@ void update_rho(void)
     // rho = max_rho - rho_diff * (entropy - min_entropy) / (max_entropy - min_entropy);
     indv_ants =  (unsigned int)(min_indv_ants + indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
     // indv_ants =  (unsigned int)(max_indv_ants - indv_ants_diff * (entropy - min_entropy) / (max_entropy - min_entropy));
-    
+    // printf("Value of entroy %f, ", entropy);
     resize_ant_colonies();
 }

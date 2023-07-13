@@ -1462,6 +1462,8 @@ cmaes_Get( cmaes_t *t, char const *s)
   }
   else if (strncmp(s, "sigma", 3) == 0) {
     return(t->sigma);
+  }else if (strncmp(s, "randomseed", 10) == 0){
+    return(t->rand.aktrand);
   }
   FATAL( "cmaes_Get(cmaes_t, char const * s): No match found for s='", s, "'",0);
   return(0);
@@ -2464,7 +2466,6 @@ double cmaes_random_Gauss(cmaes_random_t *t)
 double cmaes_random_Uniform( cmaes_random_t *t)
 {
   long tmp;
-
   tmp = t->aktseed/127773;
   t->aktseed = 16807 * (t->aktseed - tmp * 127773)
     - 2836 * tmp;

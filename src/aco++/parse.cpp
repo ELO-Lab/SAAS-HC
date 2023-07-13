@@ -1459,11 +1459,11 @@ int parse_commandline(int argc, char *argv[])
     bipopcmaes_flag = options.opt_bipopcmaes;
 
     if (cmaes_flag)
-        printf("using cmaes\n");
+        printf("Using CMA-ES\n");
     if (ipopcmaes_flag)
-        printf("using ipop cmaes\n");
+        printf("Using IPOP CMA-ES\n");
     if (bipopcmaes_flag)
-        printf("using bipop cmaes\n");
+        printf("Using BIPOP CMA-ES\n");
 
     log_flag = !options.opt_log;
     logiter_flag = !options.opt_logiter;

@@ -662,7 +662,6 @@ def format_aco_command():
         ptries,
         "--localsearch",
         localsearch,
-        "--cmaes"
     ]
     if not no_log:
         command += [
