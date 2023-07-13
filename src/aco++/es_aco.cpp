@@ -498,19 +498,19 @@ void es_aco_set_best_params()
 
 void es_aco_init_program()
 {
-    lowerBounds[ALPHA_IDX] = 0.01;
+    lowerBounds[ALPHA_IDX] = 0.00;
     upperBounds[ALPHA_IDX] = 10;
 
-    lowerBounds[BETA_IDX] = 0.01;
+    lowerBounds[BETA_IDX] = 0.00;
     upperBounds[BETA_IDX] = 10;
 
-    lowerBounds[PAR_A_IDX] = 0.01;
+    lowerBounds[PAR_A_IDX] = 0.00;
     upperBounds[PAR_A_IDX] = 1;
 
-    lowerBounds[PAR_B_IDX] = 0.01;
+    lowerBounds[PAR_B_IDX] = 0.00;
     upperBounds[PAR_B_IDX] = 1;
 
-    lowerBounds[PAR_C_IDX] = 0.01;
+    lowerBounds[PAR_C_IDX] = 0.00;
     upperBounds[PAR_C_IDX] = 1;
 
 #if Q0_TUNING_MACRO

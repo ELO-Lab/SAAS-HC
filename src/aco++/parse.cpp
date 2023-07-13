@@ -2090,7 +2090,7 @@ int parse_commandline(int argc, char *argv[])
 
     if (options.opt_indv_ants)
     {
-        sscanf(options.arg_indv_ants, "%ld:%lf:%lf", &indv_ants, &max_indv_ants, &min_indv_ants);
+        sscanf(options.arg_indv_ants, "%ld:%lf:%lf", &indv_ants, &min_indv_ants, &max_indv_ants);
         // printf("indv_ants: %ld, max_indv_ants: %lf, min_indv_ants: %lf\n", indv_ants, max_indv_ants, min_indv_ants);
     }
 
