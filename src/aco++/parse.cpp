@@ -169,13 +169,13 @@ extern double dGreedyLevyRatio;     // 0.1--5
 
 #define STR_HELP_MEAN_ARY \
     "  --mean_ary           # Array of mean values. alpha:beta:par_a:par_b:par_c\n"
-    
+
 #define STR_HELP_STD_ARY \
     "  --std_ary            # Array of std values. alpha:beta:par_a:par_b:par_c\n"
-    
+
 #define STR_HELP_INDV_ANTS \
     "  --indv_ants          # Parameters of adaptive individual ants. init:min:max\n"
-    
+
 #define STR_HELP_ADPT_RHO \
     "  --adpt_rho           # Parameters of adaptive evaporation rate. init:min:max\n"
 
@@ -348,16 +348,16 @@ struct options
     unsigned int opt_greedylevy : 1;
 
     /* Set to 1 if option --mean_ary has been specified.  */
-    unsigned int opt_mean_ary: 1;
+    unsigned int opt_mean_ary : 1;
 
     /* Set to 1 if option --std_ary has been specified.  */
-    unsigned int opt_std_ary: 1;
-    
+    unsigned int opt_std_ary : 1;
+
     /* Set to 1 if option --indv_ants has been specified.  */
-    unsigned int opt_indv_ants: 1;
-    
+    unsigned int opt_indv_ants : 1;
+
     /* Set to 1 if option --adpt_rho has been specified.  */
-    unsigned int opt_adpt_rho: 1;
+    unsigned int opt_adpt_rho : 1;
 
     /* Argument to option --inputfile (-i).  */
     const char *arg_inputfile;
@@ -587,7 +587,7 @@ parse_options(struct options *const options, const char *const program_name,
     options->arg_greedylevy = 0;
     options->arg_cmaes = 0;
     options->arg_ipopcmaes = 0;
-    options->arg_bipopcmaes = 0;    
+    options->arg_bipopcmaes = 0;
     options->arg_mean_ary = 0;
     options->arg_std_ary = 0;
     options->arg_indv_ants = 0;
@@ -684,7 +684,7 @@ parse_options(struct options *const options, const char *const program_name,
                 }
                 else if (strncmp(option + 1, optstr__adpt_rho + 1, option_len - 1) == 0)
                 {
-                    
+
                     if (option_len <= 1)
                         goto error_long_opt_ambiguous;
                     if (argument != 0)
@@ -1578,7 +1578,7 @@ int parse_commandline(int argc, char *argv[])
     ipopcmaes_flag = options.opt_ipopcmaes;
     bipopcmaes_flag = options.opt_bipopcmaes;
 
-    if (bool(options.opt_cmaes) || cmaes_flag)
+    if (options.opt_cmaes || cmaes_flag)
     {
         cmaes_flag = true;
         printf("Using CMA-ES\n");
@@ -2070,14 +2070,14 @@ int parse_commandline(int argc, char *argv[])
     if (options.opt_mean_ary)
     {
         sscanf(options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf", &alpha_mean, &beta_mean, &par_a_mean, &par_b_mean, &par_c_mean);
-        
+
         // printf("alpha_mean: %lf, beta_mean: %lf, par_a_mean: %lf, par_b_mean: %lf, par_c_mean: %lf\n", alpha_mean, beta_mean, par_a_mean, par_b_mean, par_c_mean);
     }
 
     if (options.opt_std_ary)
     {
         sscanf(options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf", &alpha_std, &beta_std, &par_a_std, &par_b_std, &par_c_std);
-        
+
         // printf("alpha_std: %lf, beta_std: %lf, par_a_std: %lf, par_b_std: %lf, par_c_std: %lf\n", alpha_std, beta_std, par_a_std, par_b_std, par_c_std);
     }
 

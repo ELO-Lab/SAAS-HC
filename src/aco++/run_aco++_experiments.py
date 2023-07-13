@@ -130,6 +130,8 @@ stdout:
 
 def launcher(arg):
     global aaco_nc_flag, number_of_runs, sol_dir, debug_log, postfix
+    global time_limit
+
     instance_name, repetition = arg
 
     _random_seed = str(random_seeds[repetition])
@@ -148,8 +150,10 @@ def launcher(arg):
         instance_name,
         "--random_seed",
         _random_seed,
+        "--time",
+        time_limit,
         "--chain_flag",
-        f"{chain_flags}",
+        chain_flags,
     ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
@@ -199,6 +203,7 @@ def get_argument():
     parser.add_argument("--exist_ok", action="store_true")
     parser.add_argument("--postfix", default="", type=str)
     parser.add_argument("--chain_flags", default="", type=str)
+    parser.add_argument("--time_limit", type=str)
     args = parser.parse_args()
 
     global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix, chain_flags
@@ -209,6 +214,9 @@ def get_argument():
     postfix = args.postfix
     chain_flags = args.chain_flags
 
+    global time_limit
+    time_limit = args.time_limit
+
 
 if __name__ == "__main__":
     global number_of_runs, debug_log, sol_dir, exist_ok
@@ -218,10 +226,10 @@ if __name__ == "__main__":
     assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
     tsp_base = [
-        # "eil51",
-        # "pr107",
+        "eil51",
+        "pr107",
         "a280",
-        # "dsj1000",
+        "dsj1000",
     ]
     number_of_items_per_city = [
         "01",
@@ -244,7 +252,8 @@ if __name__ == "__main__":
         "02",
         "03",
     ]
-    number_of_runs = 2
+    # number_of_runs = 30
+    number_of_runs = 1
     if debug_log:
         number_of_runs = 3
 
@@ -260,9 +269,10 @@ if __name__ == "__main__":
 
     build()
 
-    n_processes = 2 #max(1, multiprocessing.cpu_count() // 2)
-    # if debug_log:
-    #     n_processes = 1
+    n_processes = max(1, multiprocessing.cpu_count() // 2)
+    # n_processes = 2
+    if debug_log:
+        n_processes = 1
 
     total = (
         len(tsp_base)
