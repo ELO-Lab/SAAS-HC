@@ -178,6 +178,9 @@ extern double dGreedyLevyRatio;     // 0.1--5
     
 #define STR_HELP_ADPT_RHO \
     "  --adpt_rho           # Parameters of adaptive evaporation rate. init:min:max\n"
+    
+#define STR_HELP_LAMBDA \
+    "  --lambda             # Number of offspring\n"
 
 static const char *const STR_HELP[] = {
     STR_HELP_INPUTFILE,
@@ -223,6 +226,7 @@ static const char *const STR_HELP[] = {
     STR_HELP_STD_ARY,
     STR_HELP_INDV_ANTS,
     STR_HELP_ADPT_RHO,
+    STR_HELP_LAMBDA,
     NULL};
 
 struct options
@@ -358,6 +362,9 @@ struct options
     
     /* Set to 1 if option --adpt_rho has been specified.  */
     unsigned int opt_adpt_rho: 1;
+    
+    /* Set to 1 if option --lambda has been specified.  */
+    unsigned int opt_lambda: 1;
 
     /* Argument to option --inputfile (-i).  */
     const char *arg_inputfile;
@@ -460,6 +467,9 @@ struct options
 
     /* Argument to option --adpt_rho.  */
     const char *arg_adpt_rho;
+
+    /* Argument to option --lambda.  */
+    const char *arg_lambda;
 };
 
 /* Parse command line options.  Return index of first non-option argument,
@@ -512,6 +522,7 @@ parse_options(struct options *const options, const char *const program_name,
     static const char *const optstr__std_ary = "std_ary";
     static const char *const optstr__indv_ants = "indv_ants";
     static const char *const optstr__adpt_rho = "adpt_rho";
+    static const char *const optstr__lambda = "lambda";
     int i = 0;
     options->opt_inputfile = 0;
     options->opt_outputfile = 0;
@@ -557,6 +568,7 @@ parse_options(struct options *const options, const char *const program_name,
     options->opt_std_ary = 0;
     options->opt_indv_ants = 0;
     options->opt_adpt_rho = 0;
+    options->opt_lambda = 0;
 
     options->arg_inputfile = 0;
     options->arg_outputfile = 0;
@@ -592,6 +604,7 @@ parse_options(struct options *const options, const char *const program_name,
     options->arg_std_ary = 0;
     options->arg_indv_ants = 0;
     options->arg_adpt_rho = 0;
+    options->arg_lambda = 0;
 
     while (++i < argc)
     {
@@ -942,6 +955,20 @@ parse_options(struct options *const options, const char *const program_name,
                         goto error_missing_arg_long;
                     }
                     options->opt_levyflight = 1;
+                    break;
+                }
+                else if (strncmp(option + 1, optstr__lambda + 1, option_len - 1) == 0)
+                {
+                    if (argument != 0)
+                        options->arg_lambda = argument;
+                    else if (++i < argc)
+                        options->arg_lambda = argv[i];
+                    else
+                    {
+                        option = optstr__lambda;
+                        goto error_missing_arg_long;
+                    }
+                    options->opt_lambda = 1;
                     break;
                 }
                 goto error_unknown_long_opt;
@@ -2092,6 +2119,10 @@ int parse_commandline(int argc, char *argv[])
     {
         sscanf(options.arg_indv_ants, "%ld:%lf:%lf", &indv_ants, &min_indv_ants, &max_indv_ants);
         // printf("indv_ants: %ld, max_indv_ants: %lf, min_indv_ants: %lf\n", indv_ants, max_indv_ants, min_indv_ants);
+    }
+
+    if (options.opt_lambda){
+        initial_lambda = atol(options.arg_lambda);
     }
 
     while (i < argc)
