@@ -3,10 +3,18 @@
 int_fast8_t verbose = 1;
 
 bool node_clustering_flag = false;
-bool adaptive_evaporation_flag = false;
 
-// bool ls_n_square_flag = true;
+#if ADAPT_RHO_MACRO
+bool adaptive_evaporation_flag = true;
+#else
+bool adaptive_evaporation_flag = false;
+#endif
+
+#if LS_N2_MACRO
+bool ls_n_square_flag = true;
+#else
 bool ls_n_square_flag = false;
+#endif
 
 #if O1_EVAP_MACRO
 bool o1_evap_flag = true;
@@ -26,8 +34,13 @@ bool tree_map_flag = true;
 bool tree_map_flag = false;
 #endif
 
-// not config here
-int cmaes_flag;      // 0 or 1
-int ipopcmaes_flag;  // 0 or 1
-int bipopcmaes_flag; // 0 or 1
-int iGreedyLevyFlag; // 0 or 1
+#if CMAES_MACRO
+bool cmaes_flag = true;
+#else
+bool cmaes_flag = false;
+#endif
+
+// don't work
+bool ipopcmaes_flag = false;
+bool bipopcmaes_flag = false;
+bool iGreedyLevyFlag = false;

@@ -13,7 +13,7 @@ extern double par_a_mean, par_b_mean, par_c_mean,
     alpha_stepsize, beta_stepsize, rho_stepsize,
     q_0_mean, q_0_stepsize, rand_seed_stepsize,
     neighbour_prob_mean, neighbour_prob_stepsize;
-extern size_t min_n_ants;
+extern std::size_t min_n_ants, n_ant_per_ind;
 
 void es_ant_force_set_parameters(void);
 void es_ant_init(void);

@@ -150,7 +150,7 @@ void init_pheromone_trails(double initial_trail)
 #if TREE_MAP_MACRO
     if (tree_map_flag)
     {
-        tree_map->restart_pheromone(initial_trail);
+        tree_map->global_restart(initial_trail);
         return;
     }
 #endif
@@ -193,7 +193,7 @@ void evaporation(void)
 #if TREE_MAP_MACRO
     if (tree_map_flag)
     {
-        tree_map->evaporate(trail_min);
+        tree_map->global_evaporate(trail_min);
         return;
     }
 #endif
@@ -231,7 +231,7 @@ void evaporation_nn_list(void)
 #if TREE_MAP_MACRO
     if (tree_map_flag)
     {
-        tree_map->evaporate(trail_min);
+        tree_map->global_evaporate(trail_min);
         return;
     }
 #endif
@@ -1193,7 +1193,7 @@ void mmas_evaporation_nn_list(void)
 #if TREE_MAP_MACRO
     if (tree_map_flag)
     {
-        tree_map->evaporate(trail_min);
+        tree_map->global_evaporate(trail_min);
         return;
     }
 #endif
@@ -1491,9 +1491,9 @@ double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
 
     o1_local_restart_if_needed(i, j);
     assert(local_evap_times[i][j] <= global_evap_times);
-
     res = pheromone[i][j];
     assert(res > 0);
+
     if (verbose > 0)
     {
         // printf("res_before: %f\n", res);
@@ -1502,6 +1502,8 @@ double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
     if (local_evap_times[i][j] < global_evap_times)
     {
         res *= pow(1 - rho, global_evap_times - local_evap_times[i][j]);
+        assert(res > 0);
+
         if (mmas_flag)
             if (res < past_trail_min)
                 res = past_trail_min;
@@ -1512,7 +1514,6 @@ double o1_get_pheromone(const std::size_t &i, const std::size_t &j)
         // printf("res_after: %f\n", res);
     }
 
-    assert(res > 0);
     return res;
 }
 
@@ -1524,8 +1525,8 @@ void o1_pay_evaporation_debt(const std::size_t &i, const std::size_t &j)
 
 void o1_global_evaporate()
 {
-    global_evap_times += 1;
     past_trail_min = trail_min;
+    global_evap_times += 1;
 }
 
 void o1_global_restart(const double &trail_restart)
@@ -1587,4 +1588,63 @@ double calculate_total_information(const std::size_t &i, const std::size_t &j)
     res = pow(_pheromone, alpha) * pow(HEURISTIC(i, j), beta);
     assert(res > 0);
     return res;
+}
+
+void an_ant_run(const std::size_t &ant_idx)
+{
+
+    size_t i;      /* counter variable */
+    long int step; /* counter of the number of construction steps */
+
+    ant_empty_memory(&ant[ant_idx]);
+
+    /* Place the ants at initial city 0 and set the final city as n-1 */
+    ant[ant_idx].tour_size = 1;
+    ant[ant_idx].tour[0] = 0;
+    ant[ant_idx].visited[0] = TRUE;
+    ant[ant_idx].visited[instance.n - 1] = TRUE;
+
+    step = 0;
+    while (step < instance.n - 2)
+    {
+        step++;
+        if (ant[ant_idx].tour[ant[ant_idx].tour_size - 1] == instance.n - 2)
+        { /* previous city is the last one */
+            continue;
+        }
+        neighbour_choose_and_move_to_next(&ant[ant_idx], step);
+        if (acs_flag)
+            local_acs_pheromone_update(&ant[ant_idx], step);
+        ant[ant_idx].tour_size++;
+    }
+
+    ant[ant_idx].tour[ant[ant_idx].tour_size++] = instance.n - 1;
+    ant[ant_idx].tour[ant[ant_idx].tour_size++] = ant[ant_idx].tour[0];
+    for (i = ant[ant_idx].tour_size; i < instance.n; i++)
+        ant[ant_idx].tour[i] = 0;
+    ant[ant_idx].fitness = compute_fitness(ant[ant_idx].tour, ant[ant_idx].visited, ant[ant_idx].tour_size, ant[ant_idx].packing_plan);
+    if (acs_flag)
+        local_acs_pheromone_update(&ant[ant_idx], ant[ant_idx].tour_size - 1);
+
+    n_tours += 1;
+}
+
+void an_ant_local_search(const std::size_t &ant_idx)
+{
+    switch (ls_flag)
+    {
+    case 1:
+        two_opt_first(ant[ant_idx].tour, ant[ant_idx].tour_size); /* 2-opt local search */
+        break;
+    case 2:
+        two_h_opt_first(ant[ant_idx].tour, ant[ant_idx].tour_size); /* 2.5-opt local search */
+        break;
+    case 3:
+        three_opt_first(ant[ant_idx].tour, ant[ant_idx].tour_size); /* 3-opt local search */
+        break;
+    default:
+        fprintf(stderr, "type of local search procedure not correctly specified\n");
+        exit(1);
+    }
+    ant[ant_idx].fitness = compute_fitness(ant[ant_idx].tour, ant[ant_idx].visited, ant[ant_idx].tour_size, ant[ant_idx].packing_plan);
 }

@@ -70,6 +70,7 @@
 #include "es_ant.h"
 #include "tree_map.h"
 #include "algo_config.h"
+#include "es_aco.h"
 
 extern int iLevyFlag;         // 0 or 1
 extern double dLevyThreshold; // 0--1
@@ -77,7 +78,6 @@ extern double dLevyRatio;     // 0.1--5
 
 extern double dContribution; // 0--10
 
-extern int iGreedyLevyFlag;         // 0 or 1
 extern double dGreedyEpsilon;       // 0--1
 extern double dGreedyLevyThreshold; // 0--1
 extern double dGreedyLevyRatio;     // 0.1--5
@@ -326,6 +326,9 @@ void init_try(long int ntry)
         fprintf(log_file, "\nbegin try %li \n", ntry);
     if (log_tries_file)
         fprintf(log_tries_file, "begin try %li \n", ntry);
+
+    if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
+        es_aco_init();
 
     if (verbose > 1)
     {

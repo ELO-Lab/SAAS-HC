@@ -1,6 +1,8 @@
 #include "es_aco.h"
 #include "algo_config.h"
 #include "tree_map.h"
+#include "acothop.h"
+#include "ants.h"
 
 #define ALPHA_IDX 0
 #define BETA_IDX 1
@@ -239,14 +241,20 @@ void _es_local_search(int index)
             exit(1);
         }
         ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
-        // if (termination_condition())
-        //     return;
+        if (termination_condition())
+            return;
     }
 }
 
 //   index of current offspring         genotype   number of dims
 double eval_function(int index, double const *x, unsigned long N)
 {
+    std::size_t k;
+    double mean_fitness, std_fitness;
+    std::vector<double> fitnesses;
+    double min_fitness = INFINITY;
+    double max_fitness = -INFINITY;
+
     alpha = x[ALPHA_IDX];
     beta = x[BETA_IDX];
     par_a = x[PAR_A_IDX];
@@ -265,38 +273,60 @@ double eval_function(int index, double const *x, unsigned long N)
     neighbour_prob = x[NEIGHBOUR_PROB_IDX];
 #endif
 
-    _es_construct_solutions(index);
-    
-    if (ls_flag > 0)
+    // _es_construct_solutions(index);
+    // if (ls_flag > 0)
+    // {
+    //     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+    //     {
+    //         copy_from_to(&ant[k], &prev_ls_ant[k]);
+    //     }
+    //     _es_local_search(index);
+    //     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+    //     {
+    //         if (ant[k].fitness > prev_ls_ant[k].fitness)
+    //         {
+    //             copy_from_to(&prev_ls_ant[k], &ant[k]);
+    //         }
+    //     }
+    // }
+
+    for (k = index * indv_ants; k < index * indv_ants + indv_ants; k++)
     {
-        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+#if TREE_MAP_MACRO
+        if (tree_map_flag)
+            tree_map->choose_route(
+                ant[k],
+                neighbour_prob,
+                alpha,
+                beta,
+                rho,
+                n_tours,
+                nn_ants,
+                instance.nn_list,
+                q_0);
+        else
+#endif
+            an_ant_run(k);
+
+        if (ls_flag > 0)
         {
             copy_from_to(&ant[k], &prev_ls_ant[k]);
-        }
-        _es_local_search(index);
-        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-        {
-            if (ant[k].fitness > prev_ls_ant[k].fitness)
+            an_ant_local_search(k);
             {
-                copy_from_to(&prev_ls_ant[k], &ant[k]);
+                if (ant[k].fitness > prev_ls_ant[k].fitness)
+                {
+                    copy_from_to(&prev_ls_ant[k], &ant[k]);
+                }
             }
         }
     }
 
-    double min_fitness = INFINITY;
-    double max_fitness = -INFINITY;
-
-    double mean_fitness;
-    double std_fitness;
-
-    std::vector<double> fitnesses;
-    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+    for (k = index * indv_ants; k < (index + 1) * indv_ants; k++)
     {
         fitnesses.push_back(double(ant[k].fitness));
         min_fitness = std::min(min_fitness, double(ant[k].fitness));
         max_fitness = std::max(max_fitness, double(ant[k].fitness));
     }
-
     // mean_and_std(fitnesses, mean_fitness, std_fitness);
 
     return min_fitness;
@@ -325,6 +355,7 @@ void setup_cmaes(){
     ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     max_packing_tries = 1;
+    ls_flag = 1;
 }
 
 void es_aco_init(){
@@ -361,7 +392,8 @@ void es_aco_restart(){
     setup_cmaes();
 }
 
-void resize_ant_colonies(){
+void resize_ant_colonies()
+{
     // if (ant.size() != indv_ants * (int)(optimizer.get("lambda")))
     //     printf("number of ants %d, value of rho %f\n", indv_ants * (int)(optimizer.get("lambda")), rho);
     // else
@@ -373,10 +405,13 @@ void resize_ant_colonies(){
 void es_aco_construct_solutions()
 {
     optimizer.run_a_generation();
+    if (termination_condition())
+        return;
     es_aco_set_best_params();
-    
+
     const char *termination_reason = es_aco_termination_condition();
-    if (termination_reason) {
+    if (termination_reason)
+    {
         printf("\n%s, restart cames, ", termination_reason);
         // cmaes_flag = 0; return;
         es_aco_restart();
@@ -386,6 +421,8 @@ void es_aco_construct_solutions()
 void ipop_cmaes_aco_construct_solutions()
 {
     optimizer.run_a_generation();
+    if (termination_condition())
+        return;
     es_aco_set_best_params();
 
     if (es_aco_termination_condition())
@@ -399,6 +436,8 @@ void ipop_cmaes_aco_construct_solutions()
 void bipop_cmaes_aco_construct_solutions()
 {
     optimizer.run_a_generation();
+    if (termination_condition())
+        return;
     es_aco_set_best_params();
 
     if (es_aco_termination_condition())
@@ -437,7 +476,8 @@ void es_aco_exit()
     optimizer.boundary_cmaes_exit();
 }
 
-const char* es_aco_termination_condition(){
+const char *es_aco_termination_condition()
+{
     return optimizer.termination_condition();
 }
 
@@ -470,7 +510,7 @@ void es_aco_set_best_params()
         // printf("rho: %.4f\n", rho);
         // printf("q_0: %.4f\n", q_0);
 #if TREE_MAP_MACRO
-        printf("neighbour_prob: %.4f\n", neighbour_prob);
+        // printf("neighbour_prob: %.4f\n", neighbour_prob);
 #endif
     }
 }

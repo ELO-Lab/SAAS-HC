@@ -13,8 +13,8 @@ public:
     Tree_Map(const std::size_t &num_city, const struct problem &instance);
     ~Tree_Map();
 
-    void evaporate(const double &past_trail_min);
-    void restart_pheromone(const double &past_trail_restart);
+    void global_evaporate(const double &past_trail_min);
+    void global_restart(const double &past_trail_restart);
     void reinforce(
         const ant_struct &an_ant,
         const double &rho,

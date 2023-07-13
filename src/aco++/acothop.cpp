@@ -471,7 +471,7 @@ void pheromone_trail_update(void)
    for ACS (see also ACO Book) */
 #if TREE_MAP_MACRO
     if (tree_map_flag)
-        tree_map->evaporate(trail_min);
+        tree_map->global_evaporate(trail_min);
     else
 #endif
         if (!acs_flag)
@@ -574,10 +574,8 @@ int main(int argc, char *argv[])
     for (n_try = 0; n_try < max_tries; n_try++)
     {
         init_try(n_try);
-
-        if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
-            es_aco_init();
         // printf("%dth try \n", n_try + 1);
+
         while (!termination_condition())
         {
             if (cmaes_flag)

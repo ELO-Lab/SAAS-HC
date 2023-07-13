@@ -22,7 +22,6 @@ extern double dLevyRatio;     // 0.1--5
 
 extern double dContribution; // 0--10
 
-extern int iGreedyLevyFlag;         // 0 or 1
 extern double dGreedyEpsilon;       // 0--1
 extern double dGreedyLevyThreshold; // 0--1
 extern double dGreedyLevyRatio;     // 0.1--5
