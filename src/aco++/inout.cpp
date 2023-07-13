@@ -242,9 +242,6 @@ void init_program(long int argc, char *argv[])
     if (o1_evap_flag)
         o1_init_program();
 
-    if (adaptive_evaporation_flag)
-        rho = 0.386;
-
     if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
         es_aco_init_program();
 }
@@ -525,24 +522,19 @@ void set_default_parameters(void)
     ras_ranks = 0;
     elitist_ants = 0;
 
-    rho = 0.468542;
-    min_rho = 0.01;
-    max_rho = 0.99;
+    indv_ants = 4;
     min_indv_ants = 2;
     max_indv_ants = 50;
-    indv_ants = 4;
+
+    rho = 0.386;
+    min_rho = 0.01;
+    max_rho = 0.99;
 
     alpha_mean = 0.8075;
     alpha_std = 0.12524143350611514;
 
     beta_mean = 5.668333333333333;
     beta_std = 1.6084922201310836;
-
-    // alpha_mean = 1.550208;
-    // alpha_std = 1.523180 / 2;
-
-    // beta_mean = 4.893958;
-    // beta_std = 2.067786 / 2;
 
     par_a_mean = 0.5;
     par_a_std = 0.05;
