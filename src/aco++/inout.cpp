@@ -539,13 +539,13 @@ void set_default_parameters(void)
     beta_std = 1.6084922201310836;
 
     par_a_mean = 0.5;
-    par_a_std = 0.5 / 3;
+    par_a_std = 0.2;
 
     par_b_mean = 0.5;
-    par_b_std = 0.5 / 3;
+    par_b_std = 0.2;
 
     par_c_mean = 0.5;
-    par_c_std = 0.5 / 3;
+    par_c_std = 0.2;
     //
     rho_mean = 0.468542;
     rho_std = 0.253226 / 2;

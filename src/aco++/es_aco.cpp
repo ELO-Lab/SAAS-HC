@@ -65,7 +65,6 @@ void es_write_params()
 {
     FILE *fptr;
     // inspect cmaes_initials_default file to be more specific about each parameter
-    printf("CMA-ES's Initial parameters will be to %s.\n", params_file_name);
     fptr = fopen(params_file_name, "w");
 
     fprintf(fptr, "N %d\n", initial_nb_dims);
@@ -96,7 +95,8 @@ void es_write_params()
     }
     fprintf(fptr, "\n");
 
-    // fprintf(fptr,"stopTolFunHist %f\n", (instance.UB*0.00002));
+    fprintf(fptr,"stopTolFun %f\n", 0.f);
+    fprintf(fptr,"stopTolFunHist %f\n", 0.f);
     fprintf(fptr, "stopTolX %f\n", 1e-11);
     fprintf(fptr, "stopTolUpXFactor %f\n", 1e3);
     fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 0.2);
@@ -331,6 +331,7 @@ void setup_cmaes()
 void es_aco_init()
 {
     sprintf(params_file_name, "%s.%ld.cmaes_initials.par", output_name_buf, seed);
+    printf("CMA-ES's Initial parameters will be to %s.\n", params_file_name);
 
     cmaes_seed = seed;
     generating_random_vector();
@@ -353,10 +354,11 @@ void es_aco_init()
     setup_cmaes();
 }
 
-void es_aco_restart()
+void es_aco_restart(const char *termination_reason)
 {
+    // exit(1);
     cmaes_seed = optimizer.get("randomseed");
-
+    printf("\nRestart CMA-ES, %sNumber of iteration: %ld, Number of ants: %ld, Value of rho: %f, ", termination_reason, (long int)(optimizer.get("iter")), indv_ants * (long int)(optimizer.get("lambda")), rho);
     /*
     double *xbestever = NULL;
     xbestever = optimizer.getInto("xbestever", xbestever);
@@ -393,9 +395,8 @@ void es_aco_construct_solutions()
     const char *termination_reason = es_aco_termination_condition();
     if (termination_reason)
     {
-        printf("\n%s, restart cames, ", termination_reason);
         // cmaes_flag = 0; return;
-        es_aco_restart();
+        es_aco_restart(termination_reason);
     }
 }
 
@@ -406,11 +407,12 @@ void ipop_cmaes_aco_construct_solutions()
         return;
     es_aco_set_best_params();
 
-    if (es_aco_termination_condition())
+    
+    const char *termination_reason = es_aco_termination_condition();
+    if (termination_reason)
     {
-        printf("IPOP restart, ");
         initial_lambda *= inc_popsize;
-        es_aco_restart();
+        es_aco_restart(termination_reason);
     }
 }
 
@@ -421,7 +423,8 @@ void bipop_cmaes_aco_construct_solutions()
         return;
     es_aco_set_best_params();
 
-    if (es_aco_termination_condition())
+    const char *termination_reason = es_aco_termination_condition();
+    if (termination_reason)
     {
         printf("BIPOP restart, ");
         long int n_eval = (int)(optimizer.get("lambda")) * optimizer.get("generation");
@@ -443,7 +446,8 @@ void bipop_cmaes_aco_construct_solutions()
             n_restarts += 1;
             initial_lambda = popsize0 * pow(inc_popsize, n_restarts);
         }
-        es_aco_restart();
+        
+        es_aco_restart(termination_reason);
     }
 }
 
