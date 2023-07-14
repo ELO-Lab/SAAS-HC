@@ -522,30 +522,30 @@ void set_default_parameters(void)
     ras_ranks = 0;
     elitist_ants = 0;
     //
-    initial_lambda = 10;
+    initial_lambda = 20;
 
-    indv_ants = 4;
-    min_indv_ants = 2;
-    max_indv_ants = 50;
+    indv_ants = 2;
+    min_indv_ants = 10;
+    max_indv_ants = 100;
 
-    rho = 0.386;
-    min_rho = 0.01;
+    rho = 0.5;
+    min_rho = 0.1;
     max_rho = 0.99;
 
-    alpha_mean = 0.8075;
-    alpha_std = 0.12524143350611514;
+    alpha_mean = 1.55;
+    alpha_std = 1.507;
 
-    beta_mean = 5.668333333333333;
-    beta_std = 1.6084922201310836;
+    beta_mean = 4.89;
+    beta_std = 2.046;
 
-    par_a_mean = 0.5;
-    par_a_std = 0.5 / 3;
+    par_a_mean = 0.3;
+    par_a_std = 0.2;
 
-    par_b_mean = 0.5;
-    par_b_std = 0.5 / 3;
+    par_b_mean = 0.7;
+    par_b_std = 0.2;
 
-    par_c_mean = 0.5;
-    par_c_std = 0.5 / 3;
+    par_c_mean = 0.9;
+    par_c_std = 0.2;
     //
     rho_mean = 0.468542;
     rho_std = 0.253226 / 2;

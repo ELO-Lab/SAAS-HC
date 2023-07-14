@@ -474,7 +474,7 @@ void pheromone_trail_update(void)
         tree_map->global_evaporate(trail_min);
     else
 #endif
-        if (!acs_flag)
+    if (!acs_flag)
     {
         if (o1_evap_flag)
             o1_global_evaporate();
