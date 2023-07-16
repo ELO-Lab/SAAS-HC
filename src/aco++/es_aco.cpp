@@ -326,6 +326,7 @@ void setup_cmaes()
     optimizer.init(eval_function, lowerBounds, upperBounds, params_file_name);
     ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    ls_flag = 1;
 }
 
 void es_aco_init()
