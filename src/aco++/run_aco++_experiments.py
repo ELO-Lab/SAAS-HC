@@ -232,10 +232,19 @@ def get_argument():
     run_chain_flags = args.run_chain_flags
 
 
+def preprocess_arg():
+    global postfix
+    if len(postfix) > 1:
+        if postfix[0] != "_":
+            postfix += "_"
+
+
 if __name__ == "__main__":
     global number_of_runs, debug_log, sol_dir, exist_ok
 
     get_argument()
+    preprocess_arg()
+
     assert not os.path.isfile(sol_dir)
     assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
