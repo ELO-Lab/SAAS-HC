@@ -25,4 +25,10 @@ extern bool ipopcmaes_flag;
 extern bool bipopcmaes_flag;
 extern bool iGreedyLevyFlag;
 
+extern bool skip_ls_flag;
+extern bool random_initial_std;
+extern bool init_pheromone_trail_after_restart;
+extern bool init_adaptive_mechanism_after_restart;
+extern bool fitness_entropy_flag;
+
 #endif

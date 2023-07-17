@@ -6,6 +6,8 @@
 #include "inout.h"
 #include "adaptive_evaporation.h"
 
+#define ACO_DEBUG(x) x
+
 #define ALPHA_IDX 0
 #define BETA_IDX 1
 #define PAR_A_IDX 2
@@ -51,8 +53,14 @@ int default_ls = 1;
 
 boundary_cmaes optimizer;
 
-double *xbestever = NULL;
+double *xmean = NULL;
 double *xbestgen = NULL;
+double *xbestever = NULL;
+
+double fmean;
+double fbestgen;
+double fbestever;
+
 int worst_offspring_index;
 double worst_offspring_fitness;
 
@@ -103,8 +111,8 @@ void es_write_params()
     }
     fprintf(fptr, "\n");
 
-    fprintf(fptr,"stopTolFun %f\n", 0.f);
-    fprintf(fptr,"stopTolFunHist %f\n", 0.f);
+    fprintf(fptr, "stopTolFun %f\n", 0.0f);
+    fprintf(fptr, "stopTolFunHist %f\n", 0.0f);
     fprintf(fptr, "stopTolX %f\n", 1e-11);
     fprintf(fptr, "stopTolUpXFactor %f\n", 1e3);
     fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 0.2);
@@ -307,13 +315,25 @@ double eval_function(int index, double const *x, unsigned long N)
         min_fitness = std::min(min_fitness, double(ant[k].fitness));
         max_fitness = std::max(max_fitness, double(ant[k].fitness));
     }
-    // mean_and_std(fitnesses, mean_fitness, std_fitness);
+    mean_and_std(fitnesses, mean_fitness, std_fitness);
 
-    double offspring_fitness = min_fitness;
+    double offspring_fitness = mean_fitness;
     if (offspring_fitness > worst_offspring_fitness){
         worst_offspring_fitness = offspring_fitness;
         worst_offspring_index = index;
     }
+
+    ACO_DEBUG(
+        // printf("\tX offspring %d\t =[", index);
+        // for (int i = 0; i < initial_nb_dims; i++)
+        //     printf("%.3f, ", x[i]);
+        // printf("], fitness=%ld\n", (long int)offspring_fitness);
+
+        // printf("\t\tFitnesses=[");
+        // for (k = 0; k < indv_ants; k++)
+        //     printf("%ld, ", (long int)fitnesses[k]);
+        // printf("]\n");
+    )
     return offspring_fitness;
 }
 
@@ -322,17 +342,35 @@ void generating_random_vector()
     initialX.clear();
     typicalX.clear();
     initialStd.clear();
+    
+    double rand_std_left  = 2;
+    double rand_std_right = 20;
     for (int i = 0; i < initial_nb_dims; i++)
     {
         initialX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
         typicalX.push_back(lowerBounds[i] + (new_rand01() * (upperBounds[i] - lowerBounds[i])));
-        initialStd.push_back((upperBounds[i] - lowerBounds[i]) / 5);
+        
+        double frac;
+        if (random_initial_std)
+            frac = rand_std_left + new_rand01() * (rand_std_right - rand_std_left);
+        else frac = 5;
+
+        initialStd.push_back((upperBounds[i] - lowerBounds[i]) / frac);
     }
 }
 
 void setup_cmaes()
-{
+{    
     printf("Popsize=%d\n", (long int)initial_lambda);
+
+    printf("Initial X  =[");
+    for (int i = 0; i < initial_nb_dims; i++)
+        printf("%.3f, ", initialX[i]);
+    printf("]\nInitial STD=[");
+    for (int i = 0; i < initial_nb_dims; i++)
+        printf("%.3f, ", initialStd[i]);
+    printf("]\n");
+
     if (iGreedyLevyFlag)
     {
         initial_nb_dims = ES_ACO_DIM + 3;
@@ -343,11 +381,13 @@ void setup_cmaes()
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     
     default_ls = ls_flag;
-    xbestgen = (double *) calloc((unsigned) (optimizer.get("lambda")), sizeof(double));
+    
+    es_aco_update_statistics();
 }
 
 void es_aco_init()
 {
+    n_restarts = 0;
     sprintf(params_file_name, "%s.%ld.cmaes_initials.par", output_name_buf, seed);
     printf("CMA-ES's Initial parameters will be to %s.\n", params_file_name);
 
@@ -374,11 +414,18 @@ void es_aco_init()
 
 void es_aco_restart(const char *termination_reason)
 {
+    n_restarts ++;
     // exit(1);
     
-    // init_adaptive_mechanism();
     cmaes_seed = optimizer.get("randomseed");
-    printf("\nRestart CMA-ES, %sNumber of iteration: %ld, Number of ants: %ld, Value of rho: %f, ", termination_reason, (long int)(optimizer.get("iter")), indv_ants * (long int)(optimizer.get("lambda")), rho);
+    printf("\nRestart CMA-ES, %s\nNumber of iteration: %ld, Number of ants: %ld, Value of rho: %f, ", termination_reason, (long int)(optimizer.get("iter")), indv_ants * (long int)(optimizer.get("lambda")), rho);
+    
+    if (init_adaptive_mechanism_after_restart)
+        init_adaptive_mechanism();
+    
+    if (init_pheromone_trail_after_restart){
+        init_pheromone_trails(1. / ((rho)*fbestever));
+    }
     /*
     double *xbestever = NULL;
     xbestever = optimizer.getInto("xbestever", xbestever);
@@ -403,6 +450,8 @@ void resize_ant_colonies()
     //     printf("\n");
     ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+
+    n_ants = ant.size();
 }
 
 void es_aco_construct_solutions()
@@ -410,14 +459,33 @@ void es_aco_construct_solutions()
     worst_offspring_index = 0;
     worst_offspring_fitness = -INFINITY;
 
-    // ls_flag = 0;
+    if (skip_ls_flag) 
+        ls_flag = 0;
+    else
+        ls_flag = default_ls;
+
+    ACO_DEBUG(
+        printf("\nGeneration %ld:\tX mean=[", (long int)(optimizer.get("iter")));
+        for (int i = 0; i < initial_nb_dims; i++)
+            printf("%.3f, ", xmean[i]);
+        printf("]\n");
+    )
+
     optimizer.run_a_generation();
-    // ls_flag = default_ls;
     if (termination_condition())
         return;
     
-    es_aco_set_best_params();
-    // eval_function(worst_offspring_index, xbestever, optimizer.get("lambda"));
+    es_aco_update_statistics();
+
+    ACO_DEBUG(
+        printf("\t\tGeneration fitness=%.4f\n", fbestgen);
+        // printf("\t\tentropy=%f, fitness_entropy=%f, rho=%f, indv_ants=%d \n", entropy, fitness_entropy, rho, indv_ants);
+    )
+
+    if (skip_ls_flag) {
+        ls_flag = default_ls;
+        eval_function(worst_offspring_index, xbestever, optimizer.get("lambda"));
+    }
 
     const char *termination_reason = es_aco_termination_condition();
     if (termination_reason)
@@ -432,7 +500,7 @@ void ipop_cmaes_aco_construct_solutions()
     optimizer.run_a_generation();
     if (termination_condition())
         return;
-    es_aco_set_best_params();
+    es_aco_update_statistics();
 
     
     const char *termination_reason = es_aco_termination_condition();
@@ -448,7 +516,7 @@ void bipop_cmaes_aco_construct_solutions()
     optimizer.run_a_generation();
     if (termination_condition())
         return;
-    es_aco_set_best_params();
+    es_aco_update_statistics();
 
     const char *termination_reason = es_aco_termination_condition();
     if (termination_reason)
@@ -494,10 +562,18 @@ const char *es_aco_termination_condition()
     return optimizer.termination_condition();
 }
 
-void es_aco_set_best_params()
+void es_aco_update_statistics()
 {
+    xmean = optimizer.getInto("xmean", xmean);
+    xbestgen = optimizer.getInto("xbest", xbestgen);
     xbestever = optimizer.getInto("xbestever", xbestever);
+    
+    xmean = optimizer.boundary_transformation(xmean);
+    xbestgen = optimizer.boundary_transformation(xbestgen);
     xbestever = optimizer.boundary_transformation(xbestever);
+
+    fbestgen = optimizer.get("fitness");
+    fbestever = optimizer.get("fbestever");
 
     alpha = xbestever[ALPHA_IDX];
     beta = xbestever[BETA_IDX];

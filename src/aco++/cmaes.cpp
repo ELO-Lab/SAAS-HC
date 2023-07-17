@@ -1543,7 +1543,7 @@ cmaes_TestForTermination( cmaes_t *t)
       /* function value reached */
       if ((t->gen > 1 || t->state > 1) && t->sp.stStopFitness.flg && 
           t->rgFuncValue[t->index[0]] <= t->sp.stStopFitness.val) 
-        cp += sprintf(cp, "Fitness: function value %7.2e <= stopFitness (%7.2e)\n", 
+        cp += sprintf(cp, "Fitness: function value %7.2e <= stopFitness (%7.2e)", 
                       t->rgFuncValue[t->index[0]], t->sp.stStopFitness.val);
       
       /* TolFun */
@@ -1554,7 +1554,7 @@ cmaes_TestForTermination( cmaes_t *t)
       
       if (t->gen > 0 && range <= t->sp.stopTolFun) {
         cp += sprintf(cp, 
-                      "TolFun: function value differences %7.2e < stopTolFun=%7.2e\n", 
+                      "TolFun: function value differences %7.2e < stopTolFun=%7.2e", 
                       range, t->sp.stopTolFun);
       }
 
@@ -1575,7 +1575,7 @@ cmaes_TestForTermination( cmaes_t *t)
       }
       if (cTemp == 2*N) {
         cp += sprintf(cp, 
-                      "TolX: object variable changes below %7.2e \n", 
+                      "TolX: object variable changes below %7.2e ", 
                       t->sp.stopTolX);
       }
 
@@ -1586,14 +1586,14 @@ cmaes_TestForTermination( cmaes_t *t)
       }
       if (i < N) {
         cp += sprintf(cp, 
-                      "TolUpX: standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", 
+                      "TolUpX: standard deviation increased by more than %7.2e, larger initial standard deviation recommended ", 
                       t->sp.stopTolUpXFactor);
       }
 
       /* Condition of C greater than dMaxSignifKond */
       if (t->maxEW >= t->minEW * t->dMaxSignifKond) {
         cp += sprintf(cp, 
-                      "ConditionNumber: maximal condition number %7.2e reached. maxEW=%7.2e,minEW=%7.2e,maxdiagC=%7.2e,mindiagC=%7.2e\n", 
+                      "ConditionNumber: maximal condition number %7.2e reached. maxEW=%7.2e,minEW=%7.2e,maxdiagC=%7.2e,mindiagC=%7.2e", 
                       t->dMaxSignifKond, t->maxEW, t->minEW, t->maxdiagC, t->mindiagC);
       } /* if */
       
@@ -1611,7 +1611,7 @@ cmaes_TestForTermination( cmaes_t *t)
               {
                 /* t->sigma *= exp(0.2+t->sp.cs/t->sp.damps); */
                 cp += sprintf(cp, 
-                              "NoEffectAxis: standard deviation 0.1*%7.2e in principal axis %d without effect\n", 
+                              "NoEffectAxis: standard deviation 0.1*%7.2e in principal axis %d without effect", 
                               fac/0.1, iAchse);
                 break;
               } /* if (iKoo == N) */
@@ -1626,7 +1626,7 @@ cmaes_TestForTermination( cmaes_t *t)
               /* t->C[iKoo][iKoo] *= (1 + t->sp.ccov); */
               /* flg = 1; */
               cp += sprintf(cp, 
-                            "NoEffectCoordinate: standard deviation 0.2*%7.2e in coordinate %d without effect\n", 
+                            "NoEffectCoordinate: standard deviation 0.2*%7.2e in coordinate %d without effect", 
                             t->sigma*sqrt(t->C[iKoo][iKoo]), iKoo); 
               break;
             }
@@ -1635,13 +1635,13 @@ cmaes_TestForTermination( cmaes_t *t)
       /* if (flg) t->sigma *= exp(0.05+t->sp.cs/t->sp.damps); */
 
       if(t->countevals >= t->sp.stopMaxFunEvals) 
-        cp += sprintf(cp, "MaxFunEvals: conducted function evaluations %.0f >= %g\n", 
+        cp += sprintf(cp, "MaxFunEvals: conducted function evaluations %.0f >= %g", 
                       t->countevals, t->sp.stopMaxFunEvals);
       if(t->gen >= t->sp.stopMaxIter) 
-        cp += sprintf(cp, "MaxIter: number of iterations %.0f >= %g\n", 
+        cp += sprintf(cp, "MaxIter: number of iterations %.0f >= %g", 
                       t->gen, t->sp.stopMaxIter); 
       if(t->flgStop)
-        cp += sprintf(cp, "Manual: stop signal read\n");
+        cp += sprintf(cp, "Manual: stop signal read");
 
 #if 0
   else if (0) {

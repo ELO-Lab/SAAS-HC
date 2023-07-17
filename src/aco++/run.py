@@ -436,12 +436,13 @@ def read_arguments():
     parser.add_argument("--sector", default=8, type=int)
 
     # log parameters
+    parser.add_argument("--realtime_terminal_log", action="store_true")
     parser.add_argument("--log_iter", action="store_true")
     parser.add_argument("--save_ter_log", type=str)
     parser.add_argument("--no_log", action="store_true")
 
     # chain flags
-    parser.add_argument("--chain_flags", type=str)
+    parser.add_argument("--chain_flags", default="", type=str)
 
     args = parser.parse_args()
 
@@ -543,6 +544,12 @@ def read_arguments():
 
     global bypass_exist
     bypass_exist = args.bypass_exist
+
+    global realtime_terminal_log
+    realtime_terminal_log = args.realtime_terminal_log
+
+    if realtime_terminal_log:
+        silent = 2
 
 
 def preprocess_arguments():
@@ -681,11 +688,16 @@ def build():
     else:
         build_dir = f"{acopp_dir}/temp_build_experiment"
 
+    generator = 'Unix Makefiles'
+    
+    if realtime_terminal_log:
+        generator = '"' + generator + '"'
+
     command = [
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
         "-G",
-        "Unix Makefiles",
+        generator,
         # f"{'Ninja' if not debug else 'Unix Makefiles'}",
         f"-S{acopp_dir}",
         f"-B{build_dir}",
@@ -720,13 +732,18 @@ def format_aco_command():
         executable_path,
         "--tries",
         tries,
-        "--seed",
-        random_seed,
         "--time",
         time,
         "--inputfile",
         input_path,
     ]
+
+    if random_seed > 0:
+        command += [
+            "--seed",
+            random_seed,
+        ]
+
     if ants:
         command += [
             "--ants",
@@ -790,7 +807,13 @@ def format_aco_command():
 
 
 def run_command(command):
-    result = subprocess.run(command, capture_output=True)
+    if (realtime_terminal_log):
+        print('>', ' '.join(command))
+        result = os.system(' '.join(command))
+        result = 'hi'
+        return result
+    else:
+        result = subprocess.run(command, capture_output=True)
     assert (
         result.returncode == 0
     ), f"""
@@ -834,6 +857,9 @@ if __name__ == "__main__":
     start = datetime.now()
     result = run_command(command)
     end = datetime.now()
+
+    if silent > 1:
+        exit()
 
     stdout_log = result.stdout.decode()
     best_profit = str(stdout_log).split(": ")[-1]

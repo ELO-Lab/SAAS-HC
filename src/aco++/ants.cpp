@@ -163,6 +163,7 @@ void init_pheromone_trails(double initial_trail)
     long int i, j;
 
     TRACE(printf(" init trails with %.15f\n", initial_trail););
+    printf("Init trails with %.15f\n", initial_trail);
 
     /* Initialize pheromone trails */
     for (i = 0; i < instance.n; i++)

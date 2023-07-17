@@ -464,8 +464,11 @@ void pheromone_trail_update(void)
                       according to the rules defined by the various ACO algorithms.
  */
 {
-    if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag))
+    if (fitness_entropy_flag)
+        adaptive_mechanism();
+    else if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag))
         update_rho();
+
 
 /* Simulate the pheromone evaporation of all pheromones; this is not necessary
    for ACS (see also ACO Book) */
@@ -627,7 +630,8 @@ int main(int argc, char *argv[])
 
         if (verbose > 0)
         {
-            printf("Number of iteration: %ld\n", iteration);
+            printf("Number of iterations: %ld\n", iteration);
+            printf("Number of times that CAMES restarts: %ld\n", n_restarts);
             // printf("seed: %ld\n", seed);
         }
 
