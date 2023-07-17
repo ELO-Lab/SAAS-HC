@@ -411,6 +411,7 @@ def read_arguments():
     parser.add_argument("--exec", type=str)
     parser.add_argument("--sol_dir", type=str)
     parser.add_argument("--acopp_dir", default="./", type=str)
+    parser.add_argument("--bypass_exist", action="store_true")
 
     # aco++ parameters
     parser.add_argument("--ants", type=int)
@@ -539,6 +540,9 @@ def read_arguments():
 
     global no_default
     no_default = args.no_default
+
+    global bypass_exist
+    bypass_exist = args.bypass_exist
 
 
 def preprocess_arguments():
@@ -821,6 +825,10 @@ if __name__ == "__main__":
     command = format_aco_command()
     if silent <= 0:
         print("$ " + " ".join(command))
+
+    if os.path.exists(output_path) and bypass_exist:
+        print(f"bypass {output_path.name}")
+        exit(0)
 
     os.makedirs(output_path.parent, exist_ok=True)
     start = datetime.now()

@@ -131,13 +131,14 @@ stdout:
 
 def launcher(arg):
     global aaco_nc_flag, number_of_runs, sol_dir, debug_log, postfix
-    global time_limit
+    global time_limit, chain_flags
 
     instance_name, repetition = arg
 
     _random_seed = str(random_seeds[repetition])
     temp_postfix = str(repetition + 1) if repetition + 1 >= 10 else f"0{repetition+1}"
-    temp_postfix += f"_{postfix}"
+    if postfix:
+        temp_postfix += f"_{postfix}"
     command = [
         "python3",
         "run.py",
@@ -151,11 +152,17 @@ def launcher(arg):
         instance_name,
         "--random_seed",
         _random_seed,
-        # "--time",
-        # time_limit,
-        "--chain_flags",
-        chain_flags,
     ]
+    if time_limit:
+        command += [
+            "--time",
+            time_limit,
+        ]
+    if chain_flags:
+        command += [
+            "--chain_flags",
+            chain_flags,
+        ]
     if aaco_nc_flag:
         command += ["--aaco_nc"]
     if run_chain_flags:
@@ -183,7 +190,7 @@ def build():
     print(result.stdout.decode())
 
 
-def imap_unordered_bar(func, args, total, n_processes=2):
+def imap_unordered_bar(func, args, total, n_processes):
     p = multiprocessing.Pool(n_processes)
 
     with tqdm(total=total) as pbar:
@@ -207,7 +214,7 @@ def get_argument():
     parser.add_argument("--debug_log", action="store_true")
     parser.add_argument("--exist_ok", action="store_true")
     parser.add_argument("--postfix", default="", type=str)
-    parser.add_argument("--chain_flags", default="", type=str)
+    parser.add_argument("--chain_flags", type=str)
     parser.add_argument("--time_limit", type=str)
     parser.add_argument("--run_chain_flags", type=str)
     args = parser.parse_args()
@@ -226,10 +233,19 @@ def get_argument():
     run_chain_flags = args.run_chain_flags
 
 
+def preprocess_arg():
+    global postfix
+    if len(postfix) > 1:
+        if postfix[0] != "_":
+            postfix += "_"
+
+
 if __name__ == "__main__":
     global number_of_runs, debug_log, sol_dir, exist_ok
 
     get_argument()
+    preprocess_arg()
+
     assert not os.path.isfile(sol_dir)
     assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
@@ -261,7 +277,8 @@ if __name__ == "__main__":
         "03",
     ]
     # number_of_runs = 30
-    number_of_runs = 1
+    # number_of_runs = 1
+    number_of_runs = 2
     if debug_log:
         number_of_runs = 3
 
