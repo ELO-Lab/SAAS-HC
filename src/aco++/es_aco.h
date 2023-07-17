@@ -22,6 +22,7 @@ extern double upperBounds[];
 
 extern boundary_cmaes optimizer;
 
+extern int default_ls;
 void _es_construct_solutions(int index);
 
 void _es_local_search(int index);

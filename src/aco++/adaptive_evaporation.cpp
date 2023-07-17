@@ -8,12 +8,20 @@
 #include "es_ant.h"
 
 // Hyperparameters
+double init_rho;
+double init_indv_ants;
+
 double min_rho;
 double max_rho;
 double min_indv_ants;
 double max_indv_ants;
 
 double entropy;
+
+void init_adaptive_mechanism(void){
+    rho = init_rho;
+    indv_ants = init_indv_ants;
+}
 
 void count_ant_edges(std::map<std::pair<long int, long int>, long int> &occurence, long int &total_edge_count)
 {

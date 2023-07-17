@@ -2058,7 +2058,7 @@ int parse_commandline(int argc, char *argv[])
     if (options.opt_adapt_evap || adaptive_evaporation_flag)
     {
         adaptive_evaporation_flag = true;
-        printf("using adaptive_evaporation_flag\n");
+        printf("Using Adaptive mechanism\n");
     }
 
     /*puts ("Non-option arguments:");*/
@@ -2111,13 +2111,13 @@ int parse_commandline(int argc, char *argv[])
     if (options.opt_adpt_rho)
     {
         adaptive_evaporation_flag = 1;
-        sscanf(options.arg_adpt_rho, "%lf:%lf:%lf", &rho, &min_rho, &max_rho);
+        sscanf(options.arg_adpt_rho, "%lf:%lf:%lf", &init_rho, &min_rho, &max_rho);
         // printf("rho: %lf, min_rho: %lf, max_rho: %lf\n", rho, min_rho, max_rho);
     }
 
     if (options.opt_indv_ants)
     {
-        sscanf(options.arg_indv_ants, "%ld:%lf:%lf", &indv_ants, &min_indv_ants, &max_indv_ants);
+        sscanf(options.arg_indv_ants, "%ld:%lf:%lf", &init_indv_ants, &min_indv_ants, &max_indv_ants);
         // printf("indv_ants: %ld, max_indv_ants: %lf, min_indv_ants: %lf\n", indv_ants, max_indv_ants, min_indv_ants);
     }
 

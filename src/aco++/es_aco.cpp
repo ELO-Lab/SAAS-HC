@@ -4,6 +4,7 @@
 #include "acothop.h"
 #include "ants.h"
 #include "inout.h"
+#include "adaptive_evaporation.h"
 
 #define ALPHA_IDX 0
 #define BETA_IDX 1
@@ -46,7 +47,14 @@ std::vector<double> initialX;
 std::vector<double> typicalX;
 std::vector<double> initialStd;
 
+int default_ls = 1;
+
 boundary_cmaes optimizer;
+
+double *xbestever = NULL;
+double *xbestgen = NULL;
+int worst_offspring_index;
+double worst_offspring_fitness;
 
 // variables for ipop and bipop
 
@@ -100,6 +108,7 @@ void es_write_params()
     fprintf(fptr, "stopTolX %f\n", 1e-11);
     fprintf(fptr, "stopTolUpXFactor %f\n", 1e3);
     fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 0.2);
+    
 
     // fprintf(fptr,"fac*damp %d\n", 1);
 
@@ -243,22 +252,24 @@ double eval_function(int index, double const *x, unsigned long N)
     neighbour_prob = x[NEIGHBOUR_PROB_IDX];
 #endif
 
-    // _es_construct_solutions(index);
-    // if (ls_flag > 0)
-    // {
-    //     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-    //     {
-    //         copy_from_to(&ant[k], &prev_ls_ant[k]);
-    //     }
-    //     _es_local_search(index);
-    //     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-    //     {
-    //         if (ant[k].fitness > prev_ls_ant[k].fitness)
-    //         {
-    //             copy_from_to(&prev_ls_ant[k], &ant[k]);
-    //         }
-    //     }
-    // }
+    /*
+    _es_construct_solutions(index);
+    if (ls_flag > 0)
+    {
+        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+        {
+            copy_from_to(&ant[k], &prev_ls_ant[k]);
+        }
+        _es_local_search(index);
+        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+        {
+            if (ant[k].fitness > prev_ls_ant[k].fitness)
+            {
+                copy_from_to(&prev_ls_ant[k], &ant[k]);
+            }
+        }
+    }
+    */
 
     for (k = index * indv_ants; k < index * indv_ants + indv_ants; k++)
     {
@@ -277,7 +288,6 @@ double eval_function(int index, double const *x, unsigned long N)
         else
 #endif
             an_ant_run(k);
-
         if (ls_flag > 0)
         {
             copy_from_to(&ant[k], &prev_ls_ant[k]);
@@ -299,7 +309,12 @@ double eval_function(int index, double const *x, unsigned long N)
     }
     // mean_and_std(fitnesses, mean_fitness, std_fitness);
 
-    return min_fitness;
+    double offspring_fitness = min_fitness;
+    if (offspring_fitness > worst_offspring_fitness){
+        worst_offspring_fitness = offspring_fitness;
+        worst_offspring_index = index;
+    }
+    return offspring_fitness;
 }
 
 void generating_random_vector()
@@ -326,7 +341,9 @@ void setup_cmaes()
     optimizer.init(eval_function, lowerBounds, upperBounds, params_file_name);
     ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    ls_flag = 1;
+    
+    default_ls = ls_flag;
+    xbestgen = (double *) calloc((unsigned) (optimizer.get("lambda")), sizeof(double));
 }
 
 void es_aco_init()
@@ -358,6 +375,8 @@ void es_aco_init()
 void es_aco_restart(const char *termination_reason)
 {
     // exit(1);
+    
+    // init_adaptive_mechanism();
     cmaes_seed = optimizer.get("randomseed");
     printf("\nRestart CMA-ES, %sNumber of iteration: %ld, Number of ants: %ld, Value of rho: %f, ", termination_reason, (long int)(optimizer.get("iter")), indv_ants * (long int)(optimizer.get("lambda")), rho);
     /*
@@ -388,10 +407,17 @@ void resize_ant_colonies()
 
 void es_aco_construct_solutions()
 {
+    worst_offspring_index = 0;
+    worst_offspring_fitness = -INFINITY;
+
+    // ls_flag = 0;
     optimizer.run_a_generation();
+    // ls_flag = default_ls;
     if (termination_condition())
         return;
+    
     es_aco_set_best_params();
+    // eval_function(worst_offspring_index, xbestever, optimizer.get("lambda"));
 
     const char *termination_reason = es_aco_termination_condition();
     if (termination_reason)
@@ -460,6 +486,7 @@ void es_aco_export_result()
 void es_aco_exit()
 {
     optimizer.boundary_cmaes_exit();
+    free(xbestever);
 }
 
 const char *es_aco_termination_condition()
@@ -469,7 +496,6 @@ const char *es_aco_termination_condition()
 
 void es_aco_set_best_params()
 {
-    double *xbestever = NULL;
     xbestever = optimizer.getInto("xbestever", xbestever);
     xbestever = optimizer.boundary_transformation(xbestever);
 

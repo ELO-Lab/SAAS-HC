@@ -565,8 +565,10 @@ int main(int argc, char *argv[])
 
     if (verbose > 0)
     {
-        printf("Seed: %ld, Upper Bound %ld\n", seed, instance.UB);
+        printf("Seed=%ld, Upper Bound=%ld\n", seed, instance.UB);
     }
+
+    if (adaptive_evaporation_flag) init_adaptive_mechanism();
 
     time_used = elapsed_time(VIRTUAL);
     /*printf("Initialization took %.10f seconds\n",time_used);*/
