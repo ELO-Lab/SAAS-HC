@@ -40,11 +40,8 @@ bool cmaes_flag = true;
 bool cmaes_flag = false;
 #endif
 
-bool skip_ls_flag = false;
-bool random_initial_std = false;
-bool init_pheromone_trail_after_restart = false;
-bool init_adaptive_mechanism_after_restart = false;
-bool fitness_entropy_flag = true;
+bool random_initial_std = true;
+bool fitness_entropy_flag = false;
 
 // config here don't work
 bool ipopcmaes_flag = false;

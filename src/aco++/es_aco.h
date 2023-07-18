@@ -14,6 +14,8 @@
 #include "ls.h"
 #include "algo_config.h"
 
+#define ES_ACO_DEBUG(x) 
+
 extern unsigned long int initial_nb_dims;
 extern unsigned long int initial_lambda;
 

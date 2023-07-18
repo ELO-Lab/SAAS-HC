@@ -6,8 +6,6 @@
 #include "inout.h"
 #include "adaptive_evaporation.h"
 
-#define ACO_DEBUG(x) x
-
 #define ALPHA_IDX 0
 #define BETA_IDX 1
 #define PAR_A_IDX 2
@@ -323,7 +321,7 @@ double eval_function(int index, double const *x, unsigned long N)
         worst_offspring_index = index;
     }
 
-    ACO_DEBUG(
+    ES_ACO_DEBUG(
         // printf("\tX offspring %d\t =[", index);
         // for (int i = 0; i < initial_nb_dims; i++)
         //     printf("%.3f, ", x[i]);
@@ -377,8 +375,8 @@ void setup_cmaes()
     }
     es_write_params();
     optimizer.init(eval_function, lowerBounds, upperBounds, params_file_name);
-    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    
+    resize_ant_colonies();
     
     default_ls = ls_flag;
     
@@ -419,13 +417,7 @@ void es_aco_restart(const char *termination_reason)
     
     cmaes_seed = optimizer.get("randomseed");
     printf("\nRestart CMA-ES, %s\nNumber of iteration: %ld, Number of ants: %ld, Value of rho: %f, ", termination_reason, (long int)(optimizer.get("iter")), indv_ants * (long int)(optimizer.get("lambda")), rho);
-    
-    if (init_adaptive_mechanism_after_restart)
-        init_adaptive_mechanism();
-    
-    if (init_pheromone_trail_after_restart){
-        init_pheromone_trails(1. / ((rho)*fbestever));
-    }
+
     /*
     double *xbestever = NULL;
     xbestever = optimizer.getInto("xbestever", xbestever);
@@ -444,12 +436,9 @@ void es_aco_restart(const char *termination_reason)
 
 void resize_ant_colonies()
 {
-    // if (ant.size() != indv_ants * (int)(optimizer.get("lambda")))
-    //     printf("number of ants %d, value of rho %f\n", indv_ants * (int)(optimizer.get("lambda")), rho);
-    // else
-    //     printf("\n");
-    ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
+    int nb_indvs = (int)(optimizer.get("lambda"));
+    ant.resize(indv_ants * nb_indvs);
+    prev_ls_ant.resize(indv_ants * nb_indvs);
 
     n_ants = ant.size();
 }
@@ -459,12 +448,9 @@ void es_aco_construct_solutions()
     worst_offspring_index = 0;
     worst_offspring_fitness = -INFINITY;
 
-    if (skip_ls_flag) 
-        ls_flag = 0;
-    else
-        ls_flag = default_ls;
+    ls_flag = default_ls;
 
-    ACO_DEBUG(
+    ES_ACO_DEBUG(
         printf("\nGeneration %ld:\tX mean=[", (long int)(optimizer.get("iter")));
         for (int i = 0; i < initial_nb_dims; i++)
             printf("%.3f, ", xmean[i]);
@@ -477,15 +463,12 @@ void es_aco_construct_solutions()
     
     es_aco_update_statistics();
 
-    ACO_DEBUG(
+    ES_ACO_DEBUG(
         printf("\t\tGeneration fitness=%.4f\n", fbestgen);
         // printf("\t\tentropy=%f, fitness_entropy=%f, rho=%f, indv_ants=%d \n", entropy, fitness_entropy, rho, indv_ants);
     )
 
-    if (skip_ls_flag) {
-        ls_flag = default_ls;
-        eval_function(worst_offspring_index, xbestever, optimizer.get("lambda"));
-    }
+    eval_function(worst_offspring_index, xbestever, optimizer.get("lambda"));
 
     const char *termination_reason = es_aco_termination_condition();
     if (termination_reason)

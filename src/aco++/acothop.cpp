@@ -464,10 +464,11 @@ void pheromone_trail_update(void)
                       according to the rules defined by the various ACO algorithms.
  */
 {
-    if (fitness_entropy_flag)
+    // if (fitness_entropy_flag)
+    if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag)){
+        // update_rho();
         adaptive_mechanism();
-    else if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag))
-        update_rho();
+    }
 
 
 /* Simulate the pheromone evaporation of all pheromones; this is not necessary

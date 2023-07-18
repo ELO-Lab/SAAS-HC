@@ -210,9 +210,11 @@ def get_argument():
     parser.add_argument("--chain_flags", default="", type=str)
     parser.add_argument("--time_limit", type=str)
     parser.add_argument("--run_chain_flags", type=str)
+    parser.add_argument("--jobs", type=int, default=2)
+    parser.add_argument("--tries", type=int, default=2)
     args = parser.parse_args()
 
-    global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix, chain_flags, instance_name
+    global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix, chain_flags, instance_name, jobs, tries
     instance_name = args.instance_name
     aaco_nc_flag = args.aaco_nc
     sol_dir = args.sol_dir
@@ -226,25 +228,28 @@ def get_argument():
     global run_chain_flags
     run_chain_flags = args.run_chain_flags
 
+    jobs = args.jobs
+    tries = args.tries
+
 
 if __name__ == "__main__":
-    global number_of_runs, debug_log, sol_dir, exist_ok
+    global number_of_runs, debug_log, sol_dir, exist_ok, jobs, tries
 
     get_argument()
     assert not os.path.isfile(sol_dir)
     assert exist_ok or not (os.path.isdir(sol_dir) and len(os.listdir(sol_dir)) > 0)
 
-    number_of_runs = 10
+    number_of_runs = tries
 
     build()
 
     # n_processes = max(1, multiprocessing.cpu_count() // 2)
-    n_processes = 2
+    n_processes = jobs
 
     args = []
     for repetition in range(number_of_runs):
         args.append((instance_name, repetition))
 
-    imap_unordered_bar(launcher, args, repetition, n_processes)
+    imap_unordered_bar(launcher, args, number_of_runs, n_processes)
 
     profit_table(sol_dir, sol_dir, postfix)

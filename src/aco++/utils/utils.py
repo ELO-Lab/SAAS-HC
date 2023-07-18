@@ -372,12 +372,16 @@ def profit_table(solution_folder, save_folder, postfix=""):
         for repeat_time in range(1, number_of_runs + 1):
             pbar.update(1)
             repeat_time = str(repeat_time) if repeat_time >= 10 else f"0{repeat_time}"
+            pf = '_'
+            if len(postfix) != 0:
+                pf = '_'+postfix
 
             file_path = (
                 solution_folder
                 / f"{_tsp_base}-thop"
-                / f"{col_name}_{repeat_time}_{postfix}.thop.sol.log"
+                / f"{col_name}_{repeat_time}{pf}.thop.sol.log"
             )
+
             if not os.path.isfile(file_path):
                 continue
 
