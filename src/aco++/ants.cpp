@@ -1568,15 +1568,17 @@ double calculate_total_information(const std::size_t &i, const std::size_t &j)
         !cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag)
         return total[i][j];
 
-    if (o1_evap_flag &&
-        (es_ant_flag || cmaes_flag || ipopcmaes_flag || bipopcmaes_flag))
-        _pheromone = o1_get_pheromone(i, j);
-    else
+    if (o1_evap_flag)
     {
-        if (o1_evap_flag)
-            o1_pay_evaporation_debt(i, j);
+#if RHO_TUNING_MACRO
+        _pheromone = o1_get_pheromone(i, j);
+#else
+        o1_pay_evaporation_debt(i, j);
         _pheromone = pheromone[i][j];
+#endif
     }
+    else
+        _pheromone = pheromone[i][j];
 
     if (verbose > 0)
     {

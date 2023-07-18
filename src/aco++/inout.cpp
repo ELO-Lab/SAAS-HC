@@ -546,15 +546,16 @@ void set_default_parameters(void)
 
     par_c_mean = 0.9;
     par_c_std = 0.2;
-    //
-    rho_mean = 0.468542;
-    rho_std = 0.253226 / 2;
 
     q_0_mean = 0;
     q_0_std = 0.05;
 
     neighbour_prob_mean = 0.5;
     neighbour_prob_std = 0.05;
+    //
+    
+    rho_mean = 0.468542;
+    rho_std = 0.253226 / 2;
 }
 
 void set_default_as_parameters(void)
