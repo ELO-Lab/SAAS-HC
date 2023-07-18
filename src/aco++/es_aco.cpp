@@ -95,8 +95,8 @@ void es_write_params()
     }
     fprintf(fptr, "\n");
 
-    fprintf(fptr,"stopTolFun %f\n", 0.f);
-    fprintf(fptr,"stopTolFunHist %f\n", 0.f);
+    fprintf(fptr, "stopTolFun %f\n", 0.f);
+    fprintf(fptr, "stopTolFunHist %f\n", 0.f);
     fprintf(fptr, "stopTolX %f\n", 1e-11);
     fprintf(fptr, "stopTolUpXFactor %f\n", 1e3);
     fprintf(fptr, "maxTimeFractionForEigendecompostion %f\n", 0.2);
@@ -408,7 +408,6 @@ void ipop_cmaes_aco_construct_solutions()
         return;
     es_aco_set_best_params();
 
-    
     const char *termination_reason = es_aco_termination_condition();
     if (termination_reason)
     {
@@ -447,7 +446,7 @@ void bipop_cmaes_aco_construct_solutions()
             n_restarts += 1;
             initial_lambda = popsize0 * pow(inc_popsize, n_restarts);
         }
-        
+
         es_aco_restart(termination_reason);
     }
 }
@@ -523,14 +522,14 @@ void es_aco_init_program()
     upperBounds[Q0_IDX] = 0.99;
 #endif
 
+#if TREE_MAP_MACRO
+    lowerBounds[NEIGHBOUR_PROB_IDX] = 0;
+    upperBounds[NEIGHBOUR_PROB_IDX] = 1;
+#endif
+    //
 #if RHO_TUNING_MACRO
     lowerBounds[RHO_IDX] = 0.01;
     upperBounds[RHO_IDX] = 0.99;
-#endif
-
-#if TREE_MAP_MACRO
-    lowerBounds[NEIGHBOUR_PROB_IDX] = 0.01;
-    upperBounds[NEIGHBOUR_PROB_IDX] = 0.99;
 #endif
 
     lowerBounds[EPSILON_IDX] = 0.0;

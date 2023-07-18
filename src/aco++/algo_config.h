@@ -6,8 +6,8 @@
 // #define ES_ANT_MACRO true
 // #define O1_EVAP_MACRO true
 // #define RHO_TUNING_MACRO true
-// #define TREE_MAP_MACRO true
-// #define Q0_TUNING_MACRO true
+#define TREE_MAP_MACRO true
+#define Q0_TUNING_MACRO true
 // #define LS_N2_MACRO true // have bugs
 // #define SEED_TUNING_MACRO true
 #define ADAPT_RHO_MACRO true
