@@ -233,14 +233,15 @@ double eval_function(int index, double const *x, unsigned long N)
     dGreedyEpsilon = x[EPSILON_IDX];
     dGreedyLevyThreshold = x[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = x[LEVY_RATIO_IDX];
-#if RHO_TUNING_MACRO
-    rho = x[RHO_IDX];
-#endif
 #if Q0_TUNING_MACRO
     q_0 = x[Q0_IDX];
 #endif
 #if TREE_MAP_MACRO
     neighbour_prob = x[NEIGHBOUR_PROB_IDX];
+#endif
+//
+#if RHO_TUNING_MACRO
+    rho = x[RHO_IDX];
 #endif
 
     // _es_construct_solutions(index);
@@ -326,7 +327,6 @@ void setup_cmaes()
     optimizer.init(eval_function, lowerBounds, upperBounds, params_file_name);
     ant.resize(indv_ants * (int)(optimizer.get("lambda")));
     prev_ls_ant.resize(indv_ants * (int)(optimizer.get("lambda")));
-    ls_flag = 1;
 }
 
 void es_aco_init()
@@ -336,6 +336,9 @@ void es_aco_init()
 
     cmaes_seed = seed;
     generating_random_vector();
+    // printf("\t\tmean\tstd\n");
+    // printf("neighbour_prob\t\t%lf\t%lf\n", initialX[NEIGHBOUR_PROB_IDX], initialStd[NEIGHBOUR_PROB_IDX]);
+    // printf("q_0\t\t%lf\t%lf\n", initialX[Q0_IDX], initialStd[Q0_IDX]);
 
     initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = alpha_mean;
     initialStd[ALPHA_IDX] = alpha_std;
@@ -351,6 +354,16 @@ void es_aco_init()
 
     initialX[PAR_C_IDX] = typicalX[PAR_C_IDX] = par_c_mean;
     initialStd[PAR_C_IDX] = par_c_std;
+
+#if Q0_TUNING_MACRO
+    initialX[Q0_IDX] = typicalX[Q0_IDX] = q_0_mean;
+    initialStd[Q0_IDX] = q_0_std;
+#endif
+
+#if TREE_MAP_MACRO
+    initialX[NEIGHBOUR_PROB_IDX] = typicalX[NEIGHBOUR_PROB_IDX] = neighbour_prob_mean;
+    initialStd[NEIGHBOUR_PROB_IDX] = neighbour_prob_std;
+#endif
 
     setup_cmaes();
 }
@@ -477,18 +490,18 @@ void es_aco_set_best_params()
     par_a = xbestever[PAR_A_IDX];
     par_b = xbestever[PAR_B_IDX];
     par_c = xbestever[PAR_C_IDX];
-    // q_0 = xbestever[Q0_IDX];
     dGreedyEpsilon = xbestever[EPSILON_IDX];
     dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
-#if RHO_TUNING_MACRO
-    rho = xbestever[RHO_IDX];
-#endif
 #if Q0_TUNING_MACRO
     q_0 = xbestever[Q0_IDX];
 #endif
 #if TREE_MAP_MACRO
     neighbour_prob = xbestever[NEIGHBOUR_PROB_IDX];
+#endif
+//
+#if RHO_TUNING_MACRO
+    rho = xbestever[RHO_IDX];
 #endif
     if (verbose > 0)
     {
