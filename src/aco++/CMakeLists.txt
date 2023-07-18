@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(OMP_NUM_THREADS 1)
 set(ENV{OMP_NUM_THREADS} 1)
-set($ENV{OMP_NUM_THREADS} 1)
 
 add_compile_options(-O3)
+add_compile_options(-DARMA_DONT_USE_OPENMP)
 # add_compile_options(-w)
 # add_compile_options(-g)
 set(CMAKE_C_COMPILER $ENV{CONDA_PREFIX}/bin/gcc)
@@ -24,5 +24,5 @@ file(GLOB ACOPP_SRC "./*.cpp")
 add_executable(acothop ${ACOPP_SRC})
 # add_executable(acothop ${ACOPP_SRC} ${LIBCMAES_SRC})
 
-target_link_libraries(acothop $ENV{CONDA_PREFIX}/lib/libarmadillo.so )
+# target_link_libraries(acothop $ENV{CONDA_PREFIX}/lib/libarmadillo.so )
 # target_link_libraries(acothop $ENV{CONDA_PREFIX}/lib/libcmaes.so )
