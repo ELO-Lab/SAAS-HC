@@ -437,6 +437,7 @@ def read_arguments():
     parser.add_argument("--sector", default=8, type=int)
 
     # log parameters
+    parser.add_argument("--realtime_terminal_log", action="store_true")
     parser.add_argument("--log_iter", action="store_true")
     parser.add_argument("--save_ter_log", type=str)
     parser.add_argument("--no_log", action="store_true")
@@ -532,6 +533,9 @@ def read_arguments():
 
     global save_ter_log
     save_ter_log = args.save_ter_log
+
+    global realtime_terminal_log
+    realtime_terminal_log = args.realtime_terminal_log
 
     global no_log
     no_log = args.no_log
@@ -690,11 +694,16 @@ def build():
     else:
         build_dir = f"{acopp_dir}/temp_build_experiment"
 
+    generator = 'Unix Makefiles'
+    if realtime_terminal_log:
+        generator = '"' + generator + '"'
+
     command = [
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
         "-G",
-        "Unix Makefiles",
+        # "Unix Makefiles",
+        generator,
         # f"{'Ninja' if not debug else 'Unix Makefiles'}",
         f"-S{acopp_dir}",
         f"-B{build_dir}",
@@ -792,19 +801,23 @@ def format_aco_command():
 
 
 def run_command(command):
-    result = subprocess.run(command, capture_output=True)
-    assert (
-        result.returncode == 0
-    ), f"""
-command:
-{"$ " + ' '.join(command)}
-returncode: {result.returncode}
-stderr:
-{result.stderr.decode()}
-stdout:
-{result.stdout.decode()}
-"""
-    return result
+    if (realtime_terminal_log):
+        os.system(' '.join(command))
+        return 'hi'
+    else:
+        result = subprocess.run(command, capture_output=True)
+        assert (
+            result.returncode == 0
+        ), f"""
+    command:
+    {"$ " + ' '.join(command)}
+    returncode: {result.returncode}
+    stderr:
+    {result.stderr.decode()}
+    stdout:
+    {result.stdout.decode()}
+    """
+        return result
 
 
 if __name__ == "__main__":
@@ -813,6 +826,9 @@ if __name__ == "__main__":
     check_validation()
 
     preprocess_arguments()
+    
+    if realtime_terminal_log:
+        silent = 2
 
     if not run_only:
         build()
@@ -837,8 +853,9 @@ if __name__ == "__main__":
     result = run_command(command)
     end = datetime.now()
 
-    stdout_log = result.stdout.decode()
-    best_profit = str(stdout_log).split(": ")[-1]
+    if silent <= 1:
+        stdout_log = result.stdout.decode()
+        best_profit = str(stdout_log).split(": ")[-1]
 
     if silent <= -1:
         print("stdout:")
