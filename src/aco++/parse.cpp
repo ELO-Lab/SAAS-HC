@@ -2096,16 +2096,40 @@ int parse_commandline(int argc, char *argv[])
     }
     if (options.opt_mean_ary)
     {
-        sscanf(options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf", &alpha_mean, &beta_mean, &par_a_mean, &par_b_mean, &par_c_mean);
+#if TREE_MAP_MACRO
+        sscanf(
+            options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf",
+            &alpha_mean, &beta_mean,
+            &par_a_mean, &par_b_mean, &par_c_mean,
+            &elite_prob_mean, &neighbour_prob_mean);
+#else
+        sscanf(
+            options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf",
+            &alpha_mean, &beta_mean,
+            &par_a_mean, &par_b_mean, &par_c_mean);
+#endif
 
-        // printf("alpha_mean: %lf, beta_mean: %lf, par_a_mean: %lf, par_b_mean: %lf, par_c_mean: %lf\n", alpha_mean, beta_mean, par_a_mean, par_b_mean, par_c_mean);
+        // printf("elite_prob_mean: %lf, neighbour_prob_mean: %lf, alpha_mean: %lf, beta_mean: %lf, par_a_mean: %lf, par_b_mean: %lf, par_c_mean: %lf\n",
+        //        elite_prob_mean, neighbour_prob_mean, alpha_mean, beta_mean, par_a_mean, par_b_mean, par_c_mean);
     }
 
     if (options.opt_std_ary)
     {
-        sscanf(options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf", &alpha_std, &beta_std, &par_a_std, &par_b_std, &par_c_std);
+#if TREE_MAP_MACRO
+        sscanf(
+            options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf",
+            &alpha_std, &beta_std,
+            &par_a_std, &par_b_std, &par_c_std,
+            &elite_prob_std, &neighbour_prob_std);
+#else
+        sscanf(
+            options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf",
+            &alpha_std, &beta_std,
+            &par_a_std, &par_b_std, &par_c_std);
+#endif
 
-        // printf("alpha_std: %lf, beta_std: %lf, par_a_std: %lf, par_b_std: %lf, par_c_std: %lf\n", alpha_std, beta_std, par_a_std, par_b_std, par_c_std);
+        // printf("elite_prob_std: %lf, neighbour_prob_std: %lf, alpha_std: %lf, beta_std: %lf, par_a_std: %lf, par_b_std: %lf, par_c_std: %lf\n",
+        //        elite_prob_std, neighbour_prob_std, alpha_std, beta_std, par_a_std, par_b_std, par_c_std);
     }
 
     if (options.opt_adpt_rho)
@@ -2141,10 +2165,17 @@ int parse_commandline(int argc, char *argv[])
         es_ant_set_default_hyperparameters();
 #endif
 #if TREE_MAP_MACRO
+    printf("using TREE_MAP_MACRO\n");
     if (tree_map_flag)
+    {
         tree_map_force_set_parameters();
+    }
 #endif
     rand_gen.seed(seed);
+
+#if Q_0_TUNING_MACRO
+    printf("using Q_0_TUNING_MACRO\n");
+#endif
 
     return 0;
 }

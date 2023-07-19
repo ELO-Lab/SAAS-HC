@@ -155,13 +155,12 @@ double Node::prob_weight_without_child_leaf(
 {
     double pheromone;
 
-    if (es_ant_flag || cmaes_flag || ipopcmaes_flag || bipopcmaes_flag)
-        pheromone = get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
-    else
-    {
-        pay_evaporation_debt(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
-        pheromone = _past_pheromone;
-    }
+#if RHO_TUNING_MACRO
+    pheromone = get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+#else
+    pay_evaporation_debt(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+    pheromone = _past_pheromone;
+#endif
 
     return pow(pheromone, alpha) * pow(_heuristic, beta);
 }

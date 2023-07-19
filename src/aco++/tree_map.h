@@ -55,7 +55,7 @@ void tree_map_deallocate();
 void tree_map_construct_solutions();
 
 extern Tree_Map *tree_map;
-extern double neighbour_prob;
+extern double neighbour_prob, elite_prob;
 
 #endif
 #endif
