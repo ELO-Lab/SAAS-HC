@@ -731,13 +731,18 @@ def format_aco_command():
         executable_path,
         "--tries",
         tries,
-        "--seed",
-        random_seed,
         "--time",
         time,
         "--inputfile",
         input_path,
     ]
+
+    if random_seed != 0:
+        command += [
+            "--seed",
+            random_seed,
+        ]
+
     if ants:
         command += [
             "--ants",
@@ -802,6 +807,7 @@ def format_aco_command():
 
 def run_command(command):
     if (realtime_terminal_log):
+        print('>', ' '.join(command))
         os.system(' '.join(command))
         return 'hi'
     else:
@@ -826,7 +832,7 @@ if __name__ == "__main__":
     check_validation()
 
     preprocess_arguments()
-    
+
     if realtime_terminal_log:
         silent = 2
 
