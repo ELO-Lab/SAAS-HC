@@ -318,6 +318,9 @@ def profit_table(solution_folder, save_folder, postfix=""):
 
     solution_folder = Path(solution_folder)
     save_folder = Path(save_folder)
+    if len(postfix) > 0 and postfix[0] != "_":
+        postfix = f"_{postfix}"
+    os.makedirs(save_folder, exist_ok=True)
 
     tsp_base = [
         "eil51",
@@ -376,7 +379,7 @@ def profit_table(solution_folder, save_folder, postfix=""):
             file_path = (
                 solution_folder
                 / f"{_tsp_base}-thop"
-                / f"{col_name}_{repeat_time}_{postfix}.thop.sol.log"
+                / f"{col_name}_{repeat_time}{postfix}.thop.sol.log"
             )
             if not os.path.isfile(file_path):
                 continue
@@ -392,9 +395,9 @@ def profit_table(solution_folder, save_folder, postfix=""):
 
     pbar.close()
     res_table = pd.DataFrame(res_table)
-    with open(save_folder / f"profit_table_{postfix}.pkl", "wb") as f:
+    with open(save_folder / f"profit_table{postfix}.pkl", "wb") as f:
         pickle.dump(res_table, f)
-    with open(save_folder / f"profit_table_{postfix}.md", "w") as f:
+    with open(save_folder / f"profit_table{postfix}.md", "w") as f:
         f.write(res_table.describe().T.to_markdown())
 
     return res_table

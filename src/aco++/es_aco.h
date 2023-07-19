@@ -1,4 +1,4 @@
-#ifndef ES_ACO_H /* only include ones */
+#ifndef ES_ACO_H
 #define ES_ACO_H
 
 #include <iostream>
@@ -31,7 +31,7 @@ double eval_function(int index, double const *x, unsigned long N);
 
 void es_aco_init();
 
-void es_aco_construct_solutions();
+void es_aco_construct_and_local_search();
 
 void ipop_cmaes_aco_construct_solutions();
 

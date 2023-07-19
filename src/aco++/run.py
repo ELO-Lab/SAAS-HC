@@ -822,7 +822,7 @@ if __name__ == "__main__":
     load_default_hyperparams()
 
     if (os.path.exists(output_path) and bypass_exist) or (max_time and time > max_time):
-        print(f"bypass {output_path.stem}")
+        print(f"bypass {output_path.name}")
         exit(0)
 
     if silent <= 0 and not no_default:
