@@ -6,7 +6,6 @@ from tqdm import tqdm
 import argparse
 from datetime import datetime
 import yaml
-import math
 from utils.utils import profit_table
 
 random_seeds = [
@@ -300,7 +299,7 @@ if __name__ == "__main__":
     build()
 
     # n_processes = max(1, multiprocessing.cpu_count() // 2)
-    n_processes = 2
+    n_processes = 4
     if debug_log:
         n_processes = 1
 
@@ -321,11 +320,6 @@ if __name__ == "__main__":
         knapsack_size,
         maximum_travel_time,
     ):
-        time = float(1) * math.ceil(
-            (int("".join(filter(lambda x: x.isdigit(), _product[0]))) - 2)
-            * int(_product[1])
-            / 10.0
-        )
         instance_name = "_".join(_product)
         for repetition in range(number_of_runs):
             args.append((instance_name, repetition))
