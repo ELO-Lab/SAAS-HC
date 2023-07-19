@@ -101,8 +101,8 @@ void adaptive_mechanism(void){
     double entropy[2]       = {path_entropy,        fitness_entropy};
     double min_entropy[2]   = {min_path_entropy,    min_fitness_entropy};
     double max_entropy[2]   = {max_path_entropy,    max_fitness_entropy};
-    // indx = 1 --> using path_entropy
-    // indx = 2 --> using fitness_entropy
+    // indx = 0 --> using path_entropy
+    // indx = 1 --> using fitness_entropy
 
     idx = 1;
 
