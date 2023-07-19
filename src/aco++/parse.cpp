@@ -2171,11 +2171,14 @@ int parse_commandline(int argc, char *argv[])
         tree_map_force_set_parameters();
     }
 #endif
-    rand_gen.seed(seed);
-
 #if Q_0_TUNING_MACRO
     printf("using Q_0_TUNING_MACRO\n");
 #endif
+#if O1_EVAP_MACRO
+    printf("using O1_EVAP_MACRO\n");
+#endif
+
+    rand_gen.seed(seed);
 
     return 0;
 }

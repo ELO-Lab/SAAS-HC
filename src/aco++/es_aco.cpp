@@ -115,115 +115,115 @@ void es_write_params()
     fclose(fptr);
 }
 
-void _es_construct_solutions(int index)
-/*
-      FUNCTION:       manage the solution construction phase
-      INPUT:          none
-      OUTPUT:         none
-      (SIDE)EFFECTS:  when finished, all ants of the colony have constructed a solution
- */
-{
+// void _es_construct_solutions(int index)
+// /*
+//       FUNCTION:       manage the solution construction phase
+//       INPUT:          none
+//       OUTPUT:         none
+//       (SIDE)EFFECTS:  when finished, all ants of the colony have constructed a solution
+//  */
+// {
 
-    long int i, k; /* counter variable */
-    long int step; /* counter of the number of construction steps */
+//     long int i, k; /* counter variable */
+//     long int step; /* counter of the number of construction steps */
 
-    TRACE(printf("construct solutions for all ants\n"););
+//     TRACE(printf("construct solutions for all ants\n"););
 
-    /* Mark all cities as unvisited */
-    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-    {
-        ant_empty_memory(&ant[k]);
-    }
+//     /* Mark all cities as unvisited */
+//     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+//     {
+//         ant_empty_memory(&ant[k]);
+//     }
 
-    /* Place the ants at initial city 0 and set the final city as n-1 */
-    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-    {
-        ant[k].tour_size = 1;
-        ant[k].tour[0] = 0;
-        ant[k].visited[0] = TRUE;
-        ant[k].visited[instance.n - 1] = TRUE;
-    }
+//     /* Place the ants at initial city 0 and set the final city as n-1 */
+//     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+//     {
+//         ant[k].tour_size = 1;
+//         ant[k].tour[0] = 0;
+//         ant[k].visited[0] = TRUE;
+//         ant[k].visited[instance.n - 1] = TRUE;
+//     }
 
-    step = 0;
-    while (step < instance.n - 2)
-    {
-        step++;
-        for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-        {
-            if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
-            { /* previous city is the last one */
-                continue;
-            }
+//     step = 0;
+//     while (step < instance.n - 2)
+//     {
+//         step++;
+//         for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+//         {
+//             if (ant[k].tour[ant[k].tour_size - 1] == instance.n - 2)
+//             { /* previous city is the last one */
+//                 continue;
+//             }
 
-            if (iLevyFlag || iGreedyLevyFlag)
-            {
-                neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
-            }
-            else
-            {
-                neighbour_choose_and_move_to_next(&ant[k], step);
-            }
+//             if (iLevyFlag || iGreedyLevyFlag)
+//             {
+//                 neighbour_choose_and_move_to_next_using_greedy_Levy_flight(&ant[k], step);
+//             }
+//             else
+//             {
+//                 neighbour_choose_and_move_to_next(&ant[k], step);
+//             }
 
-            if (acs_flag)
-                local_acs_pheromone_update(&ant[k], step);
-            ant[k].tour_size++;
-        }
-    }
+//             if (acs_flag)
+//                 local_acs_pheromone_update(&ant[k], step);
+//             ant[k].tour_size++;
+//         }
+//     }
 
-    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-    {
-        ant[k].tour[ant[k].tour_size++] = instance.n - 1;
-        ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
-        for (i = ant[k].tour_size; i < instance.n; i++)
-            ant[k].tour[i] = 0;
-        ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
-        if (acs_flag)
-            local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
-    }
-    n_tours += ant.size();
-}
+//     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+//     {
+//         ant[k].tour[ant[k].tour_size++] = instance.n - 1;
+//         ant[k].tour[ant[k].tour_size++] = ant[k].tour[0];
+//         for (i = ant[k].tour_size; i < instance.n; i++)
+//             ant[k].tour[i] = 0;
+//         ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
+//         if (acs_flag)
+//             local_acs_pheromone_update(&ant[k], ant[k].tour_size - 1);
+//     }
+//     n_tours += ant.size();
+// }
 
-void _es_local_search(int index)
-/*
-      FUNCTION:       manage the local search phase; apply local search to ALL ants; in
-                      dependence of ls_flag one of 2-opt, 2.5-opt, and 3-opt local search
-                      is chosen.
-      INPUT:          none
-      OUTPUT:         none
-      (SIDE)EFFECTS:  all ants of the colony have locally optimal tours
-      COMMENTS:       typically, best performance is obtained by applying local search
-                      to all ants. It is known that some improvements (e.g. convergence
-                      speed towards high quality solutions) may be obtained for some
-                      ACO algorithms by applying local search to only some of the ants.
-                      Overall best performance is typcially obtained by using 3-opt.
- */
-{
-    long int k;
+// void _es_local_search(int index)
+// /*
+//       FUNCTION:       manage the local search phase; apply local search to ALL ants; in
+//                       dependence of ls_flag one of 2-opt, 2.5-opt, and 3-opt local search
+//                       is chosen.
+//       INPUT:          none
+//       OUTPUT:         none
+//       (SIDE)EFFECTS:  all ants of the colony have locally optimal tours
+//       COMMENTS:       typically, best performance is obtained by applying local search
+//                       to all ants. It is known that some improvements (e.g. convergence
+//                       speed towards high quality solutions) may be obtained for some
+//                       ACO algorithms by applying local search to only some of the ants.
+//                       Overall best performance is typcially obtained by using 3-opt.
+//  */
+// {
+//     long int k;
 
-    TRACE(printf("apply local search to all ants\n"););
+//     TRACE(printf("apply local search to all ants\n"););
 
-    for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
-    {
-        switch (ls_flag)
-        {
-        case 1:
-            two_opt_first(ant[k].tour, ant[k].tour_size); /* 2-opt local search */
-            break;
-        case 2:
-            two_h_opt_first(ant[k].tour, ant[k].tour_size); /* 2.5-opt local search */
-            break;
-        case 3:
-            three_opt_first(ant[k].tour, ant[k].tour_size); /* 3-opt local search */
-            break;
-        default:
-            fprintf(stderr, "type of local search procedure not correctly specified\n");
-            exit(1);
-        }
-        ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
-        if (termination_condition())
-            return;
-    }
-}
+//     for (int k = index * indv_ants; k < (index + 1) * indv_ants; k++)
+//     {
+//         switch (ls_flag)
+//         {
+//         case 1:
+//             two_opt_first(ant[k].tour, ant[k].tour_size); /* 2-opt local search */
+//             break;
+//         case 2:
+//             two_h_opt_first(ant[k].tour, ant[k].tour_size); /* 2.5-opt local search */
+//             break;
+//         case 3:
+//             three_opt_first(ant[k].tour, ant[k].tour_size); /* 3-opt local search */
+//             break;
+//         default:
+//             fprintf(stderr, "type of local search procedure not correctly specified\n");
+//             exit(1);
+//         }
+//         ant[k].fitness = compute_fitness(ant[k].tour, ant[k].visited, ant[k].tour_size, ant[k].packing_plan);
+//         if (termination_condition())
+//             return;
+//     }
+// }
 
 //   index of current offspring         genotype   number of dims
 double eval_function(int index, double const *x, unsigned long N)
@@ -447,7 +447,7 @@ void resize_ant_colonies()
     n_ants = ant.size();
 }
 
-void es_aco_construct_solutions()
+void es_aco_construct_and_local_search()
 {
     worst_offspring_index = 0;
     worst_offspring_fitness = -INFINITY;
@@ -484,52 +484,56 @@ void es_aco_construct_solutions()
 
 void ipop_cmaes_aco_construct_solutions()
 {
-    optimizer.run_a_generation();
-    if (termination_condition())
-        return;
-    es_aco_update_statistics();
+    printf("\nCAUSION: Uncommenting will lead to bugs\n");
+    exit(1);
+    //     optimizer.run_a_generation();
+    //     if (termination_condition())
+    //         return;
+    //     es_aco_set_best_params();
 
-    const char *termination_reason = es_aco_termination_condition();
-    if (termination_reason)
-    {
-        initial_lambda *= inc_popsize;
-        es_aco_restart(termination_reason);
-    }
+    //     const char *termination_reason = es_aco_termination_condition();
+    //     if (termination_reason)
+    //     {
+    //         initial_lambda *= inc_popsize;
+    //         es_aco_restart(termination_reason);
+    //     }
 }
 
 void bipop_cmaes_aco_construct_solutions()
 {
-    optimizer.run_a_generation();
-    if (termination_condition())
-        return;
-    es_aco_update_statistics();
+    printf("\nCAUSION: Uncommenting will lead to bugs\n");
+    exit(1);
+    //     optimizer.run_a_generation();
+    //     if (termination_condition())
+    //         return;
+    //     es_aco_set_best_params();
 
-    const char *termination_reason = es_aco_termination_condition();
-    if (termination_reason)
-    {
-        printf("BIPOP restart, ");
-        long int n_eval = (int)(optimizer.get("lambda")) * optimizer.get("generation");
-        if (poptype == 0)
-            small_n_eval += n_eval;
-        else
-            large_n_eval += n_eval;
+    //     const char *termination_reason = es_aco_termination_condition();
+    //     if (termination_reason)
+    //     {
+    //         printf("BIPOP restart, ");
+    //         long int n_eval = (int)(optimizer.get("lambda")) * optimizer.get("generation");
+    //         if (poptype == 0)
+    //             small_n_eval += n_eval;
+    //         else
+    //             large_n_eval += n_eval;
 
-        if (small_n_eval < large_n_eval)
-        {
-            poptype = 0;
-            double popsize_multiplier = pow(inc_popsize, n_restarts);
-            initial_lambda = floor(
-                pow(popsize0 * popsize_multiplier, pow(new_rand01(), 2)));
-        }
-        else
-        {
-            poptype = 1;
-            n_restarts += 1;
-            initial_lambda = popsize0 * pow(inc_popsize, n_restarts);
-        }
+    //         if (small_n_eval < large_n_eval)
+    //         {
+    //             poptype = 0;
+    //             double popsize_multiplier = pow(inc_popsize, n_restarts);
+    //             initial_lambda = floor(
+    //                 pow(popsize0 * popsize_multiplier, pow(new_rand01(), 2)));
+    //         }
+    //         else
+    //         {
+    //             poptype = 1;
+    //             n_restarts += 1;
+    //             initial_lambda = popsize0 * pow(inc_popsize, n_restarts);
+    //         }
 
-        es_aco_restart(termination_reason);
-    }
+    //         es_aco_restart(termination_reason);
+    //     }
 }
 
 void es_aco_export_result()
