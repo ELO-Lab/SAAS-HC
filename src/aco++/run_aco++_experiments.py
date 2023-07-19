@@ -326,8 +326,6 @@ if __name__ == "__main__":
             * int(_product[1])
             / 10.0
         )
-        if(time >= 10):
-            continue
         instance_name = "_".join(_product)
         for repetition in range(number_of_runs):
             args.append((instance_name, repetition))
