@@ -412,6 +412,7 @@ def read_arguments():
     parser.add_argument("--sol_dir", type=str)
     parser.add_argument("--acopp_dir", default="./", type=str)
     parser.add_argument("--bypass_exist", action="store_true")
+    parser.add_argument("--max_time", type=float)
 
     # aco++ parameters
     parser.add_argument("--ants", type=int)
@@ -544,6 +545,9 @@ def read_arguments():
     global bypass_exist
     bypass_exist = args.bypass_exist
 
+    global max_time
+    max_time = args.max_time
+
 
 def preprocess_arguments():
     global acopp_dir
@@ -582,6 +586,7 @@ def preprocess_arguments():
 
 def load_default_hyperparams():
     global tsp_base, number_of_items_per_city, knapsack_type, parameter_configuration_key
+    global input_path, output_path
 
     tsp_base = instance_name.split("_")[0]
     number_of_items_per_city = int(instance_name.split("_")[1])
@@ -590,6 +595,10 @@ def load_default_hyperparams():
         tsp_base,
         number_of_items_per_city,
         knapsack_type,
+    )
+    input_path = f"{acopp_dir}/../../instances/{tsp_base}-thop/{instance_name}"
+    output_path = Path(
+        f"{sol_dir}/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
 
     global time
@@ -709,13 +718,6 @@ def build():
 
 
 def format_aco_command():
-    global input_path, output_path
-
-    input_path = f"{acopp_dir}/../../instances/{tsp_base}-thop/{instance_name}"
-    output_path = Path(
-        f"{sol_dir}/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
-    )
-
     command = [
         executable_path,
         "--tries",
@@ -819,16 +821,16 @@ if __name__ == "__main__":
 
     load_default_hyperparams()
 
-    if silent <= 0:
+    if (os.path.exists(output_path) and bypass_exist) or (max_time and time > max_time):
+        print(f"bypass {output_path.stem}")
+        exit(0)
+
+    if silent <= 0 and not no_default:
         table_log()
 
     command = format_aco_command()
     if silent <= 0:
         print("$ " + " ".join(command))
-
-    if os.path.exists(output_path) and bypass_exist:
-        print(f"bypass {output_path.name}")
-        exit(0)
 
     os.makedirs(output_path.parent, exist_ok=True)
     start = datetime.now()

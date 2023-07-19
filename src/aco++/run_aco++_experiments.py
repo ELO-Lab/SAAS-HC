@@ -129,9 +129,6 @@ stdout:
 
 
 def launcher(arg):
-    global aaco_nc_flag, number_of_runs, sol_dir, debug_log, postfix
-    global time_limit, chain_flags
-
     instance_name, repetition = arg
 
     _random_seed = str(random_seeds[repetition])
@@ -152,6 +149,11 @@ def launcher(arg):
         "--random_seed",
         _random_seed,
     ]
+    if max_time:
+        command += [
+            "--max_time",
+            max_time,
+        ]
     if time_limit:
         command += [
             "--time",
@@ -216,6 +218,7 @@ def get_argument():
     parser.add_argument("--chain_flags", type=str)
     parser.add_argument("--time_limit", type=str)
     parser.add_argument("--run_chain_flags", type=str)
+    parser.add_argument("--max_time", type=str)
     args = parser.parse_args()
 
     global aaco_nc_flag, sol_dir, debug_log, exist_ok, postfix, chain_flags
@@ -230,6 +233,8 @@ def get_argument():
     time_limit = args.time_limit
     global run_chain_flags
     run_chain_flags = args.run_chain_flags
+    global max_time
+    max_time = args.max_time
 
 
 def preprocess_arg():
@@ -276,8 +281,8 @@ if __name__ == "__main__":
         "03",
     ]
     # number_of_runs = 30
-    number_of_runs = 1
-    # number_of_runs = 2
+    # number_of_runs = 1
+    number_of_runs = 2
     if debug_log:
         number_of_runs = 3
 
