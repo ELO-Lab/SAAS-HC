@@ -203,8 +203,8 @@ void tree_map_init()
 void tree_map_force_set_parameters()
 {
     mmas_flag = true;
-    q_0 = 0.0;
-    neighbour_prob = 0.5;
+    elite_prob = 0.15;
+    neighbour_prob = 0.82;
 }
 void tree_map_deallocate()
 {
@@ -217,7 +217,7 @@ void tree_map_construct_solutions()
     for (i = 0; i < n_ants; i++)
         tree_map->choose_route(ant[i], neighbour_prob, alpha, beta, rho, n_tours,
                                nn_ants,
-                               instance.nn_list, q_0);
+                               instance.nn_list, elite_prob);
 }
 
 #endif
