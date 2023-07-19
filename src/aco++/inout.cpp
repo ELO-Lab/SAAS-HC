@@ -500,10 +500,8 @@ void set_default_parameters(void)
     ls_flag = 1;
     dlb_flag = TRUE; /* apply don't look bits in local search */
     nn_ls = 20;      /* use fixed radius search in the 20 nearest neighbours */
-    n_ants = 303;    /* number of ants */
+    n_ants = 300;    /* number of ants */
     nn_ants = 20;    /* number of nearest neighbours in tour construction */
-    alpha = 1.550208;
-    beta = 4.893958;
     q_0 = 0.0;
     max_tries = 1;
     max_tours = 0;
@@ -521,41 +519,41 @@ void set_default_parameters(void)
     acs_flag = FALSE;
     ras_ranks = 0;
     elitist_ants = 0;
+    // --adapt_evap --cmaes --lambda 18.0 --mean_ary 0.7681441:5.637383:0.804593:0.78718877:0.05282157:0.14134586:0.4584047 --std_ary 0.01:1.4254404:0.20251788:0.11338539:0.01:0.30373466:0.23759665 --adpt_rho 0.4587274:0.26949337:0.7514611 --indv_ants 9.0:8.064333:57.13875
+    initial_lambda = 18;
+
+    alpha = alpha_mean = 0.7681441;
+    alpha_std = 0.01;
+
+    beta = beta_mean = 5.637383;
+    beta_std = 1.4254404;
+
+    par_a_mean = 0.804593;
+    par_a_std = 0.20251788;
+
+    par_b_mean = 0.78718877;
+    par_b_std = 0.11338539;
+
+    par_c_mean = 0.05282157;
+    par_c_std = 0.01;
+
+    elite_prob_mean = 0.14134586;
+    elite_prob_std = 0.30373466;
+
+    neighbour_prob_mean = 0.4584047;
+    neighbour_prob_std = 0.23759665;
+
+    rho = 0.4587274;
+    min_rho = 0.26949337;
+    max_rho = 0.7514611;
+
+    indv_ants = 9.0;
+    min_indv_ants = 8.064333;
+    max_indv_ants = 57.13875;
     //
-    initial_lambda = 20;
 
-    indv_ants = 2;
-    min_indv_ants = 10;
-    max_indv_ants = 100;
-
-    rho = 0.5;
-    min_rho = 0.1;
-    max_rho = 0.99;
-
-    alpha_mean = 1.55;
-    alpha_std = 1.507;
-
-    beta_mean = 4.89;
-    beta_std = 2.046;
-
-    par_a_mean = 0.3;
-    par_a_std = 0.2;
-
-    par_b_mean = 0.7;
-    par_b_std = 0.2;
-
-    par_c_mean = 0.9;
-    par_c_std = 0.2;
-
-    neighbour_prob_mean = 0.5;
-    neighbour_prob_std = 0.2;
-
-    elite_prob_mean = 0.5;
-    elite_prob_std = 0.2;
-    //
-
-    rho_mean = 0.468542;
-    rho_std = 0.253226 / 2;
+    rho_mean = 0.5;
+    rho_std = 0.2;
 }
 
 void set_default_as_parameters(void)
