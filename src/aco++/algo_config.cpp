@@ -41,7 +41,8 @@ bool cmaes_flag = false;
 #endif
 
 bool random_initial_std = true;
-bool fitness_entropy_flag = false;
+bool fitness_entropy_flag = true;
+bool replace_worst_by_bestever = true;
 
 // config here don't work
 bool ipopcmaes_flag = false;

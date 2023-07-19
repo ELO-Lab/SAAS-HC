@@ -101,15 +101,14 @@ void adaptive_mechanism(void){
     double entropy[2]       = {path_entropy,        fitness_entropy};
     double min_entropy[2]   = {min_path_entropy,    min_fitness_entropy};
     double max_entropy[2]   = {max_path_entropy,    max_fitness_entropy};
-    // indx = 0 --> using path_entropy
-    // indx = 1 --> using fitness_entropy
+    // idx = 0 --> using path_entropy
+    // idx = 1 --> using fitness_entropy
 
-    idx = 1;
+    idx = 0;
+    if (fitness_entropy_flag) idx = 1;
 
     rho = min_rho + rho_diff * (entropy[idx] - min_entropy[idx]) / (max_entropy[idx] - min_entropy[idx]);
     // rho = max_rho - rho_diff * (entropy[idx] - min_entropy[idx]) / (max_entropy[idx] - min_entropy[idx]);
-
-    idx = 1;
     
     // indv_ants = (unsigned int)(min_indv_ants + indv_ants_diff * (entropy[idx] - min_entropy[idx]) / (max_entropy[idx] - min_entropy[idx]));
     indv_ants =  (unsigned int)(max_indv_ants - indv_ants_diff * (entropy[idx] - min_entropy[idx]) / (max_entropy[idx] - min_entropy[idx]));

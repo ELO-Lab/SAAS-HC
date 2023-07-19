@@ -472,7 +472,8 @@ void es_aco_construct_and_local_search()
         // printf("\t\tentropy=%f, fitness_entropy=%f, rho=%f, indv_ants=%d \n", entropy, fitness_entropy, rho, indv_ants);
     )
 
-    eval_function(worst_offspring_index, xbestever, optimizer.get("lambda"));
+    if (replace_worst_by_bestever)
+        eval_function(worst_offspring_index, xbestever, optimizer.get("lambda"));
 
     const char *termination_reason = es_aco_termination_condition();
     if (termination_reason)
