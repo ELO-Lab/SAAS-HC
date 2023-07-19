@@ -371,7 +371,7 @@ void setup_cmaes()
     
     resize_ant_colonies();
     
-    default_ls = ls_flag;
+    // default_ls = ls_flag;
     
     es_aco_update_statistics();
 }
@@ -452,7 +452,7 @@ void es_aco_construct_and_local_search()
     worst_offspring_index = 0;
     worst_offspring_fitness = -INFINITY;
 
-    ls_flag = default_ls;
+    // ls_flag = default_ls;
 
     ES_ACO_DEBUG(
         printf("\nGeneration %ld:\tX mean=[", (long int)(optimizer.get("iter")));
