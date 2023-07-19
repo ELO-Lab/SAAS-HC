@@ -90,7 +90,7 @@ void adaptive_mechanism(void){
 
     double min_path_entropy, max_path_entropy;
     calculate_path_entropy();
-    min_path_entropy = -log2(n_ants * 1.0 / total_edge_count);
+    min_path_entropy = -log2(ant.size() * 1.0 / total_edge_count);
     max_path_entropy = -log2(1.0 / total_edge_count);
 
     double min_fitness_entropy, max_fitness_entropy;
