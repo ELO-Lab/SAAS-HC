@@ -23,8 +23,8 @@
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
 
-#if Q0_TUNING_MACRO
-#define Q0_IDX 5
+#if Q_0_TUNING_MACRO
+#define Q_0_IDX 5
 #define Q0_TEMP_DIM 6
 #else
 #define Q0_TEMP_DIM 5
@@ -130,8 +130,8 @@ long int an_ant_evaluate(const double *x, const int &N)
 #if RHO_TUNING_MACRO
     rho = x[RHO_IDX];
 #endif
-#if Q0_TUNING_MACRO
-    q_0 = x[Q0_IDX];
+#if Q_0_TUNING_MACRO
+    q_0 = x[Q_0_IDX];
 #endif
 #if TREE_MAP_MACRO
     neighbour_prob = parameters[NEIGHBOUR_PROB_IDX];
@@ -231,11 +231,11 @@ void init_optimizer(void)
     x0[PAR_C_IDX] = par_c_mean;
     sigma[PAR_C_IDX] = par_c_std / (ubounds[PAR_C_IDX] - lbounds[PAR_C_IDX]);
 
-#if Q0_TUNING_MACRO
-    lbounds[Q0_IDX] = 0;
-    ubounds[Q0_IDX] = 0.99;
-    x0[Q0_IDX] = q_0_mean;
-    sigma[Q0_IDX] = q_0_std / (ubounds[Q0_IDX] - lbounds[Q0_IDX]);
+#if Q_0_TUNING_MACRO
+    lbounds[Q_0_IDX] = 0;
+    ubounds[Q_0_IDX] = 0.99;
+    x0[Q_0_IDX] = q_0_mean;
+    sigma[Q_0_IDX] = q_0_std / (ubounds[Q_0_IDX] - lbounds[Q_0_IDX]);
 #endif
 
     lbounds[ALPHA_IDX] = 0.01;

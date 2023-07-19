@@ -11,28 +11,22 @@
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
 
-#if Q0_TUNING_MACRO
-#define Q0_IDX 5
-#define Q0_TEMP_DIM 6
+#if TREE_MAP_MACRO
+#define NEIGHBOUR_PROB_IDX 5
+#define ELITE_PROB_IDX 6
+#define TREE_MAP_TEMP_DIM 7
 #else
-#define Q0_TEMP_DIM 5
+#define TREE_MAP_TEMP_DIM 5
 #endif
 
 #if RHO_TUNING_MACRO
-#define RHO_IDX Q0_TEMP_DIM
-#define RHO_TEMP_DIM (Q0_TEMP_DIM + 1)
+#define RHO_IDX TREE_MAP_TEMP_DIM
+#define RHO_TEMP_DIM (TREE_MAP_TEMP_DIM + 1)
 #else
-#define RHO_TEMP_DIM Q0_TEMP_DIM
+#define RHO_TEMP_DIM TREE_MAP_TEMP_DIM
 #endif
 
-#if TREE_MAP_MACRO
-#define NEIGHBOUR_PROB_IDX RHO_TEMP_DIM
-#define TEMP_DIM (RHO_TEMP_DIM + 1)
-#else
-#define TEMP_DIM RHO_TEMP_DIM
-#endif
-
-#define ES_ACO_DIM TEMP_DIM
+#define ES_ACO_DIM RHO_TEMP_DIM
 #define EPSILON_IDX ES_ACO_DIM
 #define LEVY_THRESHOLD_IDX (ES_ACO_DIM + 1)
 #define LEVY_RATIO_IDX (ES_ACO_DIM + 2)
@@ -233,11 +227,9 @@ double eval_function(int index, double const *x, unsigned long N)
     dGreedyEpsilon = x[EPSILON_IDX];
     dGreedyLevyThreshold = x[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = x[LEVY_RATIO_IDX];
-#if Q0_TUNING_MACRO
-    q_0 = x[Q0_IDX];
-#endif
 #if TREE_MAP_MACRO
     neighbour_prob = x[NEIGHBOUR_PROB_IDX];
+    elite_prob = x[ELITE_PROB_IDX];
 #endif
 //
 #if RHO_TUNING_MACRO
@@ -274,7 +266,7 @@ double eval_function(int index, double const *x, unsigned long N)
                 n_tours,
                 nn_ants,
                 instance.nn_list,
-                q_0);
+                elite_prob);
         else
 #endif
             an_ant_run(k);
@@ -338,7 +330,7 @@ void es_aco_init()
     generating_random_vector();
     // printf("\t\tmean\tstd\n");
     // printf("neighbour_prob\t\t%lf\t%lf\n", initialX[NEIGHBOUR_PROB_IDX], initialStd[NEIGHBOUR_PROB_IDX]);
-    // printf("q_0\t\t%lf\t%lf\n", initialX[Q0_IDX], initialStd[Q0_IDX]);
+    // printf("q_0\t\t%lf\t%lf\n", initialX[ELITE_PROB_IDX], initialStd[ELITE_PROB_IDX]);
 
     initialX[ALPHA_IDX] = typicalX[ALPHA_IDX] = alpha_mean;
     initialStd[ALPHA_IDX] = alpha_std;
@@ -355,14 +347,12 @@ void es_aco_init()
     initialX[PAR_C_IDX] = typicalX[PAR_C_IDX] = par_c_mean;
     initialStd[PAR_C_IDX] = par_c_std;
 
-#if Q0_TUNING_MACRO
-    initialX[Q0_IDX] = typicalX[Q0_IDX] = q_0_mean;
-    initialStd[Q0_IDX] = q_0_std;
-#endif
-
 #if TREE_MAP_MACRO
     initialX[NEIGHBOUR_PROB_IDX] = typicalX[NEIGHBOUR_PROB_IDX] = neighbour_prob_mean;
     initialStd[NEIGHBOUR_PROB_IDX] = neighbour_prob_std;
+
+    initialX[ELITE_PROB_IDX] = typicalX[ELITE_PROB_IDX] = elite_prob_mean;
+    initialStd[ELITE_PROB_IDX] = elite_prob_std;
 #endif
 
     setup_cmaes();
@@ -493,11 +483,9 @@ void es_aco_set_best_params()
     dGreedyEpsilon = xbestever[EPSILON_IDX];
     dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
-#if Q0_TUNING_MACRO
-    q_0 = xbestever[Q0_IDX];
-#endif
 #if TREE_MAP_MACRO
     neighbour_prob = xbestever[NEIGHBOUR_PROB_IDX];
+    elite_prob = xbestever[ELITE_PROB_IDX];
 #endif
 //
 #if RHO_TUNING_MACRO
@@ -530,14 +518,11 @@ void es_aco_init_program()
     lowerBounds[PAR_C_IDX] = 0.01;
     upperBounds[PAR_C_IDX] = 1;
 
-#if Q0_TUNING_MACRO
-    lowerBounds[Q0_IDX] = 0;
-    upperBounds[Q0_IDX] = 0.99;
-#endif
-
 #if TREE_MAP_MACRO
     lowerBounds[NEIGHBOUR_PROB_IDX] = 0;
     upperBounds[NEIGHBOUR_PROB_IDX] = 1;
+    lowerBounds[ELITE_PROB_IDX] = 0;
+    upperBounds[ELITE_PROB_IDX] = 0.99;
 #endif
     //
 #if RHO_TUNING_MACRO

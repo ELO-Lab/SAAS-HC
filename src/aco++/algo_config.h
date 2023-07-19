@@ -7,9 +7,9 @@
 // #define O1_EVAP_MACRO true
 // #define RHO_TUNING_MACRO true
 #define TREE_MAP_MACRO true
-#define Q0_TUNING_MACRO true
+// #define Q_0_TUNING_MACRO true // not implemeted
 // #define LS_N2_MACRO true // have bugs
-// #define SEED_TUNING_MACRO true
+// #define SEED_TUNING_MACRO true // not implemeted
 #define ADAPT_RHO_MACRO true
 #define CMAES_MACRO true
 

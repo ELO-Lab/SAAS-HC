@@ -2,7 +2,6 @@
 #if TREE_MAP_MACRO
 
 #define TOP_DOWN true
-// #define TOP_DOWN false
 
 #include "utilities.h"
 #include "thop.h"
@@ -10,7 +9,7 @@
 #include "tree_map.h"
 
 Tree_Map *tree_map;
-double neighbour_prob;
+double neighbour_prob, elite_prob;
 
 Tree_Map::Tree_Map(const std::size_t &num_city, const struct problem &instance)
 {

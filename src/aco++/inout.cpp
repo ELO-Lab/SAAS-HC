@@ -131,7 +131,7 @@ double par_a_mean, par_b_mean, par_c_mean,
     par_a_std, par_b_std, par_c_std,
     alpha_mean, beta_mean, rho_mean,
     alpha_std, beta_std, rho_std,
-    q_0_mean, q_0_std,
+    elite_prob_mean, elite_prob_std,
     neighbour_prob_mean, neighbour_prob_std;
 unsigned int indv_ants;
 // ---
@@ -547,11 +547,11 @@ void set_default_parameters(void)
     par_c_mean = 0.9;
     par_c_std = 0.2;
 
-    q_0_mean = 0.5;
-    q_0_std = 0.2;
-
     neighbour_prob_mean = 0.5;
     neighbour_prob_std = 0.2;
+
+    elite_prob_mean = 0.5;
+    elite_prob_std = 0.2;
     //
 
     rho_mean = 0.468542;
