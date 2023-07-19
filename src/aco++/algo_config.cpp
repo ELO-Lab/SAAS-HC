@@ -40,7 +40,7 @@ bool cmaes_flag = true;
 bool cmaes_flag = false;
 #endif
 
-bool random_initial_std = true;
+bool random_initial_std = false;
 bool fitness_entropy_flag = true;
 bool replace_worst_by_bestever = true;
 
