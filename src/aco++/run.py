@@ -427,6 +427,7 @@ def read_arguments():
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
     parser.add_argument("--no_default", action="store_true")
+    parser.add_argument("--chain_flags", type=str)
 
     # aaco_ncparameters
     parser.add_argument("--aaco_nc", action="store_true")
@@ -437,12 +438,10 @@ def read_arguments():
     parser.add_argument("--sector", default=8, type=int)
 
     # log parameters
+    parser.add_argument("--realtime_terminal_log", action="store_true")
     parser.add_argument("--log_iter", action="store_true")
     parser.add_argument("--save_ter_log", type=str)
     parser.add_argument("--no_log", action="store_true")
-
-    # chain flags
-    parser.add_argument("--chain_flags", type=str)
 
     args = parser.parse_args()
 
@@ -533,6 +532,9 @@ def read_arguments():
     global save_ter_log
     save_ter_log = args.save_ter_log
 
+    global realtime_terminal_log
+    realtime_terminal_log = args.realtime_terminal_log
+
     global no_log
     no_log = args.no_log
 
@@ -582,6 +584,10 @@ def preprocess_arguments():
 
     global sol_dir
     sol_dir = sol_dir if sol_dir else Path(f"{acopp_dir}/../../solutions/temp/aco++")
+
+    global silent
+    if realtime_terminal_log:
+        silent = 2
 
 
 def load_default_hyperparams():
@@ -690,12 +696,15 @@ def build():
     else:
         build_dir = f"{acopp_dir}/temp_build_experiment"
 
+    generator = "Unix Makefiles"
+    if realtime_terminal_log:
+        generator = '"' + generator + '"'
+
     command = [
         "cmake",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
         "-G",
-        "Unix Makefiles",
-        # f"{'Ninja' if not debug else 'Unix Makefiles'}",
+        generator,
         f"-S{acopp_dir}",
         f"-B{build_dir}",
         f"-DCMAKE_BUILD_TYPE:STRING={'Release' if not debug else 'Debug'}",
@@ -722,13 +731,17 @@ def format_aco_command():
         executable_path,
         "--tries",
         tries,
-        "--seed",
-        random_seed,
         "--time",
         time,
         "--inputfile",
         input_path,
     ]
+
+    if random_seed != 0:
+        command += [
+            "--seed",
+            random_seed,
+        ]
     if ants:
         command += [
             "--ants",
@@ -792,19 +805,24 @@ def format_aco_command():
 
 
 def run_command(command):
-    result = subprocess.run(command, capture_output=True)
-    assert (
-        result.returncode == 0
-    ), f"""
-command:
-{"$ " + ' '.join(command)}
-returncode: {result.returncode}
-stderr:
-{result.stderr.decode()}
-stdout:
-{result.stdout.decode()}
-"""
-    return result
+    if realtime_terminal_log:
+        print(">", " ".join(command))
+        os.system(" ".join(command))
+        return "hi"
+    else:
+        result = subprocess.run(command, capture_output=True)
+        assert (
+            result.returncode == 0
+        ), f"""
+    command:
+    {"$ " + ' '.join(command)}
+    returncode: {result.returncode}
+    stderr:
+    {result.stderr.decode()}
+    stdout:
+    {result.stdout.decode()}
+    """
+        return result
 
 
 if __name__ == "__main__":
@@ -837,8 +855,9 @@ if __name__ == "__main__":
     result = run_command(command)
     end = datetime.now()
 
-    stdout_log = result.stdout.decode()
-    best_profit = str(stdout_log).split(": ")[-1]
+    if silent <= 1:
+        stdout_log = result.stdout.decode()
+        best_profit = str(stdout_log).split(": ")[-1]
 
     if silent <= -1:
         print("stdout:")

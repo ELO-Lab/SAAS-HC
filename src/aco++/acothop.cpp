@@ -464,8 +464,11 @@ void pheromone_trail_update(void)
                       according to the rules defined by the various ACO algorithms.
  */
 {
+    // if (fitness_entropy_flag)
     if (adaptive_evaporation_flag && !(tree_map_flag && es_ant_flag))
-        update_with_entropy();
+    {
+        adaptive_mechanism();
+    }
 
 /* Simulate the pheromone evaporation of all pheromones; this is not necessary
    for ACS (see also ACO Book) */
@@ -565,7 +568,7 @@ int main(int argc, char *argv[])
 
     if (verbose > 0)
     {
-        printf("Seed: %ld, Upper Bound %ld\n", seed, instance.UB);
+        printf("Seed=%ld, Upper Bound=%ld\n", seed, instance.UB);
     }
 
     time_used = elapsed_time(VIRTUAL);
@@ -625,7 +628,8 @@ int main(int argc, char *argv[])
 
         if (verbose > 0)
         {
-            printf("Number of iteration: %ld\n", iteration);
+            printf("Number of iterations: %ld\n", iteration);
+            printf("Number of times that CAMES restarts: %ld\n", n_restarts);
             // printf("seed: %ld\n", seed);
         }
 

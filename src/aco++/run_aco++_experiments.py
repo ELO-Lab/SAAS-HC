@@ -299,6 +299,7 @@ if __name__ == "__main__":
     build()
 
     n_processes = max(1, multiprocessing.cpu_count() // 2)
+    # n_processes = 3
     if debug_log:
         n_processes = 1
 

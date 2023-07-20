@@ -25,5 +25,8 @@ extern bool cmaes_flag;
 extern bool ipopcmaes_flag;
 extern bool bipopcmaes_flag;
 extern bool iGreedyLevyFlag;
+extern bool random_initial_std;
+extern bool fitness_entropy_flag;
+extern bool replace_worst_by_bestever;
 
 #endif

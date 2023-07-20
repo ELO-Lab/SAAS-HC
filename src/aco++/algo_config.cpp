@@ -40,6 +40,11 @@ bool cmaes_flag = true;
 bool cmaes_flag = false;
 #endif
 
+bool random_initial_std = true;
+bool fitness_entropy_flag = true;
+// replace_worst_by_bestever --> kh tốt :V đừng bật
+bool replace_worst_by_bestever = false;
+
 // config here don't work
 bool ipopcmaes_flag = false;
 bool bipopcmaes_flag = false;

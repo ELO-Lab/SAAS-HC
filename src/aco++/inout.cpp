@@ -291,6 +291,8 @@ void init_try(long int ntry)
     time_used = elapsed_time(VIRTUAL);
     time_passed = time_used;
 
+    if (adaptive_evaporation_flag)
+        init_adaptive_mechanism();
     if (o1_evap_flag)
         o1_init_try(); // must before init trail
 
@@ -543,11 +545,11 @@ void set_default_parameters(void)
     neighbour_prob_mean = 0.4584047;
     neighbour_prob_std = 0.23759665;
 
-    rho = 0.4587274;
+    rho = init_rho = 0.4587274;
     min_rho = 0.26949337;
     max_rho = 0.7514611;
 
-    indv_ants = 9.0;
+    indv_ants = init_indv_ants = 9.0;
     min_indv_ants = 8.064333;
     max_indv_ants = 57.13875;
     //
