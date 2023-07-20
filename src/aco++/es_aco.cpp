@@ -622,6 +622,10 @@ void es_aco_update_statistics()
 #endif
     if (verbose > 0)
     {
+        // printf("min_rho: %.4f\n", min_rho);
+        // printf("max_rho: %.4f\n", max_rho);
+        // printf("alpha: %.4f\n", alpha);
+        // printf("beta: %.4f\n", beta);
         // printf("rho: %.4f\n", rho);
         // printf("q_0: %.4f\n", q_0);
 #if TREE_MAP_MACRO
@@ -654,8 +658,13 @@ void es_aco_init_program()
     upperBounds[ELITE_PROB_IDX] = 0.99;
 #endif
 #if MIN_MAX_RHO_TUNING_MACRO
-    lowerBounds[LEFT_RHO_IDX] = lowerBounds[_MID_RHO_IDX] = lowerBounds[RIGHT_RHO_IDX] = 0;
-    upperBounds[LEFT_RHO_IDX] = upperBounds[_MID_RHO_IDX] = upperBounds[RIGHT_RHO_IDX] = 0;
+    lowerBounds[LEFT_RHO_IDX] = 0;
+    lowerBounds[_MID_RHO_IDX] = 0;
+    lowerBounds[RIGHT_RHO_IDX] = 0;
+
+    upperBounds[LEFT_RHO_IDX] = 1;
+    upperBounds[_MID_RHO_IDX] = 1;
+    upperBounds[RIGHT_RHO_IDX] = 1;
 #endif
     //
 #if RHO_TUNING_MACRO

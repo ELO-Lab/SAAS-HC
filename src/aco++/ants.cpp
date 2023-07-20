@@ -1571,12 +1571,13 @@ double calculate_total_information(const std::size_t &i, const std::size_t &j)
 
     if (o1_evap_flag)
     {
-#if RHO_TUNING_MACRO or MIN_MAX_RHO_TUNING_MACRO
-        _pheromone = o1_get_pheromone(i, j);
-#else
-        o1_pay_evaporation_debt(i, j);
-        _pheromone = pheromone[i][j];
-#endif
+        if (rho_tuning_flag or min_max_rho_tuning_flag)
+            _pheromone = o1_get_pheromone(i, j);
+        else
+        {
+            o1_pay_evaporation_debt(i, j);
+            _pheromone = pheromone[i][j];
+        }
     }
     else
         _pheromone = pheromone[i][j];

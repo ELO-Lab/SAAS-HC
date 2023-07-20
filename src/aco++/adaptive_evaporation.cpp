@@ -108,7 +108,9 @@ void update_indv_ants()
 
 void update_rho()
 {
-    if (min_max_rho_tuning_flag and iteration > 1)
+    if (iteration <= 1)
+        return;
+    if (min_max_rho_tuning_flag)
     {
         const double sum_rho = left_rho + _mid_rho + right_rho;
         left_rho = left_rho / sum_rho * (max_max_rho - min_min_rho);

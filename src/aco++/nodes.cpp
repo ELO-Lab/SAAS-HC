@@ -98,8 +98,6 @@ double Node::get_pheromone(const double &one_minus_rho,
     if (_local_evap_times < global_evap_times)
     {
         pheromone *= pow(one_minus_rho, global_evap_times - _local_evap_times);
-        assert(pheromone > 0);
-
         if (pheromone < past_trail_min)
             pheromone = past_trail_min;
     }
@@ -155,12 +153,13 @@ double Node::prob_weight_without_child_leaf(
 {
     double pheromone;
 
-#if RHO_TUNING_MACRO or MIN_MAX_RHO_TUNING_MACRO
-    pheromone = get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
-#else
-    pay_evaporation_debt(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
-    pheromone = _past_pheromone;
-#endif
+    if (rho_tuning_flag or min_max_rho_tuning_flag)
+        pheromone = get_pheromone(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+    else
+    {
+        pay_evaporation_debt(one_minus_rho, past_trail_restart, past_trail_min, global_restart_times, global_evap_times);
+        pheromone = _past_pheromone;
+    }
 
     return pow(pheromone, alpha) * pow(_heuristic, beta);
 }
