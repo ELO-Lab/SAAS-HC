@@ -2161,6 +2161,7 @@ int parse_commandline(int argc, char *argv[])
     }
 
 #if ES_ANT_MACRO
+    printf("using ES_ANT_MACRO\n");
     if (es_ant_flag)
         es_ant_set_default_hyperparameters();
 #endif
@@ -2172,6 +2173,9 @@ int parse_commandline(int argc, char *argv[])
 #endif
 #if O1_EVAP_MACRO
     printf("using O1_EVAP_MACRO\n");
+#endif
+#if MIN_MAX_RHO_TUNING_MACRO
+    printf("using MIN_MAX_RHO_TUNING_MACRO\n");
 #endif
 
     rand_gen.seed(seed);
