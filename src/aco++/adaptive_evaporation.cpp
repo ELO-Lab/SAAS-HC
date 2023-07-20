@@ -97,8 +97,11 @@ void calculate_fitness_entropy()
 
 void update_indv_ants()
 {
-    // indv_ants = (unsigned int)(min_indv_ants + (max_indv_ants - min_indv_ants) * (entropies[entropy_idx] - min_entropies[entropy_idx]) / (max_entropies[entropy_idx] - min_entropies[entropy_idx]));
-    indv_ants = (unsigned int)(max_indv_ants - (max_indv_ants - min_indv_ants) * (entropies[entropy_idx] - min_entropies[entropy_idx]) / (max_entropies[entropy_idx] - min_entropies[entropy_idx]));
+    const double _mid_value = (max_indv_ants - min_indv_ants) * (entropies[entropy_idx] - min_entropies[entropy_idx]) / (max_entropies[entropy_idx] - min_entropies[entropy_idx]);
+    if (indv_max_minus)
+        indv_ants = (unsigned int)(max_indv_ants - _mid_value);
+    else
+        indv_ants = (unsigned int)(min_indv_ants + _mid_value);
 }
 
 void update_rho()

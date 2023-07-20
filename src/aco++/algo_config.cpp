@@ -40,8 +40,11 @@ bool cmaes_flag = true;
 bool cmaes_flag = false;
 #endif
 
-bool random_initial_std = true;
-bool fitness_entropy_flag = true;
+bool indv_max_minus = false;
+// bool random_initial_std = true;
+bool random_initial_std = false;
+// bool fitness_entropy_flag = true;
+bool fitness_entropy_flag = false;
 // replace_worst_by_bestever --> kh tốt :V đừng bật
 bool replace_worst_by_bestever = false;
 
