@@ -6,7 +6,7 @@ extern double init_rho, min_rho, max_rho;
 extern unsigned int init_indv_ants;
 extern double min_indv_ants, max_indv_ants;
 
-extern double entropies, fitness_entropy;
+extern double fitness_entropy;
 
 void init_adaptive_mechanism(void);
 
