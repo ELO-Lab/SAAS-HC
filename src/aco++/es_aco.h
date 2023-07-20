@@ -16,6 +16,10 @@
 
 #define ES_ACO_DEBUG(x)
 
+// Hyperparameters
+extern double left_rho_mean, _mid_rho_mean, right_rho_mean,
+    left_rho_std, _mid_rho_std, right_rho_std;
+
 extern unsigned long int initial_nb_dims;
 extern unsigned long int initial_lambda;
 
@@ -26,6 +30,8 @@ extern boundary_cmaes optimizer;
 
 extern int default_ls;
 extern unsigned int n_restarts;
+
+//
 
 void _es_construct_solutions(int index);
 

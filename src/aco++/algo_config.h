@@ -29,5 +29,6 @@ extern bool random_initial_std;
 extern bool fitness_entropy_flag;
 extern bool replace_worst_by_bestever;
 extern bool indv_max_minus;
+extern bool min_max_rho_tuning_flag;
 
 #endif

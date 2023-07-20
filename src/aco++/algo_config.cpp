@@ -40,6 +40,12 @@ bool cmaes_flag = true;
 bool cmaes_flag = false;
 #endif
 
+#if MIN_MAX_RHO_TUNING_MACRO
+bool min_max_rho_tuning_flag = true;
+#else
+bool min_max_rho_tuning_flag = false;
+#endif
+
 bool indv_max_minus = false;
 // bool random_initial_std = true;
 bool random_initial_std = false;

@@ -14,6 +14,8 @@
 double init_rho, min_rho, max_rho;
 unsigned int init_indv_ants;
 double min_indv_ants, max_indv_ants;
+double left_rho, _mid_rho, right_rho;
+double min_min_rho, max_max_rho;
 
 std::size_t entropy_idx;
 double entropies[2], min_entropies[2], max_entropies[2];
@@ -106,15 +108,17 @@ void update_indv_ants()
 
 void update_rho()
 {
-#if MIN_MAX_RHO_TUNING_MACRO
-    const double sum_rho = left_rho + _mid_rho + right_rho;
-    left_rho = left_rho / sum_rho * (max_max_rho - min_min_rho);
-    _mid_rho = _mid_rho / sum_rho * (max_max_rho - min_min_rho);
-    min_rho = min_min_rho + left_rho;
-    max_rho = min_rho + _mid_rho;
-#endif
-    rho = min_rho + (max_rho - min_rho) * (entropies[entropy_idx] - min_entropies[entropy_idx]) / (max_entropies[entropy_idx] - min_entropies[entropy_idx]);
-    // rho = max_rho - (max_rho - min_rho) * (entropies[entropy_idx] - min_entropies[entropy_idx]) / (max_entropies[entropy_idx] - min_entropies[entropy_idx]);
+    if (min_max_rho_tuning_flag and iteration > 1)
+    {
+        const double sum_rho = left_rho + _mid_rho + right_rho;
+        left_rho = left_rho / sum_rho * (max_max_rho - min_min_rho);
+        _mid_rho = _mid_rho / sum_rho * (max_max_rho - min_min_rho);
+        min_rho = min_min_rho + left_rho;
+        max_rho = min_rho + _mid_rho;
+    }
+    const double _mid_value = (max_rho - min_rho) * (entropies[entropy_idx] - min_entropies[entropy_idx]) / (max_entropies[entropy_idx] - min_entropies[entropy_idx]);
+    rho = min_rho + _mid_value;
+    // rho = max_rho - _mid_value;
 }
 
 void adaptive_mechanism(void)
@@ -123,10 +127,7 @@ void adaptive_mechanism(void)
     calculate_fitness_entropy();
     entropy_idx = fitness_entropy_flag;
 
-#if MIN_MAX_RHO_TUNING_MACRO
-#else
     update_rho();
-#endif
 
     if (cmaes_flag || ipopcmaes_flag || bipopcmaes_flag || es_ant_flag)
     {

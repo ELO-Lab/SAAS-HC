@@ -27,10 +27,23 @@
 #define RHO_TEMP_DIM TREE_MAP_TEMP_DIM
 #endif
 
-#define ES_ACO_DIM RHO_TEMP_DIM
+#if MIN_MAX_RHO_TUNING_MACRO
+#define LEFT_RHO_IDX RHO_TEMP_DIM
+#define _MID_RHO_IDX (RHO_TEMP_DIM + 1)
+#define RIGHT_RHO_IDX (RHO_TEMP_DIM + 2)
+#define MIN_MAX_RHO_TEMP_DIM (RHO_TEMP_DIM + 3)
+#else
+#define MIN_MAX_RHO_TEMP_DIM RHO_TEMP_DIM
+#endif
+
+#define ES_ACO_DIM MIN_MAX_RHO_TEMP_DIM
 #define EPSILON_IDX ES_ACO_DIM
 #define LEVY_THRESHOLD_IDX (ES_ACO_DIM + 1)
 #define LEVY_RATIO_IDX (ES_ACO_DIM + 2)
+
+// Hyperparameters
+double left_rho_mean, _mid_rho_mean, right_rho_mean,
+    left_rho_std, _mid_rho_std, right_rho_std;
 
 unsigned long int initial_nb_dims = ES_ACO_DIM;
 unsigned long int initial_lambda = 10;
@@ -250,6 +263,12 @@ double eval_function(int index, double const *x, unsigned long N)
     neighbour_prob = x[NEIGHBOUR_PROB_IDX];
     elite_prob = x[ELITE_PROB_IDX];
 #endif
+#if MIN_MAX_RHO_TUNING_MACRO
+    left_rho = x[LEFT_RHO_IDX];
+    _mid_rho = x[_MID_RHO_IDX];
+    right_rho = x[RIGHT_RHO_IDX];
+    update_rho();
+#endif
 //
 #if RHO_TUNING_MACRO
     rho = x[RHO_IDX];
@@ -415,6 +434,14 @@ void es_aco_init()
 
     initialX[ELITE_PROB_IDX] = typicalX[ELITE_PROB_IDX] = elite_prob_mean;
     initialStd[ELITE_PROB_IDX] = elite_prob_std;
+#endif
+#if MIN_MAX_RHO_TUNING_MACRO
+    initialX[LEFT_RHO_IDX] = typicalX[LEFT_RHO_IDX] = left_rho_mean;
+    initialStd[LEFT_RHO_IDX] = left_rho_std;
+    initialX[_MID_RHO_IDX] = typicalX[_MID_RHO_IDX] = _mid_rho_mean;
+    initialStd[_MID_RHO_IDX] = _mid_rho_std;
+    initialX[RIGHT_RHO_IDX] = typicalX[RIGHT_RHO_IDX] = right_rho_mean;
+    initialStd[RIGHT_RHO_IDX] = right_rho_std;
 #endif
 
     setup_cmaes();
@@ -583,6 +610,12 @@ void es_aco_update_statistics()
     neighbour_prob = xbestever[NEIGHBOUR_PROB_IDX];
     elite_prob = xbestever[ELITE_PROB_IDX];
 #endif
+#if MIN_MAX_RHO_TUNING_MACRO
+    left_rho = xbestever[LEFT_RHO_IDX];
+    _mid_rho = xbestever[_MID_RHO_IDX];
+    right_rho = xbestever[RIGHT_RHO_IDX];
+    update_rho();
+#endif
 //
 #if RHO_TUNING_MACRO
     rho = xbestever[RHO_IDX];
@@ -619,6 +652,10 @@ void es_aco_init_program()
     upperBounds[NEIGHBOUR_PROB_IDX] = 1;
     lowerBounds[ELITE_PROB_IDX] = 0;
     upperBounds[ELITE_PROB_IDX] = 0.99;
+#endif
+#if MIN_MAX_RHO_TUNING_MACRO
+    lowerBounds[LEFT_RHO_IDX] = lowerBounds[_MID_RHO_IDX] = lowerBounds[RIGHT_RHO_IDX] = 0;
+    upperBounds[LEFT_RHO_IDX] = upperBounds[_MID_RHO_IDX] = upperBounds[RIGHT_RHO_IDX] = 0;
 #endif
     //
 #if RHO_TUNING_MACRO
