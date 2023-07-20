@@ -635,26 +635,26 @@ void es_aco_update_statistics()
 
 void es_aco_init_program()
 {
-    lowerBounds[ALPHA_IDX] = 0.01;
+    lowerBounds[ALPHA_IDX] = 0.0001;
     upperBounds[ALPHA_IDX] = 10;
 
-    lowerBounds[BETA_IDX] = 0.01;
+    lowerBounds[BETA_IDX] = 0.0001;
     upperBounds[BETA_IDX] = 10;
 
-    lowerBounds[PAR_A_IDX] = 0.01;
+    lowerBounds[PAR_A_IDX] = 0.0001;
     upperBounds[PAR_A_IDX] = 1;
 
-    lowerBounds[PAR_B_IDX] = 0.01;
+    lowerBounds[PAR_B_IDX] = 0.0001;
     upperBounds[PAR_B_IDX] = 1;
 
-    lowerBounds[PAR_C_IDX] = 0.01;
+    lowerBounds[PAR_C_IDX] = 0.0001;
     upperBounds[PAR_C_IDX] = 1;
 
 #if TREE_MAP_MACRO
     lowerBounds[NEIGHBOUR_PROB_IDX] = 0;
     upperBounds[NEIGHBOUR_PROB_IDX] = 1;
     lowerBounds[ELITE_PROB_IDX] = 0;
-    upperBounds[ELITE_PROB_IDX] = 0.99;
+    upperBounds[ELITE_PROB_IDX] = 0.9999;
 #endif
 #if MIN_MAX_RHO_TUNING_MACRO
     lowerBounds[LEFT_RHO_IDX] = 0;
@@ -667,8 +667,8 @@ void es_aco_init_program()
 #endif
     //
 #if RHO_TUNING_MACRO
-    lowerBounds[RHO_IDX] = 0.01;
-    upperBounds[RHO_IDX] = 0.99;
+    lowerBounds[RHO_IDX] = 0.0001;
+    upperBounds[RHO_IDX] = 0.9999;
 #endif
 
     lowerBounds[EPSILON_IDX] = 0.0;
