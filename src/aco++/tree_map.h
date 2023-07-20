@@ -50,7 +50,6 @@ protected:
 };
 
 void tree_map_init();
-void tree_map_force_set_parameters();
 void tree_map_deallocate();
 void tree_map_construct_solutions();
 

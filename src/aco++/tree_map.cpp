@@ -200,12 +200,6 @@ void tree_map_init()
 {
     tree_map = new Tree_Map(instance.n - 1, instance);
 }
-void tree_map_force_set_parameters()
-{
-    mmas_flag = true;
-    elite_prob = 0.15;
-    neighbour_prob = 0.82;
-}
 void tree_map_deallocate()
 {
     delete tree_map;

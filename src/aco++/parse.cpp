@@ -2166,10 +2166,6 @@ int parse_commandline(int argc, char *argv[])
 #endif
 #if TREE_MAP_MACRO
     printf("using TREE_MAP_MACRO\n");
-    if (tree_map_flag)
-    {
-        tree_map_force_set_parameters();
-    }
 #endif
 #if Q_0_TUNING_MACRO
     printf("using Q_0_TUNING_MACRO\n");

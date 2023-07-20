@@ -313,7 +313,6 @@ void es_ant_set_default_hyperparameters(void)
     // min_n_ants = n_ants * 0.8;
     // min_n_ants = n_ants;
     min_n_ants = 0;
-    indv_ants = 5;
 
     rand_seed_std = (rand_gen.max() - rand_gen.min()) / 20.0;
 }

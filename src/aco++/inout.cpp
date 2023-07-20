@@ -539,10 +539,10 @@ void set_default_parameters(void)
     par_c_mean = 0.05282157;
     par_c_std = 0.01;
 
-    elite_prob_mean = 0.14134586;
+    elite_prob = elite_prob_mean = 0.14134586;
     elite_prob_std = 0.30373466;
 
-    neighbour_prob_mean = 0.4584047;
+    neighbour_prob = neighbour_prob_mean = 0.4584047;
     neighbour_prob_std = 0.23759665;
 
     rho = init_rho = 0.2;
