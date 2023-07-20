@@ -545,7 +545,7 @@ void set_default_parameters(void)
     neighbour_prob_mean = 0.4584047;
     neighbour_prob_std = 0.23759665;
 
-    rho = init_rho = 0.4587274;
+    rho = init_rho = 0.2;
     min_rho = 0.26949337;
     max_rho = 0.7514611;
 
@@ -556,124 +556,53 @@ void set_default_parameters(void)
 
     rho_mean = 0.5;
     rho_std = 0.2;
+
+    n_cluster = 4;
+    cluster_size = 16;
+    n_sector = 8;
 }
 
 void set_default_as_parameters(void)
 {
     assert(as_flag);
-    n_ants = -1;  /* number of ants (-1 means instance size) */
-    nn_ants = 20; /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.5;
-    q_0 = 0.0;
-    ras_ranks = 0;
-    elitist_ants = 0;
 }
 
 void set_default_eas_parameters(void)
 {
     assert(eas_flag);
-    n_ants = -1;  /* number of ants (-1 means instance size) */
-    nn_ants = 20; /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.5;
-    q_0 = 0.0;
-    ras_ranks = 0;
     elitist_ants = n_ants;
 }
 
 void set_default_ras_parameters(void)
 {
     assert(ras_flag);
-    n_ants = -1;  /* number of ants (-1 means instance size) */
-    nn_ants = 20; /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.1;
-    q_0 = 0.0;
     ras_ranks = 6;
-    elitist_ants = 0;
 }
 
 void set_default_bwas_parameters(void)
 {
     assert(bwas_flag);
-    n_ants = -1;  /* number of ants (-1 means instance size) */
-    nn_ants = 20; /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.1;
-    q_0 = 0.0;
-    ras_ranks = 0;
-    elitist_ants = 0;
 }
 
 void set_default_mmas_parameters(void)
 {
     assert(mmas_flag);
-    n_ants = -1;  /* number of ants (-1 means instance size) */
-    nn_ants = 20; /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.02;
-    q_0 = 0.0;
-    ras_ranks = 0;
-    elitist_ants = 0;
 }
 
 void set_default_acs_parameters(void)
 {
     assert(acs_flag);
-    n_ants = 10;  /* number of ants (-1 means instance size) */
-    nn_ants = 20; /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.1;
     q_0 = 0.9;
-    ras_ranks = 0;
-    elitist_ants = 0;
 }
 
 void set_default_ls_parameters(void)
 {
     assert(ls_flag);
-    dlb_flag = TRUE; /* apply don't look bits in local search */
-    nn_ls = 20;      /* use fixed radius search in the 20 nearest neighbours */
-
-    n_ants = 25;  /* number of ants */
-    nn_ants = 20; /* number of nearest neighbours in tour construction */
-    alpha = 1.0;
-    beta = 2.0;
-    rho = 0.5;
-    q_0 = 0.0;
-
-    if (mmas_flag)
-    {
-        n_ants = 25;
-        rho = 0.2;
-        q_0 = 0.00;
-    }
-    else if (acs_flag)
-    {
-        n_ants = 10;
-        rho = 0.1;
-        q_0 = 0.98;
-    }
-    else if (eas_flag)
-    {
-        elitist_ants = n_ants;
-    }
 }
 
 void set_default_node_clustering_parameters(void)
 {
-    n_cluster = 4;
-    cluster_size = 16;
-    n_sector = 8;
-
-    q_0 = 0.98f;
+    q_0 = 0.98;
 }
 
 void save_best_thop_solution(void)
