@@ -10,7 +10,7 @@
 // #define RHO_TUNING_MACRO true
 // #define ES_ANT_MACRO true
 // #define O1_EVAP_MACRO true
-#define TREE_MAP_MACRO true
+// #define TREE_MAP_MACRO true
 #define ADAPT_RHO_MACRO true
 #define CMAES_MACRO true
 
@@ -30,4 +30,7 @@ extern bool fitness_entropy_flag;
 extern bool replace_worst_by_bestever;
 extern bool indv_max_minus;
 
+extern bool random_initial_std;
+extern bool fitness_entropy_flag;
+extern bool replace_worst_by_bestever;
 #endif
