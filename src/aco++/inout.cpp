@@ -552,9 +552,10 @@ void set_default_parameters(void)
     indv_ants = init_indv_ants = 9.0;
     min_indv_ants = 8.064333;
     max_indv_ants = 57.13875;
+
     // no need for tuning
-    min_min_rho = 0.01;
-    max_max_rho = 0.99;
+    min_min_rho = 0.000001;
+    max_max_rho = 0.999999;
     const double temp_min_rho = (min_rho - min_min_rho) / (max_max_rho - min_min_rho);
     const double temp_max_rho = (max_rho - min_min_rho) / (max_max_rho - min_min_rho);
     left_rho = temp_min_rho;

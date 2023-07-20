@@ -2096,12 +2096,25 @@ int parse_commandline(int argc, char *argv[])
     }
     if (options.opt_mean_ary)
     {
-#if TREE_MAP_MACRO
+#if MIN_MAX_RHO_TUNING_MACRO && TREE_MAP_MACRO
+        sscanf(
+            options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf",
+            &alpha_mean, &beta_mean,
+            &par_a_mean, &par_b_mean, &par_c_mean,
+            &elite_prob_mean, &neighbour_prob_mean,
+            &left_rho_mean, &_mid_rho_mean, &right_rho_mean);
+#elif TREE_MAP_MACRO
         sscanf(
             options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf",
             &alpha_mean, &beta_mean,
             &par_a_mean, &par_b_mean, &par_c_mean,
             &elite_prob_mean, &neighbour_prob_mean);
+#elif MIN_MAX_RHO_TUNING_MACRO
+        sscanf(
+            options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf",
+            &alpha_mean, &beta_mean,
+            &par_a_mean, &par_b_mean, &par_c_mean,
+            &left_rho_mean, &_mid_rho_mean, &right_rho_mean);
 #else
         sscanf(
             options.arg_mean_ary, "%lf:%lf:%lf:%lf:%lf",
@@ -2109,18 +2122,34 @@ int parse_commandline(int argc, char *argv[])
             &par_a_mean, &par_b_mean, &par_c_mean);
 #endif
 
-        // printf("elite_prob_mean: %lf, neighbour_prob_mean: %lf, alpha_mean: %lf, beta_mean: %lf, par_a_mean: %lf, par_b_mean: %lf, par_c_mean: %lf\n",
-        //        elite_prob_mean, neighbour_prob_mean, alpha_mean, beta_mean, par_a_mean, par_b_mean, par_c_mean);
+        // printf("left_rho_mean: %lf, _mid_rho_mean: %lf, right_rho_mean: %lf, elite_prob_mean: %lf, neighbour_prob_mean: %lf, alpha_mean: %lf, beta_mean: %lf, par_a_mean: %lf, par_b_mean: %lf, par_c_mean: %lf\n",
+        //        left_rho_mean, _mid_rho_mean, right_rho_mean,
+        //        elite_prob_mean, neighbour_prob_mean,
+        //        alpha_mean, beta_mean,
+        //        par_a_mean, par_b_mean, par_c_mean);
     }
 
     if (options.opt_std_ary)
     {
-#if TREE_MAP_MACRO
+#if MIN_MAX_RHO_TUNING_MACRO && TREE_MAP_MACRO
+        sscanf(
+            options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf",
+            &alpha_std, &beta_std,
+            &par_a_std, &par_b_std, &par_c_std,
+            &elite_prob_std, &neighbour_prob_std,
+            &left_rho_std, &_mid_rho_std, &right_rho_std);
+#elif TREE_MAP_MACRO
         sscanf(
             options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf",
             &alpha_std, &beta_std,
             &par_a_std, &par_b_std, &par_c_std,
             &elite_prob_std, &neighbour_prob_std);
+#elif MIN_MAX_RHO_TUNING_MACRO
+        sscanf(
+            options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf:%lf:%lf:%lf",
+            &alpha_std, &beta_std,
+            &par_a_std, &par_b_std, &par_c_std,
+            &left_rho_std, &_mid_rho_std, &right_rho_std);
 #else
         sscanf(
             options.arg_std_ary, "%lf:%lf:%lf:%lf:%lf",
@@ -2128,15 +2157,22 @@ int parse_commandline(int argc, char *argv[])
             &par_a_std, &par_b_std, &par_c_std);
 #endif
 
-        // printf("elite_prob_std: %lf, neighbour_prob_std: %lf, alpha_std: %lf, beta_std: %lf, par_a_std: %lf, par_b_std: %lf, par_c_std: %lf\n",
-        //        elite_prob_std, neighbour_prob_std, alpha_std, beta_std, par_a_std, par_b_std, par_c_std);
+        // printf("left_rho_std: %lf, _mid_rho_std: %lf, right_rho_std: %lf, elite_prob_std: %lf, neighbour_prob_std: %lf, alpha_std: %lf, beta_std: %lf, par_a_std: %lf, par_b_std: %lf, par_c_std: %lf\n",
+        //        left_rho_std, _mid_rho_std, right_rho_std,
+        //        elite_prob_std, neighbour_prob_std,
+        //        alpha_std, beta_std,
+        //        par_a_std, par_b_std, par_c_std);
     }
 
     if (options.opt_adpt_rho)
     {
         adaptive_evaporation_flag = 1;
+#if MIN_MAX_RHO_TUNING_MACRO
+        sscanf(options.arg_adpt_rho, "%lf", &init_rho);
+#else
         sscanf(options.arg_adpt_rho, "%lf:%lf:%lf", &init_rho, &min_rho, &max_rho);
-        // printf("rho: %lf, min_rho: %lf, max_rho: %lf\n", rho, min_rho, max_rho);
+#endif
+        // printf("init_rho: %lf, min_rho: %lf, max_rho: %lf\n", init_rho, min_rho, max_rho);
     }
 
     if (options.opt_indv_ants)

@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(OMP_NUM_THREADS 1)
 set(ENV{OMP_NUM_THREADS} 1)
 
-add_compile_options(-O3)
+# add_compile_options(-O3)
 add_compile_options(-DARMA_DONT_USE_OPENMP)
 # add_compile_options(-w)
 # add_compile_options(-g)
