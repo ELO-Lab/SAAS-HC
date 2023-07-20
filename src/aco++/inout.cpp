@@ -545,7 +545,7 @@ void set_default_parameters(void)
     neighbour_prob = neighbour_prob_mean = 0.4584047;
     neighbour_prob_std = 0.23759665;
 
-    rho = init_rho = 0.2;
+    rho = init_rho = 0.4587274;
     min_rho = 0.26949337;
     max_rho = 0.7514611;
 
