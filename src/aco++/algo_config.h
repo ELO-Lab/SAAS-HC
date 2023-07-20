@@ -3,13 +3,13 @@
 
 #include "stdint.h"
 
-// #define MIN_MAX_RHO_TUNING_MACRO true // have bugs // not implemeted
 // #define LS_N2_MACRO true // have bugs
 // #define Q_0_TUNING_MACRO true // not implemeted
 // #define SEED_TUNING_MACRO true // not implemeted
 // #define RHO_TUNING_MACRO true
 // #define ES_ANT_MACRO true
 // #define O1_EVAP_MACRO true
+#define MIN_MAX_RHO_TUNING_MACRO true
 #define TREE_MAP_MACRO true
 #define ADAPT_RHO_MACRO true
 #define CMAES_MACRO true
@@ -30,5 +30,6 @@ extern bool fitness_entropy_flag;
 extern bool replace_worst_by_bestever;
 extern bool indv_max_minus;
 extern bool min_max_rho_tuning_flag;
+extern bool rho_tuning_flag;
 
 #endif

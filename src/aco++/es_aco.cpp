@@ -611,9 +611,9 @@ void es_aco_update_statistics()
     elite_prob = xbestever[ELITE_PROB_IDX];
 #endif
 #if MIN_MAX_RHO_TUNING_MACRO
-    left_rho = xbestever[LEFT_RHO_IDX];
-    _mid_rho = xbestever[_MID_RHO_IDX];
-    right_rho = xbestever[RIGHT_RHO_IDX];
+    left_rho = xbestgen[LEFT_RHO_IDX];
+    _mid_rho = xbestgen[_MID_RHO_IDX];
+    right_rho = xbestgen[RIGHT_RHO_IDX];
     update_rho();
 #endif
 //
@@ -622,8 +622,7 @@ void es_aco_update_statistics()
 #endif
     if (verbose > 0)
     {
-        // printf("min_rho: %.4f\n", min_rho);
-        // printf("max_rho: %.4f\n", max_rho);
+        // printf("min_rho: %.4f\tmax_rho: %.4f\n", min_rho, max_rho);
         // printf("alpha: %.4f\n", alpha);
         // printf("beta: %.4f\n", beta);
         // printf("rho: %.4f\n", rho);

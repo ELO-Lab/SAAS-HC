@@ -552,17 +552,25 @@ void set_default_parameters(void)
     indv_ants = init_indv_ants = 9.0;
     min_indv_ants = 8.064333;
     max_indv_ants = 57.13875;
-
     // no need for tuning
     min_min_rho = 0.01;
     max_max_rho = 0.99;
     const double temp_min_rho = (min_rho - min_min_rho) / (max_max_rho - min_min_rho);
     const double temp_max_rho = (max_rho - min_min_rho) / (max_max_rho - min_min_rho);
+    left_rho = temp_min_rho;
+    _mid_rho = temp_max_rho - temp_min_rho;
+    right_rho = 1 - temp_max_rho;
+    // const double k = MIN(MIN(left_rho, _mid_rho), right_rho) + MAX(MAX(left_rho, _mid_rho), right_rho);
+    const double k = _mid_rho / 0.5;
+    // const double k = 1;
 
-    left_rho = left_rho_mean = temp_min_rho;
-    _mid_rho = _mid_rho_mean = temp_max_rho - temp_min_rho;
-    right_rho = right_rho_mean = 1 - temp_max_rho;
-    left_rho_std = _mid_rho_std = right_rho_std = 1.0 / 5;
+    left_rho /= k;
+    _mid_rho /= k;
+    right_rho /= k;
+    left_rho_mean = left_rho;
+    _mid_rho_mean = _mid_rho;
+    right_rho_mean = right_rho;
+    left_rho_std = _mid_rho_std = right_rho_std = 0.011;
     //
 
     rho_mean = 0.5;
