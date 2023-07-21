@@ -291,6 +291,11 @@ void init_try(long int ntry)
     time_used = elapsed_time(VIRTUAL);
     time_passed = time_used;
 
+    // ls_prob_flag
+    improvement_count = 0;
+    ls_count = 0;
+    ls_prob = 1;
+
     if (adaptive_evaporation_flag)
         init_adaptive_mechanism();
     if (o1_evap_flag)
@@ -581,6 +586,12 @@ void set_default_parameters(void)
     n_cluster = 4;
     cluster_size = 16;
     n_sector = 8;
+
+    // ls_prob_flag
+    // min_ls_prob = 1;
+    // max_ls_prob = 1;
+    min_ls_prob = 0.8;
+    max_ls_prob = 2;
 }
 
 void set_default_as_parameters(void)

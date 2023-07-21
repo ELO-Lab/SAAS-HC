@@ -247,6 +247,9 @@ void update_statistics(void)
         restart_found_best = iteration;
         /*printf("restart best: %ld, restart_found_best %ld, time %.2f\n",restart_best_ant->fitness, restart_found_best, elapsed_time ( VIRTUAL ));*/
     }
+
+    if (ls_prob_flag)
+        update_ls_prob();
 }
 
 void search_control_and_statistics(void)
@@ -577,6 +580,10 @@ int main(int argc, char *argv[])
     {
         init_try(n_try);
         // printf("%dth try \n", n_try + 1);
+        if (verbose > 0)
+        {
+            // printf("improvement_ratio: %ld/%ld\n", improvement_count, ls_count);
+        }
 
         while (!termination_condition())
         {

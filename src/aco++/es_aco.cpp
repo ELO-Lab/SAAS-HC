@@ -311,13 +311,18 @@ double eval_function(int index, double const *x, unsigned long N)
 #endif
             an_ant_run(k);
 
-        if (ls_flag > 0)
+        if (ls_flag > 0 and
+            (!ls_prob_flag or new_rand01() < ls_prob))
         {
+            if (ls_prob_flag)
+                ls_count += 1;
             copy_from_to(&ant[k], &prev_ls_ant[k]);
             an_ant_local_search(k);
             {
                 if (ant[k].fitness > prev_ls_ant[k].fitness)
                 {
+                    if (ls_prob_flag)
+                        improvement_count += 1;
                     copy_from_to(&prev_ls_ant[k], &ant[k]);
                 }
             }

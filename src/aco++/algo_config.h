@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 
+// seemingly good
 #define MIN_MAX_RHO_TUNING_MACRO true
 #define TREE_MAP_MACRO true
 #define ADAPT_RHO_MACRO true
@@ -37,5 +38,6 @@ extern bool replace_worst_by_bestever;
 extern bool indv_max_minus;
 extern bool min_max_rho_tuning_flag;
 extern bool rho_tuning_flag;
+extern bool ls_prob_flag;
 
 #endif

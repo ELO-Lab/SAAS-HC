@@ -2,6 +2,10 @@
 
 int_fast8_t verbose = 1;
 
+// bool ls_prob_flag = true;
+bool ls_prob_flag = false;
+
+// seemingly good
 bool indv_max_minus = true;
 // bool indv_max_minus = false;
 bool random_initial_std = true;
@@ -13,7 +17,7 @@ bool fitness_entropy_flag = true;
 bool replace_worst_by_bestever = false;
 bool node_clustering_flag = false;
 
-// config here don't work
+// config here doesn't work
 bool ipopcmaes_flag = false;
 bool bipopcmaes_flag = false;
 bool iGreedyLevyFlag = false;

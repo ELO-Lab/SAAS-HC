@@ -68,6 +68,10 @@ long int nn_ls;           /* maximal depth of nearest neighbour lists used in th
 long int dlb_flag = TRUE; /* flag indicating whether don't look bits are used. I recommend
                              to always use it if local search is applied */
 
+// ls_prob_flag
+double ls_prob, min_ls_prob, max_ls_prob;
+std::size_t improvement_count, ls_count;
+
 // ls_n_square_flag
 long int **new_compute_local_nn_lists(long int *tour, const long int &n);
 
@@ -2038,4 +2042,22 @@ long int **new_compute_local_nn_lists(long int *tour, const long int &n)
     TRACE(printf("\n    .. done\n");)
 
     return m_nnear;
+}
+
+void update_ls_prob()
+{
+    if (ls_count == 0)
+    {
+        assert(improvement_count == 0);
+        return;
+    }
+
+    ls_prob = min_ls_prob + (max_ls_prob - min_ls_prob) * improvement_count / ls_count;
+    if (verbose > 0)
+    {
+        printf("new_ls_prob: %lf, improvement_ratio: %ld/%ld\n", ls_prob, improvement_count, ls_count);
+    }
+
+    improvement_count = 0;
+    ls_count = 0;
 }

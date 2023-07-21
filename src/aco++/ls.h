@@ -56,6 +56,13 @@ extern long int nn_ls;
 
 extern long int dlb_flag;
 
+// ls_prob_flag
+extern double ls_prob, min_ls_prob, max_ls_prob;
+extern std::size_t improvement_count, ls_count;
+void update_ls_prob();
+
+///
+
 void two_opt_first(long int *tour, long int t_size);
 
 void two_h_opt_first(long int *tour, long int t_size);
