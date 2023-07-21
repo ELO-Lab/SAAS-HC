@@ -413,7 +413,7 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
 
     long int _try;
 
-    bool cmaes_win;
+    bool cmaes_win = true;
 
     for (_try = 0; _try < max_packing_tries; _try++)
     {

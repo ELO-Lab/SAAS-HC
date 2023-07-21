@@ -510,11 +510,8 @@ void set_default_parameters(void)
       COMMENTS: none
  */
 {
-    ls_flag = 1;
     dlb_flag = TRUE; /* apply don't look bits in local search */
-    nn_ls = 20;      /* use fixed radius search in the 20 nearest neighbours */
     n_ants = 300;    /* number of ants */
-    nn_ants = 20;    /* number of nearest neighbours in tour construction */
     q_0 = 0.0;
     max_tries = 1;
     max_tours = 0;
@@ -526,13 +523,17 @@ void set_default_parameters(void)
     as_flag = FALSE;
     eas_flag = FALSE;
     ras_flag = FALSE;
-    mmas_flag = TRUE;
     bwas_flag = FALSE;
     acs_flag = FALSE;
     ras_ranks = 0;
     elitist_ants = 0;
 
-    max_packing_tries = 2;
+    nn_ls = 20;   /* use fixed radius search in the 20 nearest neighbours */
+    nn_ants = 20; /* number of nearest neighbours in tour construction */
+    ls_flag = 1;
+    max_packing_tries = 1;
+    mmas_flag = TRUE;
+
     // --adapt_evap --cmaes --lambda 18.0 --mean_ary 0.7681441:5.637383:0.804593:0.78718877:0.05282157:0.14134586:0.4584047 --std_ary 0.01:1.4254404:0.20251788:0.11338539:0.01:0.30373466:0.23759665 --adpt_rho 0.4587274:0.26949337:0.7514611 --indv_ants 9.0:8.064333:57.13875
     initial_lambda = 18;
 
