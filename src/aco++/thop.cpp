@@ -373,6 +373,7 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
  */
 {
 
+    double temp_par_a, temp_par_b, temp_par_c;
     int i, j, k, l;
 
     /* for ( i = 0; i <= instance.n; ++i) printf("%d", t[i]); printf("\n"); */
@@ -383,7 +384,6 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
         exit(0);
     }
 
-    double par_sum;
     long int prev_city, curr_city;
     double _total_time;
     long int _total_weight, total_weight, total_profit;
@@ -420,16 +420,23 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
             profit_accumulated[i] = weight_accumulated[i] = 0;
         }
 
-        if (!es_ant_flag)
+        if (_try > 0 ||
+            (!cmaes_flag && !ipopcmaes_flag && !bipopcmaes_flag && !es_ant_flag))
         {
-            par_a = new_rand01();
-            par_b = new_rand01();
-            par_c = new_rand01();
+            temp_par_a = new_rand01();
+            temp_par_b = new_rand01();
+            temp_par_c = new_rand01();
         }
-        par_sum = (par_a + par_b + par_c);
-        par_a /= par_sum;
-        par_b /= par_sum;
-        par_c /= par_sum;
+        else
+        {
+            temp_par_a = par_a;
+            temp_par_b = par_b;
+            temp_par_c = par_c;
+        }
+        const double temp_par_sum = (temp_par_a + temp_par_b + temp_par_c);
+        temp_par_a /= temp_par_sum;
+        temp_par_b /= temp_par_sum;
+        temp_par_c /= temp_par_sum;
 
         l = 0;
 
@@ -438,8 +445,8 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
             tmp_packing_plan[j] = 0;
             if (visited[instance.itemptr[j].id_city] == FALSE)
                 continue;
-            item_vector[l] = (-1.0 * pow(instance.itemptr[j].profit, par_a)) /
-                             (pow(instance.itemptr[j].weight, par_b) * pow((distance_accumulated[instance.n - 2] - distance_accumulated[instance.itemptr[j].id_city]), par_c));
+            item_vector[l] = (-1.0 * pow(instance.itemptr[j].profit, temp_par_a)) /
+                             (pow(instance.itemptr[j].weight, temp_par_b) * pow((distance_accumulated[instance.n - 2] - distance_accumulated[instance.itemptr[j].id_city]), temp_par_c));
             help_vector[l] = j;
             l++;
         }

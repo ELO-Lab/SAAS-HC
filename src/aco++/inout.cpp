@@ -507,7 +507,6 @@ void set_default_parameters(void)
     q_0 = 0.0;
     max_tries = 1;
     max_tours = 0;
-    max_packing_tries = 1;
     seed = (long int)time(NULL);
     max_time = -1;
     optimal = 1;
@@ -521,6 +520,8 @@ void set_default_parameters(void)
     acs_flag = FALSE;
     ras_ranks = 0;
     elitist_ants = 0;
+
+    max_packing_tries = 2;
     // --adapt_evap --cmaes --lambda 18.0 --mean_ary 0.7681441:5.637383:0.804593:0.78718877:0.05282157:0.14134586:0.4584047 --std_ary 0.01:1.4254404:0.20251788:0.11338539:0.01:0.30373466:0.23759665 --adpt_rho 0.4587274:0.26949337:0.7514611 --indv_ants 9.0:8.064333:57.13875
     initial_lambda = 18;
 
@@ -530,14 +531,14 @@ void set_default_parameters(void)
     beta = beta_mean = 5.637383;
     beta_std = 1.4254404;
 
-    par_a_mean = 0.804593;
-    par_a_std = 0.20251788;
+    par_a_mean = 0.5;
+    par_a_std = 0.2;
 
-    par_b_mean = 0.78718877;
-    par_b_std = 0.11338539;
+    par_b_mean = 0.5;
+    par_b_std = 0.2;
 
-    par_c_mean = 0.05282157;
-    par_c_std = 0.01;
+    par_c_mean = 0.5;
+    par_c_std = 0.2;
 
     elite_prob = elite_prob_mean = 0.14134586;
     elite_prob_std = 0.30373466;
