@@ -67,6 +67,7 @@
 struct problem instance;
 
 double par_a, par_b, par_c;
+std::size_t cmaes_win_count, packing_count;
 
 static double dtrunc(double x)
 {
@@ -412,6 +413,8 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
 
     long int _try;
 
+    bool cmaes_win;
+
     for (_try = 0; _try < max_packing_tries; _try++)
     {
 
@@ -499,12 +502,20 @@ long int compute_fitness(long int *t, char *visited, long int t_size, char *p)
 
         if (total_profit > best_packing_plan_profit)
         {
+            if (par_abc_tuning_flag)
+                cmaes_win = (_try == 0);
             best_packing_plan_profit = total_profit;
             for (j = 0; j < instance.m; j++)
             {
                 p[j] = tmp_packing_plan[j];
             }
         }
+    }
+
+    if (par_abc_tuning_flag)
+    {
+        packing_count += 1;
+        cmaes_win_count += cmaes_win;
     }
 
     free(distance_accumulated);

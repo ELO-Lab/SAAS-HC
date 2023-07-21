@@ -8,6 +8,7 @@
 #define TREE_MAP_MACRO true
 #define ADAPT_RHO_MACRO true
 #define CMAES_MACRO true
+#define PAR_ABC_TUNING_MACRO true
 
 // have bugs
 // #define LS_N2_MACRO true
@@ -39,5 +40,6 @@ extern bool indv_max_minus;
 extern bool min_max_rho_tuning_flag;
 extern bool rho_tuning_flag;
 extern bool ls_prob_flag;
+extern bool par_abc_tuning_flag;
 
 #endif

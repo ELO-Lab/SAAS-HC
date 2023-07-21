@@ -291,6 +291,12 @@ void init_try(long int ntry)
     time_used = elapsed_time(VIRTUAL);
     time_passed = time_used;
 
+    if (par_abc_tuning_flag)
+    {
+        cmaes_win_count = 0;
+        packing_count = 0;
+    }
+
     // ls_prob_flag
     improvement_count = 0;
     ls_count = 0;

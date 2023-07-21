@@ -69,3 +69,9 @@ bool rho_tuning_flag = true;
 #else
 bool rho_tuning_flag = false;
 #endif
+
+#if PAR_ABC_TUNING_MACRO
+bool par_abc_tuning_flag = true;
+#else
+bool par_abc_tuning_flag = false;
+#endif

@@ -8,16 +8,22 @@
 
 #define ALPHA_IDX 0
 #define BETA_IDX 1
+
+#if PAR_ABC_TUNING_MACRO
 #define PAR_A_IDX 2
 #define PAR_B_IDX 3
 #define PAR_C_IDX 4
+#define PAR_ABC_TEMP_DIM 5
+#else
+#define PAR_ABC_TEMP_DIM 2
+#endif
 
 #if TREE_MAP_MACRO
-#define NEIGHBOUR_PROB_IDX 5
-#define ELITE_PROB_IDX 6
-#define TREE_MAP_TEMP_DIM 7
+#define NEIGHBOUR_PROB_IDX PAR_ABC_TEMP_DIM
+#define ELITE_PROB_IDX (PAR_ABC_TEMP_DIM + 1)
+#define TREE_MAP_TEMP_DIM (PAR_ABC_TEMP_DIM + 2)
 #else
-#define TREE_MAP_TEMP_DIM 5
+#define TREE_MAP_TEMP_DIM PAR_ABC_TEMP_DIM
 #endif
 
 #if RHO_TUNING_MACRO
@@ -253,9 +259,11 @@ double eval_function(int index, double const *x, unsigned long N)
 
     alpha = x[ALPHA_IDX];
     beta = x[BETA_IDX];
+#if PAR_ABC_TUNING_MACRO
     par_a = x[PAR_A_IDX];
     par_b = x[PAR_B_IDX];
     par_c = x[PAR_C_IDX];
+#endif
     dGreedyEpsilon = x[EPSILON_IDX];
     dGreedyLevyThreshold = x[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = x[LEVY_RATIO_IDX];
@@ -424,6 +432,7 @@ void es_aco_init()
     initialX[BETA_IDX] = typicalX[BETA_IDX] = beta_mean;
     initialStd[BETA_IDX] = beta_std;
 
+#if PAR_ABC_TUNING_MACRO
     initialX[PAR_A_IDX] = typicalX[PAR_A_IDX] = par_a_mean;
     initialStd[PAR_A_IDX] = par_a_std;
 
@@ -432,7 +441,7 @@ void es_aco_init()
 
     initialX[PAR_C_IDX] = typicalX[PAR_C_IDX] = par_c_mean;
     initialStd[PAR_C_IDX] = par_c_std;
-
+#endif
 #if TREE_MAP_MACRO
     initialX[NEIGHBOUR_PROB_IDX] = typicalX[NEIGHBOUR_PROB_IDX] = neighbour_prob_mean;
     initialStd[NEIGHBOUR_PROB_IDX] = neighbour_prob_std;
@@ -605,9 +614,11 @@ void es_aco_update_statistics()
 
     alpha = xbestever[ALPHA_IDX];
     beta = xbestever[BETA_IDX];
+#if PAR_ABC_TUNING_MACRO
     par_a = xbestever[PAR_A_IDX];
     par_b = xbestever[PAR_B_IDX];
     par_c = xbestever[PAR_C_IDX];
+#endif
     dGreedyEpsilon = xbestever[EPSILON_IDX];
     dGreedyLevyThreshold = xbestever[LEVY_THRESHOLD_IDX];
     dGreedyLevyRatio = xbestever[LEVY_RATIO_IDX];
@@ -646,6 +657,7 @@ void es_aco_init_program()
     lowerBounds[BETA_IDX] = 0.0001;
     upperBounds[BETA_IDX] = 10;
 
+#if PAR_ABC_TUNING_MACRO
     lowerBounds[PAR_A_IDX] = 0.0001;
     upperBounds[PAR_A_IDX] = 1;
 
@@ -654,7 +666,7 @@ void es_aco_init_program()
 
     lowerBounds[PAR_C_IDX] = 0.0001;
     upperBounds[PAR_C_IDX] = 1;
-
+#endif
 #if TREE_MAP_MACRO
     lowerBounds[NEIGHBOUR_PROB_IDX] = 0;
     upperBounds[NEIGHBOUR_PROB_IDX] = 1;

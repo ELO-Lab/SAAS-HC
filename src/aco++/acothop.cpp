@@ -637,6 +637,8 @@ int main(int argc, char *argv[])
         {
             printf("Number of iterations: %ld\n", iteration);
             printf("Number of times that CAMES restarts: %ld\n", n_restarts);
+            if (par_abc_tuning_flag)
+                printf("cmaes_win_count/packing_count : %ld/%ld\n", cmaes_win_count, packing_count);
             // printf("seed: %ld\n", seed);
         }
 

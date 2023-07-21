@@ -64,6 +64,7 @@
 #endif
 
 extern double par_a, par_b, par_c;
+extern std::size_t cmaes_win_count, packing_count;
 
 struct point
 {
