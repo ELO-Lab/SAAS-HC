@@ -2,6 +2,22 @@
 
 int_fast8_t verbose = 1;
 
+bool indv_max_minus = true;
+// bool indv_max_minus = false;
+bool random_initial_std = true;
+// bool random_initial_std = false;
+bool fitness_entropy_flag = true;
+// bool fitness_entropy_flag = false;
+
+// seemingly not good
+bool replace_worst_by_bestever = false;
+bool node_clustering_flag = false;
+
+// config here don't work
+bool ipopcmaes_flag = false;
+bool bipopcmaes_flag = false;
+bool iGreedyLevyFlag = false;
+
 #if ADAPT_RHO_MACRO
 bool adaptive_evaporation_flag = true;
 #else
@@ -49,19 +65,3 @@ bool rho_tuning_flag = true;
 #else
 bool rho_tuning_flag = false;
 #endif
-
-bool indv_max_minus = true;
-// bool indv_max_minus = false;
-bool random_initial_std = true;
-// bool random_initial_std = false;
-bool fitness_entropy_flag = true;
-// bool fitness_entropy_flag = false;
-
-// seemingly not good
-bool replace_worst_by_bestever = false;
-bool node_clustering_flag = false;
-
-// config here don't work
-bool ipopcmaes_flag = false;
-bool bipopcmaes_flag = false;
-bool iGreedyLevyFlag = false;

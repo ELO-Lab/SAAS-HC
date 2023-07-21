@@ -3,16 +3,22 @@
 
 #include "stdint.h"
 
-// #define LS_N2_MACRO true // have bugs
-// #define Q_0_TUNING_MACRO true // not implemeted
-// #define SEED_TUNING_MACRO true // not implemeted
-// #define RHO_TUNING_MACRO true
-// #define ES_ANT_MACRO true
-// #define O1_EVAP_MACRO true
 #define MIN_MAX_RHO_TUNING_MACRO true
 #define TREE_MAP_MACRO true
 #define ADAPT_RHO_MACRO true
 #define CMAES_MACRO true
+
+// have bugs
+// #define LS_N2_MACRO true
+
+// not implemeted
+// #define Q_0_TUNING_MACRO true
+// #define SEED_TUNING_MACRO true
+
+// seemingly not good
+// #define RHO_TUNING_MACRO true
+// #define ES_ANT_MACRO true
+// #define O1_EVAP_MACRO true
 
 extern int_fast8_t verbose;
 extern bool node_clustering_flag;      // AACO-NC - Clustering cities
