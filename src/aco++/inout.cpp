@@ -533,59 +533,43 @@ void set_default_parameters(void)
     ls_flag = 1;
     max_packing_tries = 1;
     mmas_flag = TRUE;
-
-    // --adapt_evap --cmaes --lambda 18.0 --mean_ary 0.7681441:5.637383:0.804593:0.78718877:0.05282157:0.14134586:0.4584047 --std_ary 0.01:1.4254404:0.20251788:0.11338539:0.01:0.30373466:0.23759665 --adpt_rho 0.4587274:0.26949337:0.7514611 --indv_ants 9.0:8.064333:57.13875
-    initial_lambda = 18;
-
-    alpha = alpha_mean = 0.7681441;
-    alpha_std = 0.01;
-
-    beta = beta_mean = 5.637383;
-    beta_std = 1.4254404;
-
-    par_a_mean = 0.5;
-    par_a_std = 0.2;
-
-    par_b_mean = 0.5;
-    par_b_std = 0.2;
-
-    par_c_mean = 0.5;
-    par_c_std = 0.2;
-
-    elite_prob = elite_prob_mean = 0.14134586;
-    elite_prob_std = 0.30373466;
-
-    neighbour_prob = neighbour_prob_mean = 0.4584047;
-    neighbour_prob_std = 0.23759665;
-
-    rho = init_rho = 0.4587274;
-    min_rho = 0.26949337;
-    max_rho = 0.7514611;
-
-    indv_ants = init_indv_ants = 9.0;
-    min_indv_ants = 8.064333;
-    max_indv_ants = 57.13875;
-
-    // no need for tuning
     min_min_rho = 0.0001;
     max_max_rho = 0.9999;
-    const double temp_min_rho = (min_rho - min_min_rho) / (max_max_rho - min_min_rho);
-    const double temp_max_rho = (max_rho - min_min_rho) / (max_max_rho - min_min_rho);
-    left_rho = temp_min_rho;
-    _mid_rho = temp_max_rho - temp_min_rho;
-    right_rho = 1 - temp_max_rho;
-    // const double k = MIN(MIN(left_rho, _mid_rho), right_rho) + MAX(MAX(left_rho, _mid_rho), right_rho);
-    const double k = _mid_rho / 0.5;
-    // const double k = 1;
 
-    left_rho /= k;
-    _mid_rho /= k;
-    right_rho /= k;
-    left_rho_mean = left_rho;
-    _mid_rho_mean = _mid_rho;
-    right_rho_mean = right_rho;
-    left_rho_std = _mid_rho_std = right_rho_std = 0.011;
+    // --adapt_evap --cmaes --lambda 18.0 --mean_ary 0.8070596:2.6299257:0.3441242:0.23257422:0.4260279:0.34964353:0.9378256:0.11494596:0.75537807:0.5290341 --std_ary 1e-04:3.0920484:0.2694315:0.008680235:0.3205146:0.7105911:0.10465527:0.19005416:0.21295582:0.28610045 --adpt_rho 0.5064249 --indv_ants 12.0:20.499468:69.103516
+    initial_lambda = 18;
+
+    alpha = alpha_mean = 0.8070596;
+    beta = beta_mean = 2.6299257;
+    par_a_mean = 0.3441242;
+    par_b_mean = 0.23257422;
+    par_c_mean = 0.4260279;
+    elite_prob = elite_prob_mean = 0.34964353;
+    neighbour_prob = neighbour_prob_mean = 0.9378256;
+    left_rho_mean = left_rho = 0.11494596;
+    _mid_rho_mean = _mid_rho = 0.75537807;
+    right_rho_mean = right_rho = 0.5290341;
+
+    alpha_std = 1e-04;
+    beta_std = 3.0920484;
+    par_a_std = 0.2694315;
+    par_b_std = 0.008680235;
+    par_c_std = 0.3205146;
+    elite_prob_std = 0.7105911;
+    neighbour_prob_std = 0.10465527;
+    left_rho_std = 0.19005416;
+    _mid_rho_std = 0.21295582;
+    right_rho_std = 0.28610045;
+
+    rho = init_rho = 0.5064249;
+
+    indv_ants = init_indv_ants = 12;
+    min_indv_ants = 20.499468;
+    max_indv_ants = 69.103516;
     //
+
+    min_rho = 0.26949337;
+    max_rho = 0.7514611;
 
     rho_mean = 0.5;
     rho_std = 0.2;
