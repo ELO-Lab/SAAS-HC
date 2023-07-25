@@ -397,7 +397,8 @@ def profit_table(solution_folder, save_folder, postfix=""):
     res_table = pd.DataFrame(res_table)
     with open(save_folder / f"profit_table{postfix}.pkl", "wb") as f:
         pickle.dump(res_table, f)
-    with open(save_folder / f"profit_table{postfix}.md", "w") as f:
-        f.write(res_table.describe().T.to_markdown())
+    # with open(save_folder / f"profit_table{postfix}.md", "w") as f:
+    #     f.write(res_table.describe().T.to_markdown())
+    res_table.describe().T.to_csv(save_folder / f"profit_table{postfix}.csv")
 
     return res_table

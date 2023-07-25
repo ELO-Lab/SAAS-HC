@@ -426,8 +426,12 @@ def read_arguments():
     parser.add_argument("--random_seed", default=0, type=float)
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
-    parser.add_argument("--no_default", action="store_true")
-    parser.add_argument("--chain_flags", default="--adapt_evap --cmaes --lambda 18.0 --mean_ary 0.8070596:2.6299257:0.3441242:0.23257422:0.4260279:0.34964353:0.9378256:0.11494596:0.75537807:0.5290341 --std_ary 1e-04:3.0920484:0.2694315:0.008680235:0.3205146:0.7105911:0.10465527:0.19005416:0.21295582:0.28610045 --adpt_rho 0.5064249 --indv_ants 12.0:20.499468:69.103516", type=str)
+    parser.add_argument(
+        "--chain_flags",
+        default="--adapt_evap --cmaes --lambda 18.0 --mean_ary 0.8070596:2.6299257:0.3441242:0.23257422:0.4260279:0.34964353:0.9378256:0.11494596:0.75537807:0.5290341 --std_ary 1e-04:3.0920484:0.2694315:0.008680235:0.3205146:0.7105911:0.10465527:0.19005416:0.21295582:0.28610045 --adpt_rho 0.5064249 --indv_ants 12.0:20.499468:69.103516",
+        type=str,
+    )
+    parser.add_argument("--have_default", action="store_true")
 
     # aaco_ncparameters
     parser.add_argument("--aaco_nc", action="store_true")
@@ -541,14 +545,14 @@ def read_arguments():
     global chain_flags
     chain_flags = args.chain_flags
 
-    global no_default
-    no_default = args.no_default
-
     global bypass_exist
     bypass_exist = args.bypass_exist
 
     global max_time
     max_time = args.max_time
+
+    global have_default
+    have_default = args.have_default
 
 
 def preprocess_arguments():
@@ -617,7 +621,7 @@ def load_default_hyperparams():
             / 10.0
         )
 
-    if not no_default:
+    if have_default:
         global ants, alpha, beta, rho, ptries, localsearch
         ants = (
             ants
@@ -780,7 +784,7 @@ def format_aco_command():
         ]
     if q0 != None:
         command += ["--q0", q0]
-    if not not_mmas and not no_default:
+    if not not_mmas and have_default:
         command += ["--mmas"]
     if adapt_evap:
         command += ["--adapt_evap"]
@@ -843,7 +847,7 @@ if __name__ == "__main__":
         print(f"bypass {output_path.name}")
         exit(0)
 
-    if silent <= 0 and not no_default:
+    if silent <= 0 and have_default:
         table_log()
 
     command = format_aco_command()
