@@ -3,7 +3,6 @@ import shutil
 import argparse
 import math
 from pathlib import Path
-from tabulate import tabulate
 import subprocess
 from datetime import datetime
 import multiprocessing
@@ -667,6 +666,8 @@ def check_validation():
 
 
 def table_log():
+    from tabulate import tabulate
+
     configurations = [
         [
             "ants",
