@@ -53,3 +53,24 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Other
+__pycache__
+.vscode
+
+.cache
+Makefile
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles
+build
+
+solutions
+acothop_*
+temp*
+*.ter.log
+
+cmaes_data
+actparcmaes.par
+cmaes_initials.par
+cmaes_initials.par
