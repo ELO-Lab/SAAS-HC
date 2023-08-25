@@ -363,7 +363,9 @@ double eval_function(int index, double const *x, unsigned long N)
         //     printf("%ld, ", (long int)fitnesses[k]);
         // printf("]\n");
     )
-    return offspring_fitness;
+
+    // return offspring_fitness;
+    return min_fitness;
 }
 
 void generating_random_vector()
