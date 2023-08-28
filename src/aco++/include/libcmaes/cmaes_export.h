@@ -1,1 +1,0 @@
-#define CMAES_EXPORT
