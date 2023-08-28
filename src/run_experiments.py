@@ -215,7 +215,11 @@ def get_argument():
     parser.add_argument("--debug_log", action="store_true")
     parser.add_argument("--exist_ok", action="store_true")
     parser.add_argument("--postfix", default="", type=str)
-    parser.add_argument("--chain_flags", type=str)
+    parser.add_argument(
+        "--chain_flags",
+        default="--adapt_evap --cmaes --lambda 18.0 --mean_ary 0.95417756:1.7766886:0.20167154:0.39507222:0.3663831:0.65598345:0.90279484:0.062387817:0.69876164:0.7007201 --std_ary 0.006573472:1.96358:0.3029353:0.14392708:0.3584612:0.71128744:0.10297234:0.24576956:0.2731469:0.34350172 --adpt_rho 0.6272713 --indv_ants 10.0:12.859584:62.129234",
+        type=str,
+        )
     parser.add_argument("--time_limit", type=str)
     parser.add_argument("--run_chain_flags", type=str)
     parser.add_argument("--max_time", type=str)
@@ -293,14 +297,16 @@ if __name__ == "__main__":
         "maximum_travel_time": maximum_travel_time,
         "number_of_runs": number_of_runs,
     }
-    print(yaml.dump(instances))
-
-    build()
 
     n_processes = max(1, multiprocessing.cpu_count() // 2)
     # n_processes = 3
     if debug_log:
         n_processes = 1
+
+    print(yaml.dump(instances))
+    print(f"n_processes: {n_processes}")
+
+    build()
 
     total = (
         len(tsp_base)

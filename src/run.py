@@ -412,6 +412,8 @@ def read_arguments():
     parser.add_argument("--src_dir", default="./", type=str)
     parser.add_argument("--bypass_exist", action="store_true")
     parser.add_argument("--max_time", type=float)
+    parser.add_argument("--chain_flags", type=str)
+    parser.add_argument("--have_default", action="store_true")
 
     # algo parameters
     parser.add_argument("--ants", type=int)
@@ -425,14 +427,6 @@ def read_arguments():
     parser.add_argument("--random_seed", default=0, type=float)
     parser.add_argument("--not_mmas", action="store_true")
     parser.add_argument("--tries", default=1, type=int)
-    parser.add_argument(
-        "--chain_flags",
-        default="--adapt_evap --cmaes --lambda 18.0 --mean_ary 0.8070596:2.6299257:0.3441242:0.23257422:0.4260279:0.34964353:0.9378256:0.11494596:0.75537807:0.5290341 --std_ary 1e-04:3.0920484:0.2694315:0.008680235:0.3205146:0.7105911:0.10465527:0.19005416:0.21295582:0.28610045 --adpt_rho 0.5064249 --indv_ants 12.0:20.499468:69.103516",
-        type=str,
-    )
-    parser.add_argument("--have_default", action="store_true")
-
-    # aaco_ncparameters
     parser.add_argument("--aaco_nc", action="store_true")
     parser.add_argument("--adapt_evap", action="store_true")
     parser.add_argument("--nodeclustering", action="store_true")
@@ -586,7 +580,7 @@ def preprocess_arguments():
         not_mmas = False
 
     global sol_dir
-    sol_dir = sol_dir if sol_dir else Path(f"{src_dir}/../../solutions/temp/temp")
+    sol_dir = sol_dir if sol_dir else Path(f"{src_dir}/../solutions/temp/temp")
 
     global silent
     if realtime_terminal_log:
@@ -605,7 +599,7 @@ def load_default_hyperparams():
         number_of_items_per_city,
         knapsack_type,
     )
-    input_path = f"{src_dir}/../../instances/{tsp_base}-thop/{instance_name}"
+    input_path = f"{src_dir}/../instances/{tsp_base}-thop/{instance_name}"
     output_path = Path(
         f"{sol_dir}/{tsp_base}-thop/{instance_name[:-5]}{postfix}.thop.sol"
     )
@@ -663,6 +657,7 @@ def check_validation():
     assert not (experiment and (not run_only and not build_only))
     assert not (experiment and (run_only and not no_log and not sol_dir))
     assert os.path.isdir(src_dir)
+    assert not (not build_only and not chain_flags)
 
 
 def table_log():
