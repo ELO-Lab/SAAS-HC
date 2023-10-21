@@ -65,10 +65,17 @@ CMakeCache.txt
 CMakeFiles
 build
 
+experiments/saas_hc*
+instances/eil51-thop
+instances/a280-thop
+instances/pr107-thop
+instances/dsj1000-thop
 solutions
 acothop_*
 temp*
 *.ter.log
+log.txt
+errcmaes.err
 
 cmaes_data
 actparcmaes.par
