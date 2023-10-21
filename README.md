@@ -1,9 +1,9 @@
 # Self-Adaptive Ant System with Hierarchical Clustering for the Thief Orienteering Problem
 This repository implements the SAAS-HC algorithm (Self-Adaptive Ant System with Hierarchical Clustering) for the Thief Orienteering problem. The algorithm explanation was presented in the paper "Self-Adaptive Ant System with Hierarchical Clustering for the Thief Orienteering Problem" by Vu Hoang Huynh, The Viet Le, and Ngoc Hoang Luong.
 
-Furthermore, this repository provides the SAAS-HC solution for the ThOP benchmark and the solutions of other algorithms: ILS, BRKGA, ACO, and ACO++. The implementations of these algorithms can be found in [this repository](https://github.com/jonatasbcchagas/acoplusplus_thop).
+Furthermore, this repository provides the SAAS-HC solution for the ThOP benchmark and the solutions of other algorithms: ILS, BRKGA, ACO, and ACO++. The implementations of these algorithms can be found in [this repository](https://github.com/jonatasbcchagas/acoplusplus_thop). All the solution files were stored in the experiments folder.
 ## Contributor
-[Vu Hoang Huynh](https://github.com/vuhh2002), [The Viet Le](https://github.com/LETHEVIET/), and Ngoc Hoang Luong
+[Vu Hoang Huynh](https://github.com/vuhh2002), [The Viet Le](https://github.com/LETHEVIET/), and Ngoc Hoang Luong.
 ## Installation
 ### Linux OS 
 ### Create Conda environment and install dependencies
