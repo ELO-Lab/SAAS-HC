@@ -28,6 +28,6 @@ python run_experiments.py --sol_dir ../experiments/saas_hc
 ## Acknowledgement
 Our code is heavily inspired by [this repository](https://github.com/jonatasbcchagas/acoplusplus_thop) which is the source code of the paper ["Efficiently solving the thief orienteering problem with a max-min ant colony optimization algorithm"](https://link.springer.com/article/10.1007/s11590-021-01824-y) by Jonatas B. C. Chagas and Markus Wagner.
 
-Besides that, we used the K-Means library from [mlpack](https://github.com/mlpack/mlpack) and the C language implementation of the CMA-ES algorithm from [this repository](https://github.com/CMA-ES/c-cmaes) by Nikolaus Hansen.
+Besides that, we used the K-Means library from [mlpack](https://github.com/mlpack/mlpack) and the C implementation of the CMA-ES algorithm from [this repository](https://github.com/CMA-ES/c-cmaes) by Nikolaus Hansen.
 
 This research was funded by University of Information Technology - Vietnam National University HoChiMinh City.
